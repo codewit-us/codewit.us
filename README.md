@@ -8,6 +8,10 @@ This project uses *Nx* to manage the monorepo and npm as the package manager. To
 
 From the [`codewit` directory, you can run nx commands](codewit/)
 
+Running front end: `nx serve client`
+
+Running back end: `nx serve api`
+
 
 ## Contributing
 
