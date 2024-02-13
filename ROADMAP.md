@@ -12,7 +12,7 @@ The `codewit/client` directory contains the react app that drives the front-end.
 
 #### Website Icon/Logos
 
-- The site icon, or favicon, which appears in the browser tab, is located under the `/client/public/` directory alongside the logo and hexicon. The icon is currently initialized in `/client/index.html` along with the website title.
+- The site icon, or favicon, which appears in the browser tab, is located under the `codewit/client/public/` directory alongside the logo and hexicon. The icon is currently initialized in `codewit/client/index.html` along with the website title.
 
 ## Back-end
 
