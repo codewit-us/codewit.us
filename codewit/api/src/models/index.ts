@@ -3,6 +3,7 @@ import { Demo } from './demo';
 import { Exercise } from './exercise';
 
 const sequelize = new Sequelize({
+  host: process.env.DB_HOST ?? 'localhost',
   database: 'codewitus_db',
   dialect: 'postgres',
   username: 'rohith',
