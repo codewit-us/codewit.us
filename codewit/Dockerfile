@@ -9,4 +9,5 @@ WORKDIR /codewit
 COPY --from=builder ./codewit/dist/api .
 COPY package* ./
 RUN npm install --production
+EXPOSE 3000
 CMD node main.js
