@@ -1,0 +1,223 @@
+{
+	"info": {
+		"_postman_id": "bfe56f46-e2f7-4342-8f32-0eae3bc93ad1",
+		"name": "Codewit",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14677408"
+	},
+	"item": [
+		{
+			"name": "Get Demos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/demos",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Demo by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/demos/7",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos",
+						"7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Demos",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Test Demo 5\",\r\n    \"youtube_id\": \"test123\",\r\n    \"exercise_prompt\": \"Hi i am a prompt!!!!!!!!\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/demos",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Demo",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\":\"Demo 2\",\r\n    \"youtube_id\": \"testttttttttt\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/demos/12",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos",
+						"12"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Demo by id",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/demos/6",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Exercises",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/exercises",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"exercises"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Exercise by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/exercises/8",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"exercises",
+						"8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Exercise by id",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/exercises/7",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"exercises",
+						"7"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Exercise by id",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"prompt\": \"Updated text\",\r\n    \"demo_uid\": 19\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/exercises/3",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"exercises",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Exercise for a Demo id",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"prompt\": \"New exercise for old video\",\r\n    \"demo_uid\": 19\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/exercises/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"exercises",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
