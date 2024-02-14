@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    network_mode: "host"
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_USER=rohith
+      - POSTGRES_DB=codewitus_db
+
+  app:
+    network_mode: "host"
+    depends_on:
+      - postgres
+    build: .
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    stdin_open: true
+    tty: true
