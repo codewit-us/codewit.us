@@ -11,7 +11,21 @@ module.exports = {
     ...createGlobPatternsForDependencies(__dirname),
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        background: '#000000', // Black
+        'alternate-background': '#271a13', // Chocolate brown
+        foreground: '#40312a', // Medium brown
+        'foreground-outline': '#271a13', // Chocolate brown
+        highlight: '#f8eedf', // Khaki yellow
+        accent: '#3da2b4', // Blue-ish teal
+      },
+      fontFamily: {
+        logo: ['Capriola', 'sans-serif'],
+        copy: ['Georgia', 'serif'],
+        code: ['Menlo', 'Consolas', 'Courier New', 'monospace'],
+      },
+    },
   },
   plugins: [],
 };
