@@ -37,4 +37,21 @@ async function deleteDemo(uid: number): Promise<Demo | null> {
   return demo;
 }
 
-export { getAllDemos, getDemoById, createDemo, updateDemo, deleteDemo };
+async function likeDemo(uid: number): Promise<Demo | null> {
+  const demo = await Demo.findByPk(uid);
+  if (demo) {
+    demo.likes++;
+    await demo.save();
+  }
+
+  return demo;
+}
+
+export {
+  getAllDemos,
+  getDemoById,
+  createDemo,
+  updateDemo,
+  deleteDemo,
+  likeDemo,
+};

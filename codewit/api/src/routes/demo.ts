@@ -4,6 +4,7 @@ import {
   deleteDemo,
   getAllDemos,
   getDemoById,
+  likeDemo,
   updateDemo,
 } from '../controllers/demo';
 import { createExercise } from '../controllers/exercise';
@@ -56,6 +57,20 @@ demoRouter.patch('/:uid', async (req, res) => {
       req.body.youtube_id
     );
 
+    if (demo) {
+      res.json(demo);
+    } else {
+      res.status(404).json({ message: 'Demo not found' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+demoRouter.post('/:uid/like', async (req, res) => {
+  try {
+    const demo = await likeDemo(Number(req.params.uid));
     if (demo) {
       res.json(demo);
     } else {
