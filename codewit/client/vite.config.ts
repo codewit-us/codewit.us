@@ -45,5 +45,12 @@ export default defineConfig({
       reportsDirectory: '../coverage/client',
       provider: 'v8',
     },
+    alias: [
+      {
+        find: /^monaco-editor$/,
+        replacement:
+          __dirname + "../../node_modules/monaco-editor/esm/vs/editor/editor.api",
+      },
+    ],
   },
 });
