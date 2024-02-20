@@ -33,7 +33,7 @@ const Home = (): JSX.Element => {
   return (
 <>
   <div className="h-container-full max-w-full overflow-auto bg-zinc-900">
-    <div className="h-56 md:h-52 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-6 gap-4 p-3">
+    <div className="h-58 md:h-52 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-6 gap-4 p-3">
       {demos.map((demo) => (
         <Demo
           key={demo.uid}
