@@ -58,9 +58,9 @@ const Read = (): JSX.Element => {
         height: "100%",
       }}
       maxWidth="90%"
-      minWidth="10%"
+      minWidth="30%"
       enable={{ right: true, left: true }}
-      className="overflow-auto p-4 bg-zinc-900 font-white border-r-2 border-zinc-800"
+      className="overflow-x-hidden overflow-y-auto p-4 bg-zinc-900 font-white border-r-2 border-zinc-800"
       handleStyles={{
         left: { left: '-5px' },
         right: { right: '-5px' }
