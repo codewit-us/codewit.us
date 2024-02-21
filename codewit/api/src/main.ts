@@ -3,8 +3,8 @@ import { sequelize } from './models';
 import demoRouter from './routes/demo';
 import exerciseRouter from './routes/exercise';
 
-const host = process.env.HOST ?? '0.0.0.0';
-const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+const host = process.env.API_HOST ?? 'localhost';
+const port = process.env.API_PORT ? Number(process.env.API_PORT) : 3000;
 
 const app = express();
 app.use(express.json());
