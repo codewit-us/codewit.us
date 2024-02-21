@@ -7,7 +7,6 @@ import {
   likeDemo,
   updateDemo,
 } from '../controllers/demo';
-import { createExercise } from '../controllers/exercise';
 
 const demoRouter = Router();
 
@@ -37,11 +36,12 @@ demoRouter.get('/:uid', async (req, res) => {
 
 demoRouter.post('/', async (req, res) => {
   try {
-    let demo = await createDemo(req.body.title, req.body.youtube_id);
-    if (req.body.exercise_prompt) {
-      await createExercise(req.body.exercise_prompt, demo.uid);
-      demo = await getDemoById(demo.uid);
-    }
+    const demo = await createDemo(
+      req.body.title,
+      req.body.youtube_id,
+      req.body.exercises
+    );
+
     res.json(demo);
   } catch (err) {
     console.error(err);

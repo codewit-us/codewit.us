@@ -2,23 +2,20 @@ import {
   Model,
   DataTypes,
   Association,
-  NonAttribute,
   InferAttributes,
   InferCreationAttributes,
   Sequelize,
+  CreationOptional,
 } from 'sequelize';
 import { Exercise } from './exercise';
 
-class Demo extends Model<
-  InferAttributes<Demo, { omit: 'exercises' }>,
-  InferCreationAttributes<Demo, { omit: 'exercises' }>
-> {
+class Demo extends Model<InferAttributes<Demo>, InferCreationAttributes<Demo>> {
   declare uid: number;
   declare title: string;
   declare likes: number;
   declare youtube_id: string;
 
-  declare exercises?: NonAttribute<Exercise[]>; // Note this is optional since it's only populated when explicitly requested in code
+  declare exercises?: CreationOptional<Exercise[]>;
 
   declare static associations: {
     exercises: Association<Demo, Exercise>;
