@@ -8,8 +8,15 @@ async function getDemoById(uid: number): Promise<Demo | null> {
   return await Demo.findByPk(uid, { include: Exercise });
 }
 
-async function createDemo(title: string, youtube_id: string): Promise<Demo> {
-  return await Demo.create({ title, youtube_id });
+async function createDemo(
+  title: string,
+  youtube_id: string,
+  exercises: Exercise[] = []
+): Promise<Demo> {
+  return await Demo.create(
+    { title, youtube_id, exercises },
+    { include: Exercise }
+  );
 }
 
 async function updateDemo(
