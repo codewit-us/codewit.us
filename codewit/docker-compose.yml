@@ -7,7 +7,7 @@ services:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=12345
-      - POSTGRES_USER=rohith
+      - POSTGRES_USER=codewitus_user
       - POSTGRES_DB=codewitus_db
 
   app:
@@ -17,7 +17,12 @@ services:
       dockerfile: Dockerfile.backend
     environment:
       - DB_HOST=codewitus_db
-      - PORT=3000
+      - DB_USER=codewitus_user
+      - DB_PASSWORD=12345
+      - DB_NAME=codewitus_db
+      - DB_PORT=5432
+      - API_PORT=3000
+      - API_HOST=0.0.0.0
     restart: unless-stopped
     ports:
       - 3000:3000
