@@ -18,6 +18,8 @@ The `codewit/client` directory contains the react app that drives the front-end.
 
 The `codewit/api` directory contains the express back-end.
 
+- **Postman Collection** at `codewit/api/codewit.postman_collection.json`
+
 ### main.ts
 
 - main.ts contains the router for our backend apis that uses express's router. It is located at `codewit/api/src/main.ts`
