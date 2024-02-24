@@ -44,6 +44,15 @@ const Read = (): JSX.Element => {
     fetchVideo();  
   }, [uid]);
 
+  const likeVideo = async (uid: string) => {
+    console.log('liking video');
+    try {
+      await axios.post(`/demos/${uid}/like`);
+    } catch (error) {
+      console.error('Error liking the video:', error);
+    }
+  }
+
   if (error) {
     return <NotFound />;
   }
@@ -69,7 +78,7 @@ const Read = (): JSX.Element => {
     >
       <div className="space-y-4 w-full h-full">
         <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
-        <VideoHeader title={demo.title} />
+        <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
         <AuthorTags />
         <RelatedDemos />
         <HelpfulLinks />
@@ -81,7 +90,7 @@ const Read = (): JSX.Element => {
     <div className="p-4 bg-zinc-900 font-white w-full h-full">
       <div className="space-y-4">
         <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
-        <VideoHeader title={demo.title} />
+        <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
         <AuthorTags />
         <RelatedDemos />
         <HelpfulLinks />
