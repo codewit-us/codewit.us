@@ -31,7 +31,7 @@ const Home = (): JSX.Element => {
 
   /* v8 ignore next 3 */
   const handleEdit = (demoUid: number) => {
-    const demoToEdit = demos.find((demo) => demo.uid === demoUid);
+    const demoToEdit = demos.find((demo) => demo.uid == demoUid);
     if (demoToEdit) {
       navigate('/create', { state: { demo: demoToEdit, isEditing: true } });
     }
@@ -41,7 +41,7 @@ const Home = (): JSX.Element => {
     setDeleting(prev => ({ ...prev, [demoUid]: true }));  
     try {
       await axios.delete(`/demos/${demoUid}`);  
-      setDemo(prevDemos => prevDemos.filter(demo => demo.uid !== demoUid));  
+      setDemo(prevDemos => prevDemos.filter(demo => demo.uid != demoUid));  
     } catch (err) {
       alert("Failed to delete the demo. Please try again.");
     } finally {

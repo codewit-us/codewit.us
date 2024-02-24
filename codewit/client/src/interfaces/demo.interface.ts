@@ -8,7 +8,7 @@ interface Exercise {
 
 interface Demo {
   createdAt?: string;
-  uid?: string;
+  uid?: number;
   youtube_id: string;
   title: string;
   likes?: number;

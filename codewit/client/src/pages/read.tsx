@@ -44,7 +44,7 @@ const Read = (): JSX.Element => {
     fetchVideo();  
   }, [uid]);
 
-  const likeVideo = async (uid: string) => {
+  const likeVideo = async (uid: number) => {
     console.log('liking video');
     try {
       await axios.post(`/demos/${uid}/like`);
@@ -76,21 +76,24 @@ const Read = (): JSX.Element => {
         right: { right: '-5px' }
       }}
     >
-      <div className="space-y-4 w-full h-full">
-        <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
-        <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
-        <AuthorTags />
-        <RelatedDemos />
-        <HelpfulLinks />
-      </div>
+      {demo && (
+        <div className="space-y-4 w-full h-full">
+          <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
+          <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
+          <AuthorTags />
+          <RelatedDemos />
+          <HelpfulLinks />
+        </div>
+      )}
     </Resizable>
   );
 
   const nonResizableContent = (
     <div className="p-4 bg-zinc-900 font-white w-full h-full">
       <div className="space-y-4">
-        <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
-        <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
+        {demo && (
+          <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
+        )}
         <AuthorTags />
         <RelatedDemos />
         <HelpfulLinks />
@@ -102,7 +105,7 @@ const Read = (): JSX.Element => {
     <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-zinc-900">
       {isMdScreen ? resizableContent : nonResizableContent}
       <div className="flex-1 h-full w-full md:overflow-auto p-4 flex flex-col gap-2">
-        <Exercises exercises={demo.exercises} />
+        {demo && <Exercises exercises={demo.exercises} />}
         <CodeBlock />
         <Checklist />
       </div>
