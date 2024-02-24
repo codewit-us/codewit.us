@@ -11,13 +11,13 @@ import AuthorTags from '../components/videoui/authorTags';
 import RelatedDemos from '../components/videoui/relatedDemos';
 import VideoPlayer from '../components/videoui/videoPlayer';
 import Exercises from '../components/codeblock/exercises';
-import { Resizable } from 're-resizable';
 import axios from 'axios';
+import { Resizable } from 're-resizable';
 
 const Read = (): JSX.Element => {
-  const [demo, setDemo] = useState<DemoType | null>(null);
+  const [demo, setDemo] = useState<DemoType[]>([]);
   const [error, setError] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [isMdScreen, setIsMdScreen] = useState<boolean>(window.innerWidth >= 768);
   const { uid } = useParams<{ uid: string }>();
 
@@ -31,26 +31,24 @@ const Read = (): JSX.Element => {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    const getDemos = async () => {
+    const fetchVideo = async () => {
       try {
-        const res = await axios.get(`/demo/`);
-        console.log(res.data);
+        setLoading(true);
+        const res = await axios.get(`/demos/${uid}`);
         setDemo(res.data);
         setLoading(false);
       } catch (err) {
         setError(true);
-        return null;
-      }
-    };
-    getDemos();
+      }  
+    }
+    fetchVideo();  
   }, [uid]);
 
   if (error) {
     return <NotFound />;
   }
 
-  if (loading || !demo) {
+  if (loading) {
     return <Loading />;
   }
 
