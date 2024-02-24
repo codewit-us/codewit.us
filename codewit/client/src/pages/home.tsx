@@ -4,8 +4,10 @@ import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loading from '../components/loading/loading';
+import Error from '../components/error/error';
 const Home = (): JSX.Element => {
   const [demos, setDemo] = useState<DemoType[]>([]);
+  const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
@@ -17,6 +19,7 @@ const Home = (): JSX.Element => {
         setDemo(res.data);
         setLoading(false);
       } catch (err) {
+        setError(true);
         return null;
       }
     };
@@ -41,26 +44,28 @@ const Home = (): JSX.Element => {
     return <Loading />
   }
 
+  if(error) {
+    return <Error />
+  }
+
   return (
-<>
-  <div className="h-container-full max-w-full overflow-auto bg-zinc-900">
-    <div className="h-58 md:h-52 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-6 gap-4 p-3">
-      {demos.map((demo) => (
-        <Demo
-          key={demo.uid}
-          title={demo.title}
-          uid={demo.uid}
-          amountExercises={demo.exercises.length}
-          handleEdit={() => handleEdit(demo.uid)}
-          handleDelete={() => handleDelete(demo.uid)}
-        />
-      ))}
-    </div>
-  </div>
-</>
-
+    <>
+      <div className="h-container-full max-w-full overflow-auto bg-zinc-900">
+        <div className="h-58 md:h-52 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-6 gap-4 p-3">
+          {demos.map((demo) => (
+            <Demo
+              key={demo.uid}
+              title={demo.title}
+              uid={demo.uid}
+              amountExercises={demo.exercises.length}
+              handleEdit={() => handleEdit(demo.uid)}
+              handleDelete={() => handleDelete(demo.uid)}
+            />
+          ))}
+        </div>
+      </div>
+    </>
   );
-
 };
 
 export default Home;
