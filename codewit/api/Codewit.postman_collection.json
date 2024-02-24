@@ -48,7 +48,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Demo\",\r\n    \"youtube_id\": \"test123\",\r\n    \"exercises\": [\r\n        {\"prompt\": \"Hi i am a prompt 1!!!!!!!!\"},\r\n        {\"prompt\": \"Hi i am a prompt 2!!!!!!!!\"},\r\n        {\"prompt\": \"Hi i am a prompt 3!!!!!!!!\"}\r\n    ]\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Demo\",\r\n    \"youtube_id\": \"9Z6mWJXR-6M\",\r\n    \"exercises\": [\r\n        {\"prompt\": \"Hi i am a prompt 1!!!!!!!!\"},\r\n        {\"prompt\": \"Hi i am a prompt 2!!!!!!!!\"},\r\n        {\"prompt\": \"Hi i am a prompt 3!!!!!!!!\"}\r\n    ]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -93,7 +93,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\":\"Demo 2\",\r\n    \"youtube_id\": \"testttttttttt\"\r\n}",
+					"raw": "{\r\n    \"title\":\"Demo 2\",\r\n    \"youtube_id\": \"9Z6mWJXR-6M\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"

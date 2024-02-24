@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
-import NotFound from '../pages/notfound';
+import NotFound from '../components/notfound/notfound';
 import CodeBlock from "../components/codeblock/codeblock";
 import Checklist from "../components/codeblock/checklist";
-import Loading from '../components/loading/loading';
+import Loading from '../components/loading/loadingPage';
 import HelpfulLinks from '../components/videoui/helpfulLinks';
 import VideoHeader from '../components/videoui/videoHeader';
 import AuthorTags from '../components/videoui/authorTags';
@@ -15,7 +15,7 @@ import axios from 'axios';
 import { Resizable } from 're-resizable';
 
 const Read = (): JSX.Element => {
-  const [demo, setDemo] = useState<DemoType[]>([]);
+  const [demo, setDemo] = useState<DemoType>();
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [isMdScreen, setIsMdScreen] = useState<boolean>(window.innerWidth >= 768);

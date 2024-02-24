@@ -3,7 +3,7 @@ import NavBar from '../components/nav/nav';
 import Home from '../pages/home';
 import Read from '../pages/read';
 import Create from '../pages/create';
-import NotFound from '../pages/notfound';
+import NotFound from '../components/notfound/notfound';
 import styles from './app.module.css';
 
 import { Route, Routes, Link } from 'react-router-dom';

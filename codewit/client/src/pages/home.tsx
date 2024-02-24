@@ -3,11 +3,13 @@ import Demo from '../components/demos/demos';
 import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Loading from '../components/loading/loading';
+import Loading from '../components/loading/loadingPage';
 import Error from '../components/error/error';
+
 const Home = (): JSX.Element => {
   const [demos, setDemo] = useState<DemoType[]>([]);
   const [error, setError] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<{ [uid: number]: boolean }>({});
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
@@ -17,10 +19,11 @@ const Home = (): JSX.Element => {
         setLoading(true);
         const res = await axios.get(`/demos`);
         setDemo(res.data);
-        setLoading(false);
       } catch (err) {
         setError(true);
         return null;
+      } finally {
+        setLoading(false);
       }
     };
     fetchDemos();
@@ -34,11 +37,18 @@ const Home = (): JSX.Element => {
     }
   };
 
-  const handleDelete = (demoUid: number) => {
-    const newDemos = demos.filter((demo) => demo.uid !== demoUid);
-    setDemo(newDemos);
-    localStorage.setItem('demos', JSON.stringify(newDemos));
+  const handleDelete = async (demoUid: number) => {
+    setDeleting(prev => ({ ...prev, [demoUid]: true }));  
+    try {
+      await axios.delete(`/demos/${demoUid}`);  
+      setDemo(prevDemos => prevDemos.filter(demo => demo.uid !== demoUid));  
+    } catch (err) {
+      alert("Failed to delete the demo. Please try again.");
+    } finally {
+      setDeleting(prev => ({ ...prev, [demoUid]: false }));
+    }
   };
+  
 
   if(loading) {
     return <Loading />
@@ -56,10 +66,11 @@ const Home = (): JSX.Element => {
             <Demo
               key={demo.uid}
               title={demo.title}
-              uid={demo.uid}
+              uid={demo.uid ?? 0}
               amountExercises={demo.exercises.length}
-              handleEdit={() => handleEdit(demo.uid)}
-              handleDelete={() => handleDelete(demo.uid)}
+              handleEdit={() => handleEdit(demo.uid ?? 0)}
+              isDeleting={deleting[demo.uid ?? 0]}
+              handleDelete={() => handleDelete(demo.uid ?? 0)}
             />
           ))}
         </div>

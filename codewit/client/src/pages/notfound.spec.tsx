@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import NotFound from './notfound';
+import NotFound from '../components/notfound/notfound';
 
 describe('Error Page', () => {
 

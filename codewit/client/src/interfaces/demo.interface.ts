@@ -2,16 +2,16 @@
 // Interface For Video Object
 
 interface Exercise {
-  uid: number;
+  demo_uid: number;
   prompt: string;
 }
 
 interface Demo {
   createdAt?: string;
-  uid: number;
+  uid?: number;
   youtube_id: string;
   title: string;
-  likes: number;
+  likes?: number;
   exercises: Exercise[];
   updatedAt?: string;
 }
