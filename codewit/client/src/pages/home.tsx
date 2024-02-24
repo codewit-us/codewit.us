@@ -2,18 +2,25 @@ import React, { useEffect, useState } from 'react';
 import Demo from '../components/demos/demos'; 
 import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
+import Loading from '../components/loading/loading';
 const Home = (): JSX.Element => {
   const [demos, setDemo] = useState<DemoType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedDemos = localStorage.getItem('demos');
-
-    if (storedDemos) {
-      const allDemos: DemoType[] = JSON.parse(storedDemos);
-      setDemo(allDemos);
-    }
+    const fetchDemos = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`/demos`);
+        setDemo(res.data);
+        setLoading(false);
+      } catch (err) {
+        return null;
+      }
+    };
+    fetchDemos();
   }, []);
 
   /* v8 ignore next 3 */
@@ -29,6 +36,10 @@ const Home = (): JSX.Element => {
     setDemo(newDemos);
     localStorage.setItem('demos', JSON.stringify(newDemos));
   };
+
+  if(loading) {
+    return <Loading />
+  }
 
   return (
 <>

@@ -7,11 +7,13 @@ interface Exercise {
 }
 
 interface Demo {
+  createdAt?: string;
   uid: number;
   youtube_id: string;
   title: string;
   likes: number;
   exercises: Exercise[];
+  updatedAt?: string;
 }
 
 // Interface to Youtube API Response
