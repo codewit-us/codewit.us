@@ -30,10 +30,7 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - **Delete Demo**: Users can remove demos directly from the Home Page through a dedicated delete button, immediately updating the displayed list of demos.
 - **Components**:
   - **Demos Component** (`<Demos />`): Responsible for displaying individual demos in a grid, each equipped with action buttons for editing, deleting, and viewing.
-- **Technical Details**:
-  - Leverages React Router for handling navigation to different parts of the application based on user actions.
-
-
+  
 ## Read Page
 - Located at `codewit/client/src/pages/read.tsx`, the Read Page showcases the full details of a demo. Users can arrive at this page by selecting a demo on the Home Page or directly via the `/read/:uid` URL, where `uid` corresponds to the demo's unique identifier.
 - **Functionality**:
@@ -44,9 +41,6 @@ The `codewit/client` directory contains the react app that drives the front-end.
     - Components Located under `../components/videoui/`
   - **CodeBlock Components** (`<Exercises />`, `<CodeBlock />`, `<Progress />`, `<CheckList />`): For presenting associated exercises, an interactive code editor, a progress bar, and a checklist for tracking user progress.
     - Components Located under `../components/codeblock/`
-- **Technical Details**:
-  - Utilizes React Router for URL parameter handling and navigation.
-  - Uses `useParams` to parse uid
     
 ## Create Page
 - Located at `codewit/client/src/pages/create.tsx`, the Create Page allows users to create or edit demos. Accessible from the Home Page for new demos or via edit buttons on existing demos, it distinguishes between adding or editing through the `useLocation` state.
@@ -57,10 +51,6 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - **VideoSelect (VideoSelect />**: Component for selecting a YouTube video fetched from the YouTube API.
   - **ExerciseList (ExerciseList />**: Component for adding, editing, and removing exercises.
     - Both Located under `../components/form/`
-- **Technical Details**:
-  - Utilizes `useState` for form data management.
-  - Uses `useLocation` to determine if a demo is being created or edited.
-  - Employs `useNavigate` for redirection after form submission.
 
 
 
