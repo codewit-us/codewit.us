@@ -10,9 +10,9 @@ interface ExerciseListProps {
 
 const ExerciseList = ({ exercises, onAdd, onRemove, onChange }: ExerciseListProps): JSX.Element => {
   return (
-    <div>
+    <div className={exercises.length > 0 ? "bg-gray-700 p-2 rounded-md" : ""}>
       {exercises.map((exercise, index) => (
-        <div key={index} className="mb-5">
+        <div key={index} className="mb-3">
           <div className="relative">
             <textarea
               id={`exercise-prompt-${index}`}
