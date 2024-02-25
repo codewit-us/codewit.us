@@ -123,7 +123,7 @@ const Create = (): JSX.Element => {
         <button 
           type="submit"
           data-testid="submitbtn" 
-          className="w-[150px] text-white bg-accent-500 hover:bg-accent-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-5 py-2.5 text-center transition-colors duration-200"
+          className="text-white bg-accent-500 hover:bg-accent-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm py-2.5 px-3 text-center transition-colors duration-200"
         >
           {isEditing ? 'confirm edit' : 'create'}
         </button>
