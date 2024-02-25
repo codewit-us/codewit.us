@@ -80,6 +80,7 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
               onChange={(e) => setSearchTerm(e.target.value)}
               onFocus={() => setIsOpen(true)}
               placeholder="Search for a video"
+              required
               className="bg-gray-700 border border-gray-600 text-white text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             />
             {isOpen && (
