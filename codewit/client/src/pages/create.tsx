@@ -87,46 +87,50 @@ const Create = (): JSX.Element => {
   }
 
   return (
-      <form onSubmit={handleSubmit} className=" bg-zinc-900 w-full h-container-full overflow-x-hidden shadow-xl p-6 space-y-6">
-        <h2 className="text-xl font-semibold text-white">Create Demo Exercise</h2>
+    <div className="flex justify-center items-start h-container-full bg-zinc-900 overflow-auto">
+    <form onSubmit={handleSubmit} className="bg-zinc-900 w-full max-w-4xl h-full p-6 space-y-6">
+      <h2 className="text-xl font-semibold text-white">Create Demo Exercise</h2>
   
-        <div>
-          <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-200">Title</label>
-          <input 
-            type="text" 
-            id="title" 
-            name="title" 
-            className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-sm focus:ring-blue-500 focus:border-blue-500" 
-            placeholder="Enter title" 
-            value={demo.title} 
-            onChange={handleInputChange} 
-            required 
-          />
-        </div>
-  
-        <VideoSelect
-          onSelectVideo={handleVideoSelect}
-          selectedVideoId={demo.youtube_id}
+      <div>
+        <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-200">Title</label>
+        <input 
+          type="text" 
+          id="title" 
+          name="title" 
+          className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-md focus:ring-blue-500 focus:border-blue-500" 
+          placeholder="Enter title" 
+          value={demo.title} 
+          onChange={handleInputChange} 
+          required 
         />
+      </div>
   
-        <div className="max-h-96 overflow-auto">
-          <ExerciseList
-            exercises={demo.exercises}
-            onAdd={addExercise}
-            onRemove={removeExercise}
-            onChange={handleExerciseChange}
-          />
-        </div>
+      <VideoSelect
+        onSelectVideo={handleVideoSelect}
+        selectedVideoId={demo.youtube_id}
+      />
   
+      <div className="max-h-96 overflow-auto">
+        <ExerciseList
+          exercises={demo.exercises}
+          onAdd={addExercise}
+          onRemove={removeExercise}
+          onChange={handleExerciseChange}
+        />
+      </div>
+  
+      <div className="flex justify-end py-2">
         <button 
           type="submit"
           data-testid="submitbtn" 
-          className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-sm text-sm px-5 py-2.5 text-center transition-colors duration-200"
+          className="w-[150px] text-white bg-accent-500 hover:bg-accent-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-5 py-2.5 text-center transition-colors duration-200"
         >
-          {isEditing ? 'Confirm Edit' : 'Create'}
+          {isEditing ? 'confirm edit' : 'create'}
         </button>
-
-      </form>
+      </div>
+    </form>
+  </div>
+  
   );  
 };
 
