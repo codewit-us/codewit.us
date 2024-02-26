@@ -9,7 +9,7 @@ const NavBar = (): JSX.Element => {
   };
 
   return (
-    <nav className="bg-background-500 border-gray-200 dark:bg-gray-900">
+    <nav className="bg-background-500 border-gray-200 ">
       <div className="max-w-screen flex flex-wrap items-center justify-between mx-auto p-3">
         <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
             <img src="/logo-dark.png" className="h-10" alt="CodeWitUs Logo" />

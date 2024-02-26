@@ -97,7 +97,7 @@ const Create = (): JSX.Element => {
           type="text" 
           id="title" 
           name="title" 
-          className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-md focus:ring-blue-500 focus:border-blue-500" 
+          className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500" 
           placeholder="Enter title" 
           value={demo.title} 
           onChange={handleInputChange} 

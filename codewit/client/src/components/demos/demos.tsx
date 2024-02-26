@@ -22,7 +22,7 @@ const Video = ({ title, uid, amountExercises, isDeleting, handleEdit, handleDele
   };
   
   return (
-    <div className="flex flex-col h-full bg-gray-800 overflow-hidden rounded-lg cursor-pointer w-full">
+  <div className="flex flex-col h-full bg-gray-800 overflow-hidden rounded-lg transition-transform duration-150 ease-in-out hover:scale-102 cursor-pointer w-full">
       <Link to ={`/read/${uid}`} className="flex flex-grow w-full">
         <div className="flex-shrink-0 flex justify-center items-center bg-gray-900 w-full h-full ">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3da2b4" className="opacity-50 w-12 h-12">
