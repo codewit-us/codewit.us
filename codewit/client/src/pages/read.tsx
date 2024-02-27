@@ -67,7 +67,7 @@ const Read = (): JSX.Element => {
         width: "70%",
         height: "100%",
       }}
-      maxWidth="90%"
+      maxWidth="65%"
       minWidth="30%"
       enable={{ right: true, left: true }}
       className="overflow-x-hidden overflow-y-auto p-4 bg-zinc-900 font-white border-r-2 border-zinc-800"
