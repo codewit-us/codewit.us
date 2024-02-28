@@ -48,7 +48,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Demo\",\r\n    \"youtube_id\": \"test123\",\r\n    \"exercises\": [\r\n        {\"prompt\": \"Hi i am a prompt 1!!!!!!!!\"},\r\n        {\"prompt\": \"Hi i am a prompt 2!!!!!!!!\"},\r\n        {\"prompt\": \"Hi i am a prompt 3!!!!!!!!\"}\r\n    ]\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Demo 10\",\r\n    \"youtube_id\": \"test123\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -93,7 +93,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\":\"Demo 2\",\r\n    \"youtube_id\": \"testttttttttt\"\r\n}",
+					"raw": "{\r\n    \"title\":\"Demo 2\",\r\n    \"youtube_id\": \"testttttttttt 2\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -101,13 +101,97 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/demos/3",
+					"raw": "{{url}}/demos/2",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"3"
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add exercises to demo",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exercises\": [1,2,3]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/demos/2/exercises",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos",
+						"2",
+						"exercises"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove exercises from demo",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exercises\": [3]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/demos/2/exercises",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos",
+						"2",
+						"exercises"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Replace exercises in a demo",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exercises\": [1,2,3]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/demos/2/exercises",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"demos",
+						"2",
+						"exercises"
 					]
 				}
 			},
@@ -154,71 +238,26 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/exercises/8",
+					"raw": "{{url}}/exercises/1",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"exercises",
-						"8"
+						"1"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Delete Exercise by id",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{url}}/exercises/7",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"exercises",
-						"7"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update Exercise by id",
-			"request": {
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"prompt\": \"Updated text\",\r\n    \"demo_uid\": 2\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/exercises/9",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"exercises",
-						"9"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create Exercise for a Demo id",
+			"name": "Create Exercise",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"prompt\": \"New exercise for old video\",\r\n    \"demo_uid\": 2\r\n}",
+					"raw": "{\r\n    \"prompt\": \"New exercise 10\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -233,6 +272,51 @@
 					"path": [
 						"exercises",
 						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Exercise by id",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/exercises/10",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"exercises",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Exercise by id",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"prompt\": \"Updated Exercise\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/exercises/9",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"exercises",
+						"9"
 					]
 				}
 			},
