@@ -25,7 +25,7 @@ const sequelize = new Sequelize({
 
 [Demo, Exercise].forEach((model) => model.initialize(sequelize));
 
-Demo.hasMany(Exercise, { foreignKey: 'demo_uid' });
-Exercise.belongsTo(Demo, { foreignKey: 'demo_uid' });
+Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
+Exercise.belongsToMany(Demo, { through: 'DemoExercises' });
 
 export { Demo, Exercise, sequelize };
