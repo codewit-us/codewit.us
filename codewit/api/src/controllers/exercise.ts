@@ -1,35 +1,24 @@
-import { Demo, Exercise } from '../models';
+import { Exercise } from '../models';
 
 async function getAllExercises(): Promise<Exercise[]> {
-  return await Exercise.findAll({ include: Demo });
+  return await Exercise.findAll();
 }
 
 async function getExerciseById(uid: number): Promise<Exercise | null> {
-  return await Exercise.findByPk(uid, { include: Demo });
+  return await Exercise.findByPk(uid);
 }
 
-async function createExercise(
-  prompt: string,
-  demo_uid: number
-): Promise<Exercise> {
-  return await Exercise.create({ prompt, demo_uid });
-}
-
-async function bulkCreateExercises(
-  exercises: { prompt: string; demo_uid: number }[]
-): Promise<Exercise[]> {
-  return await Exercise.bulkCreate(exercises);
+async function createExercise(prompt: string): Promise<Exercise> {
+  return await Exercise.create({ prompt });
 }
 
 async function updateExercise(
   uid: number,
-  prompt?: string,
-  demo_uid?: number
+  prompt?: string
 ): Promise<Exercise | null> {
   let exercise = await Exercise.findByPk(uid);
   if (exercise) {
     if (prompt) exercise.prompt = prompt;
-    if (demo_uid) exercise.demo_uid = demo_uid;
 
     exercise = await exercise.save();
   }
@@ -50,7 +39,6 @@ export {
   getAllExercises,
   getExerciseById,
   createExercise,
-  bulkCreateExercises,
   updateExercise,
   deleteExercise,
 };

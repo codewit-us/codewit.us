@@ -8,15 +8,8 @@ async function getDemoById(uid: number): Promise<Demo | null> {
   return await Demo.findByPk(uid, { include: Exercise });
 }
 
-async function createDemo(
-  title: string,
-  youtube_id: string,
-  exercises: Exercise[] = []
-): Promise<Demo> {
-  return await Demo.create(
-    { title, youtube_id, exercises },
-    { include: Exercise }
-  );
+async function createDemo(title: string, youtube_id: string): Promise<Demo> {
+  return await Demo.create({ title, youtube_id });
 }
 
 async function updateDemo(
@@ -24,12 +17,51 @@ async function updateDemo(
   title?: string,
   youtube_id?: string
 ): Promise<Demo | null> {
-  const demo = await Demo.findByPk(uid);
+  const demo = await Demo.findByPk(uid, { include: Exercise });
   if (demo) {
     if (title) demo.title = title;
     if (youtube_id) demo.youtube_id = youtube_id;
 
     await demo.save();
+  }
+
+  return demo;
+}
+
+async function addExercisesToDemo(
+  uid: number,
+  exercises: number[]
+): Promise<Demo | null> {
+  const demo = await Demo.findByPk(uid, { include: Exercise });
+  if (demo) {
+    await demo.addExercises(exercises);
+    await demo.reload();
+  }
+
+  return demo;
+}
+
+async function removeExercisesFromDemo(
+  uid: number,
+  exercises: number[]
+): Promise<Demo | null> {
+  const demo = await Demo.findByPk(uid, { include: Exercise });
+  if (demo) {
+    await demo.removeExercises(exercises);
+    await demo.reload();
+  }
+
+  return demo;
+}
+
+async function setExercisesForDemo(
+  uid: number,
+  exercises: number[]
+): Promise<Demo | null> {
+  const demo = await Demo.findByPk(uid, { include: Exercise });
+  if (demo) {
+    await demo.setExercises(exercises);
+    await demo.reload();
   }
 
   return demo;
@@ -61,4 +93,7 @@ export {
   updateDemo,
   deleteDemo,
   likeDemo,
+  addExercisesToDemo,
+  removeExercisesFromDemo,
+  setExercisesForDemo,
 };

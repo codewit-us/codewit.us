@@ -36,7 +36,7 @@ exerciseRouter.get('/:uid', async (req, res) => {
 
 exerciseRouter.post('/', async (req, res) => {
   try {
-    const exercise = await createExercise(req.body.prompt, req.body.demo_uid);
+    const exercise = await createExercise(req.body.prompt);
     res.json(exercise);
   } catch (err) {
     console.error(err);
@@ -48,8 +48,7 @@ exerciseRouter.patch('/:uid', async (req, res) => {
   try {
     const exercise = await updateExercise(
       Number(req.params.uid),
-      req.body.prompt,
-      req.body.demo_uid
+      req.body.prompt
     );
 
     if (exercise) {

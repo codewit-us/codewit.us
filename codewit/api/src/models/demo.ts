@@ -1,21 +1,43 @@
 import {
   Model,
   DataTypes,
-  Association,
   InferAttributes,
   InferCreationAttributes,
   Sequelize,
-  CreationOptional,
+  Association,
+  NonAttribute,
+  HasManyAddAssociationMixin,
+  HasManyAddAssociationsMixin,
+  HasManyCountAssociationsMixin,
+  HasManyGetAssociationsMixin,
+  HasManyHasAssociationMixin,
+  HasManyHasAssociationsMixin,
+  HasManyRemoveAssociationMixin,
+  HasManyRemoveAssociationsMixin,
+  HasManySetAssociationsMixin,
 } from 'sequelize';
 import { Exercise } from './exercise';
 
-class Demo extends Model<InferAttributes<Demo>, InferCreationAttributes<Demo>> {
+class Demo extends Model<
+  InferAttributes<Demo, { omit: 'exercises' }>,
+  InferCreationAttributes<Demo, { omit: 'exercises' }>
+> {
   declare uid: number;
   declare title: string;
   declare likes: number;
   declare youtube_id: string;
 
-  declare exercises?: CreationOptional<Exercise[]>;
+  declare exercises?: NonAttribute<Exercise[]>;
+
+  declare getExercises: HasManyGetAssociationsMixin<Exercise>; // Note the null assertions!
+  declare addExercise: HasManyAddAssociationMixin<Exercise, number>;
+  declare addExercises: HasManyAddAssociationsMixin<Exercise, number>;
+  declare setExercises: HasManySetAssociationsMixin<Exercise, number>;
+  declare removeExercise: HasManyRemoveAssociationMixin<Exercise, number>;
+  declare removeExercises: HasManyRemoveAssociationsMixin<Exercise, number>;
+  declare hasExercise: HasManyHasAssociationMixin<Exercise, number>;
+  declare hasExercises: HasManyHasAssociationsMixin<Exercise, number>;
+  declare countExercises: HasManyCountAssociationsMixin;
 
   declare static associations: {
     exercises: Association<Demo, Exercise>;
