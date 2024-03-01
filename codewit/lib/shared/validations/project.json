@@ -1,0 +1,8 @@
+{
+  "name": "validations",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "lib/shared/validations/src",
+  "projectType": "library",
+  "targets": {},
+  "tags": []
+}
