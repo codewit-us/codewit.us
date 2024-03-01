@@ -10,6 +10,14 @@ import {
   setExercisesForDemo,
   updateDemo,
 } from '../controllers/demo';
+import {
+  addExercisesToDemoSchema,
+  createDemoSchema,
+  removeExercisesFromDemoSchema,
+  setExercisesForDemoSchema,
+  updateDemoSchema,
+} from '@codewit/validations';
+import { fromZodError } from 'zod-validation-error';
 
 const demoRouter = Router();
 
@@ -39,7 +47,18 @@ demoRouter.get('/:uid', async (req, res) => {
 
 demoRouter.post('/', async (req, res) => {
   try {
-    const demo = await createDemo(req.body.title, req.body.youtube_id);
+    const validatedBody = createDemoSchema.safeParse(req.body);
+
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
+    const demo = await createDemo(
+      validatedBody.data.title,
+      validatedBody.data.youtube_id
+    );
 
     res.json(demo);
   } catch (err) {
@@ -50,10 +69,18 @@ demoRouter.post('/', async (req, res) => {
 
 demoRouter.patch('/:uid', async (req, res) => {
   try {
+    const validatedBody = updateDemoSchema.safeParse(req.body);
+
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
     const demo = await updateDemo(
       Number(req.params.uid),
-      req.body.title,
-      req.body.youtube_id
+      validatedBody.data.title,
+      validatedBody.data.youtube_id
     );
 
     if (demo) {
@@ -83,10 +110,19 @@ demoRouter.post('/:uid/like', async (req, res) => {
 
 demoRouter.patch('/:uid/exercises', async (req, res) => {
   try {
+    const validatedBody = addExercisesToDemoSchema.safeParse(req.body);
+
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
     const demo = await addExercisesToDemo(
       Number(req.params.uid),
-      req.body.exercises
+      validatedBody.data.exercises
     );
+
     if (demo) {
       res.json(demo);
     } else {
@@ -100,10 +136,19 @@ demoRouter.patch('/:uid/exercises', async (req, res) => {
 
 demoRouter.delete('/:uid/exercises', async (req, res) => {
   try {
+    const validatedBody = removeExercisesFromDemoSchema.safeParse(req.body);
+
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
     const demo = await removeExercisesFromDemo(
       Number(req.params.uid),
-      req.body.exercises
+      validatedBody.data.exercises
     );
+
     if (demo) {
       res.json(demo);
     } else {
@@ -117,10 +162,19 @@ demoRouter.delete('/:uid/exercises', async (req, res) => {
 
 demoRouter.put('/:uid/exercises', async (req, res) => {
   try {
+    const validatedBody = setExercisesForDemoSchema.safeParse(req.body);
+
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
     const demo = await setExercisesForDemo(
       Number(req.params.uid),
-      req.body.exercises
+      validatedBody.data.exercises
     );
+
     if (demo) {
       res.json(demo);
     } else {
