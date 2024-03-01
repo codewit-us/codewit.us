@@ -1,137 +1,31 @@
-import React, { useState } from 'react';
-import VideoSelect from '../components/form/videoselect';
-import ExerciseList from '../components/form/exercisesTextArea';
-import Error from '../components/error/error';
-import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
-import { useLocation, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { Link, Outlet } from 'react-router-dom';
 
 const Create = (): JSX.Element => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
-  const [demo, setDemo] = useState<DemoType>(() => {
-    const demoState: DemoType = location.state?.demo || {
-      youtube_id: '',
-      title: '',
-      exercises: [],
-    };
-    if (location.state?.isEditing) {
-      setIsEditing(true);
-    }
-    return demoState;
-  });
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    try {
-      if (isEditing) {
-        await axios.patch(`/demos/${demo.uid}`, {
-          title: demo.title,
-          youtube_id: demo.youtube_id,
-          exercises: demo.exercises,
-        });
-      } else {
-        await axios.post('/demos', {
-          title: demo.title,
-          youtube_id: demo.youtube_id,
-          exercises: demo.exercises,
-        });
-      }
-      navigate('/'); 
-    } catch (error) {
-      setError(true);
-      console.error('Error saving the demo:', error);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setDemo((prevDemo) => ({
-      ...prevDemo, 
-      [name]: value
-    }));
-  };
-
-  const handleExerciseChange = (index: number, value: string) => {
-    setDemo((prevDemo) => ({
-      ...prevDemo,
-      exercises: prevDemo.exercises.map((exercise, i) =>
-        i === index ? { ...exercise, prompt: value } : exercise
-      ),
-    }));
-  };
-
-  const addExercise = () => {
-    setDemo((prevDemo) => ({
-      ...prevDemo,
-      exercises: [...prevDemo.exercises, { demo_uid: prevDemo.exercises.length + 1, prompt: '' }],
-    }));
-  };
-
-  const removeExercise = (indexToRemove: number) => {
-    setDemo((prevDemo) => ({
-      ...prevDemo,
-      exercises: prevDemo.exercises.filter((_, index) => index !== indexToRemove),
-    }));
-  };
-
-  const handleVideoSelect = (videoId: string) => {
-    setDemo({ ...demo, youtube_id: videoId });
-  };
-
-  if(error) {
-    return <Error />;
-  }
 
   return (
-    <div className="flex justify-center items-start h-container-full bg-zinc-900 overflow-auto">
-    <form onSubmit={handleSubmit} className="bg-zinc-900 w-full max-w-4xl h-full p-6 space-y-6">
-      <h2 className="text-xl font-semibold text-white">Create Demo Exercise</h2>
-  
-      <div>
-        <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-200">Title</label>
-        <input 
-          type="text" 
-          id="title" 
-          name="title" 
-          className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500" 
-          placeholder="Enter title" 
-          value={demo.title} 
-          onChange={handleInputChange} 
-          required 
-        />
+    <div className="md:flex w-full h-container-full">
+      <div className="w-full md:w-48 md:h-full bg-background-500 border-solid border-r-1 border-white md:border-gray-800 md:border-r">
+        <div className="flex flex-col p-4">
+          <Link to="/create" className="flex gap-2 text-highlight-500 p-2 font-normal hover:bg-accent-900 rounded-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path d="M4.5 4.5a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h8.25a3 3 0 0 0 3-3v-9a3 3 0 0 0-3-3H4.5ZM19.94 18.75l-2.69-2.69V7.94l2.69-2.69c.944-.945 2.56-.276 2.56 1.06v11.38c0 1.336-1.616 2.005-2.56 1.06Z" />
+            </svg>
+            demo
+          </Link>
+          <Link to="/create/exercise" className="flex gap-2 text-highlight-500 p-2 font-normal hover:bg-accent-900 rounded-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <path fillRule="evenodd" d="M4.125 3C3.089 3 2.25 3.84 2.25 4.875V18a3 3 0 0 0 3 3h15a3 3 0 0 1-3-3V4.875C17.25 3.839 16.41 3 15.375 3H4.125ZM12 9.75a.75.75 0 0 0 0 1.5h1.5a.75.75 0 0 0 0-1.5H12Zm-.75-2.25a.75.75 0 0 1 .75-.75h1.5a.75.75 0 0 1 0 1.5H12a.75.75 0 0 1-.75-.75ZM6 12.75a.75.75 0 0 0 0 1.5h7.5a.75.75 0 0 0 0-1.5H6Zm-.75 3.75a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5H6a.75.75 0 0 1-.75-.75ZM6 6.75a.75.75 0 0 0-.75.75v3c0 .414.336.75.75.75h3a.75.75 0 0 0 .75-.75v-3A.75.75 0 0 0 9 6.75H6Z" clipRule="evenodd" />
+              <path d="M18.75 6.75h1.875c.621 0 1.125.504 1.125 1.125V18a1.5 1.5 0 0 1-3 0V6.75Z" />
+            </svg>
+            exercise
+          </Link>
+        </div>
       </div>
-  
-      <VideoSelect
-        onSelectVideo={handleVideoSelect}
-        selectedVideoId={demo.youtube_id}
-      />
-  
-      <div className="max-h-96 overflow-auto">
-        <ExerciseList
-          exercises={demo.exercises}
-          onAdd={addExercise}
-          onRemove={removeExercise}
-          onChange={handleExerciseChange}
-        />
+      <div className="h-full md:flex-1">
+        <Outlet />
       </div>
-  
-      <div className="flex justify-end py-2">
-        <button 
-          type="submit"
-          data-testid="submitbtn" 
-          className="text-white bg-accent-500 hover:bg-accent-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm py-2 px-3 text-center transition-colors duration-200"
-        >
-          {isEditing ? 'confirm edit' : 'create'}
-        </button>
-      </div>
-    </form>
-  </div>
-  
-  );  
+    </div>
+  );
 };
 
 export default Create;

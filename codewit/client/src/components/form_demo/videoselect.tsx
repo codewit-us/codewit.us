@@ -78,7 +78,7 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
               <input
                 type="text"
                 value={selectedVideoTitle || searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {setSelectedVideoTitle(''), setSearchTerm(e.target.value)}}
                 onFocus={() => setIsOpen(true)}
                 placeholder="Search for a video"
                 required

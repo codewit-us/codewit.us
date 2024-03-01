@@ -9,7 +9,7 @@ const NavBar = (): JSX.Element => {
   };
 
   return (
-    <nav className="bg-background-500 border-gray-200 ">
+    <nav className="bg-background-500 border-b border-gray-800">
       <div className="max-w-screen flex flex-wrap items-center justify-between mx-auto p-3">
         <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
             <img src="/logo-dark.png" className="h-10" alt="CodeWitUs Logo" />
@@ -24,14 +24,14 @@ const NavBar = (): JSX.Element => {
         </svg>
         </button>
         <div className={`${isOpen ? "block" : "hidden"} w-full md:block md:w-auto`} id="navbar-default">
-          <ul className="font-logo flex flex-col p-4 mt-4 md:p-0 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 ">
+          <ul className="font-medium flex flex-col p-4 mt-4 md:p-0 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 ">
             <li>
-              <Link to="/" className="block py-2 px-3 text-white rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
+              <Link to="/" className="block py-2 px-3 text-highlight-500 rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
                 home
               </Link>
             </li>
             <li>
-              <Link to="/create" className="block py-2 px-3 text-white rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
+              <Link to="/create" className="block py-2 px-3 text-highlight-500 rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
                 create
               </Link>
             </li>

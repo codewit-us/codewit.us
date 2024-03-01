@@ -1,6 +1,5 @@
 import React from 'react';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import MarkdownEditor from '@uiw/react-markdown-editor';
 
 interface Exercise {
   demo_uid: number;
@@ -20,9 +19,7 @@ const Exercises = ({ exercises }: ExercisesProps): JSX.Element => {
             Exercise {index + 1}
           </h3>
           <div className="markdown bg-background-500 text-white font-code p-4 rounded-b overflow-x-auto">
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {exercise.prompt}
-            </Markdown>
+            <MarkdownEditor.Markdown className = "text-white" source={exercise.prompt} />
           </div>
         </div>
       ))}

@@ -90,9 +90,11 @@ module.exports = {
         code: ['Menlo', 'Consolas', 'Courier New', 'monospace'],
       },
       height: {
-        'container-full': 'calc(100% - 64px)',
+        'container-full': 'calc(100% - 64.8px)',
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 };
