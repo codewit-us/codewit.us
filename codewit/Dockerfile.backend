@@ -4,10 +4,10 @@ WORKDIR /codewit
 
 COPY package* .
 
-RUN npm install && npm i -g nx
+RUN npm install
 
 EXPOSE 3000
 
 COPY . .
 
-CMD nx run api:serve:development
+CMD npm run backend-dev

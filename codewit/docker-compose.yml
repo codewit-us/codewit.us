@@ -35,8 +35,9 @@ services:
         - path: api/
           target: /codewit/api/
           action: sync
-    volumes:
-      - node_modules_volume:/codewit/node_modules
+        - path: lib/
+          target: /codewit/lib/
+          action: sync
     stdin_open: true
     tty: true
     
@@ -60,10 +61,8 @@ services:
         - path: client/
           target: /codewit/client/
           action: sync
-    volumes:
-      - node_modules_volume:/codewit/node_modules
+        - path: lib/
+          target: /codewit/lib/
+          action: sync
     stdin_open: true
     tty: true
-    
-volumes:
-  node_modules_volume:
