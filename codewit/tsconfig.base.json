@@ -14,7 +14,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@codewit/validations": ["lib/shared/validations/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
