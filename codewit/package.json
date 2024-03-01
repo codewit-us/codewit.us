@@ -2,7 +2,10 @@
   "name": "@codewit/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "backend-dev": "nx run api:serve:development",
+    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001"
+  },
   "private": true,
   "dependencies": {
     "@nrwl/node": "^18.0.1",
