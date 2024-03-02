@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import VideoSelect from '../components/form_demo/VideoSelect';
 import Error from '../components/error/Error';
-import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
+import { DemoResponse } from '@codewit/validations';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ExerciseSelect from '../components/form_demo/ExerciseSelect';
@@ -19,8 +19,8 @@ const CreateDemo = (): JSX.Element => {
     return [];
   });
   
-  const [demo, setDemo] = useState<DemoType>(() => {
-    const demoState: DemoType = location.state?.demo || {
+  const [demo, setDemo] = useState<DemoResponse>(() => {
+    const demoState: DemoResponse = location.state?.demo || {
       youtube_id: '',
       title: '',
     };

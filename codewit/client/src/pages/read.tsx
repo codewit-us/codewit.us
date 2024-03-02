@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
+import { DemoResponse, Demo as DemoType } from '@codewit/validations';
 import NotFound from '../components/notfound/NotFound';
 import CodeBlock from "../components/codeblock/Codeblock";
 import Checklist from "../components/codeblock/Checklist";
@@ -15,7 +15,7 @@ import axios from 'axios';
 import { Resizable } from 're-resizable';
 
 const Read = (): JSX.Element => {
-  const [demo, setDemo] = useState<DemoType>();
+  const [demo, setDemo] = useState<DemoResponse>();
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [isMdScreen, setIsMdScreen] = useState<boolean>(window.innerWidth >= 768);
@@ -45,7 +45,6 @@ const Read = (): JSX.Element => {
   }, [uid]);
 
   const likeVideo = async (uid: number) => {
-    console.log('liking video');
     try {
       await axios.post(`/demos/${uid}/like`);
     } catch (error) {

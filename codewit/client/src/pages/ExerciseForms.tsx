@@ -3,10 +3,11 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Error from "../components/error/Error";
 import MDEditor from '@uiw/react-markdown-editor';
+import { ExerciseResponse } from '@codewit/validations';
 
 const ExerciseForms = (): JSX.Element => {
   const [exercise, setExercise] = useState({ prompt: '' });
-  const [exercises, setExercises] = useState<{ uid: number; prompt: string }[]>([]);
+  const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingUid, setEditingUid] = useState<number | null>(null);
   const [error, setError] = useState<boolean>(false);
@@ -48,7 +49,7 @@ const ExerciseForms = (): JSX.Element => {
     setExercise({ prompt: value || '' });
   };
 
-  const handleEdit = (exercise) => {
+  const handleEdit = (exercise: ExerciseResponse) => {
     setIsEditing(true);
     setEditingUid(exercise.uid);
     setExercise({ prompt: exercise.prompt });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
 
 const CodeEditor = (): JSX.Element => {

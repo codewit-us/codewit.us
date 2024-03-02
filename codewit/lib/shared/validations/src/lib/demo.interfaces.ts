@@ -1,4 +1,3 @@
-/* v8 ignore next 48 */
 // Interface For Video Object
 
 interface Exercise {
@@ -6,14 +5,35 @@ interface Exercise {
   prompt: string;
 }
 
+interface ExerciseResponse {
+  uid: number;
+  prompt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
 interface Demo {
-  createdAt?: string;
-  uid?: number;
   youtube_id: string;
   title: string;
-  likes?: number;
+}
+
+interface DemoPostResponse {
+  likes: number;
+  uid: number;
+  title: string;
+  youtube_id: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
+interface DemoResponse {
+  likes: number;
+  uid: number;
+  title: string;
+  youtube_id: string;
+  updatedAt: string;
+  createdAt: string;
   exercises: Exercise[];
-  updatedAt?: string;
 }
 
 // Interface to Youtube API Response
@@ -47,4 +67,12 @@ interface Thumbnail {
   height: number;
 }
 
-export type { Exercise, Demo, YouTubeSearchResult, Thumbnail };
+export type { 
+  Exercise, 
+  ExerciseResponse,
+  Demo,
+  DemoPostResponse,
+  DemoResponse,
+  YouTubeSearchResult, 
+  Thumbnail 
+};
