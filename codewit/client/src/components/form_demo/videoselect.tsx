@@ -72,7 +72,6 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
       {error ? (
         <div className="text-red-500">{error}</div>
       ) : (
-        <>
           <div className="relative">
             <div className="relative">
               <input
@@ -102,7 +101,6 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
               </ul>
             )}
           </div>
-        </>
       )}
     </div>
   );

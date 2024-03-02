@@ -1,6 +1,6 @@
 import React from 'react';
-import ChecklistItem from './checklistItem';
-import Progress from './progress';
+import ChecklistItem from './ChecklistItem';
+import Progress from './Progress';
 
 const ResultsComponent = (): JSX.Element => {
   const checklistItems = [

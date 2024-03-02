@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import Demo from '../components/demos/demos';
+import Demo from '../components/demos/Demos';
 import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Loading from '../components/loading/loadingPage';
-import Error from '../components/error/error';
+import Loading from '../components/loading/LoadingPage';
+import Error from '../components/error/Error';
 
 const Home = (): JSX.Element => {
   const [demos, setDemo] = useState<DemoType[]>([]);

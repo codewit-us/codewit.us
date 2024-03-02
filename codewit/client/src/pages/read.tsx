@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Demo as DemoType } from 'client/src/interfaces/demo.interface';
-import NotFound from '../components/notfound/notfound';
-import CodeBlock from "../components/codeblock/codeblock";
-import Checklist from "../components/codeblock/checklist";
-import Loading from '../components/loading/loadingPage';
-import HelpfulLinks from '../components/videoui/helpfulLinks';
-import VideoHeader from '../components/videoui/videoHeader';
-import AuthorTags from '../components/videoui/authorTags';
-import RelatedDemos from '../components/videoui/relatedDemos';
-import VideoPlayer from '../components/videoui/videoPlayer';
-import Exercises from '../components/codeblock/exercises';
+import NotFound from '../components/notfound/NotFound';
+import CodeBlock from "../components/codeblock/Codeblock";
+import Checklist from "../components/codeblock/Checklist";
+import Loading from '../components/loading/LoadingPage';
+import HelpfulLinks from '../components/videoui/HelpfulLinks';
+import VideoHeader from '../components/videoui/VideoHeader';
+import AuthorTags from '../components/videoui/AuthorTags';
+import RelatedDemos from '../components/videoui/RelatedDemos';
+import VideoPlayer from '../components/videoui/VideoPlayer';
+import Exercises from '../components/codeblock/Exercises';
 import axios from 'axios';
 import { Resizable } from 're-resizable';
 
@@ -92,7 +92,10 @@ const Read = (): JSX.Element => {
     <div className="p-4 bg-zinc-900 font-white w-full h-full">
       <div className="space-y-4">
         {demo && (
-          <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
+          <>
+            <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
+            <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
+          </>
         )}
         <AuthorTags />
         <RelatedDemos />

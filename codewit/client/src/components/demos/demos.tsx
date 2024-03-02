@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import LoadingIcons from "../loading/loadingIcon";
+import LoadingIcons from "../loading/LoadingIcon";
 
 interface VideoProps {
   title: string;
