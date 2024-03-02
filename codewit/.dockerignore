@@ -1,5 +1,7 @@
 .git
 *Dockerfile*
 *docker-compose*
-node_modules
-dist
+node_modules/
+dist/
+.nx/
+tmp/

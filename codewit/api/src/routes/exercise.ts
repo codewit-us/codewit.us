@@ -7,6 +7,11 @@ import {
   getExerciseById,
   updateExercise,
 } from '../controllers/exercise';
+import {
+  createExerciseSchema,
+  updateExerciseSchema,
+} from '@codewit/validations';
+import { fromZodError } from 'zod-validation-error';
 
 const exerciseRouter = Router();
 
@@ -36,7 +41,15 @@ exerciseRouter.get('/:uid', async (req, res) => {
 
 exerciseRouter.post('/', async (req, res) => {
   try {
-    const exercise = await createExercise(req.body.prompt, req.body.demo_uid);
+    const validatedBody = createExerciseSchema.safeParse(req.body);
+
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
+    const exercise = await createExercise(validatedBody.data.prompt);
     res.json(exercise);
   } catch (err) {
     console.error(err);
@@ -46,10 +59,17 @@ exerciseRouter.post('/', async (req, res) => {
 
 exerciseRouter.patch('/:uid', async (req, res) => {
   try {
+    const validatedBody = updateExerciseSchema.safeParse(req.body);
+
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
     const exercise = await updateExercise(
       Number(req.params.uid),
-      req.body.prompt,
-      req.body.demo_uid
+      validatedBody.data.prompt
     );
 
     if (exercise) {

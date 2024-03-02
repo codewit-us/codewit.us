@@ -2,7 +2,10 @@
   "name": "@codewit/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "backend-dev": "nx run api:serve:development",
+    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001"
+  },
   "private": true,
   "dependencies": {
     "@nrwl/node": "^18.0.1",
@@ -18,7 +21,9 @@
     "react-router-dom": "6.11.2",
     "remark-gfm": "^4.0.0",
     "sequelize": "^6.36.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zod": "^3.22.4",
+    "zod-validation-error": "^3.0.3"
   },
   "devDependencies": {
     "@nx/cypress": "18.0.1",
