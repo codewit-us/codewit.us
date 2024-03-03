@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import Error from "../components/error/Error";
 import MDEditor from '@uiw/react-markdown-editor';
 import { ExerciseResponse } from '@codewit/validations';
@@ -11,13 +10,12 @@ const ExerciseForms = (): JSX.Element => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingUid, setEditingUid] = useState<number | null>(null);
   const [error, setError] = useState<boolean>(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchExercises = async () => {
       try {
         const { data } = await axios.get('/exercises');
-        setExercises(data);
+        setExercises(data as ExerciseResponse[]);
       } catch (error) {
         console.error('Error fetching exercises:', error);
         setError(true);
@@ -29,16 +27,20 @@ const ExerciseForms = (): JSX.Element => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if(!exercise.prompt.trim()) return;
+    let response: ExerciseResponse;
     try {
       if (isEditing && editingUid) {
-        await axios.patch(`/exercises/${editingUid}`, exercise);
+        const {data} = await axios.patch(`/exercises/${editingUid}`, exercise);
+        response = data;
       } else {
-        await axios.post('/exercises', exercise);
+        const {data} = await axios.post('/exercises', exercise);
+        response = data;
       }
+      setExercises((prev) => [...prev, response]);
       setExercise({ prompt: '' });
       setIsEditing(false); 
       setEditingUid(null); 
-      navigate('/');
     } catch (error) {
       setError(true);
       console.error('Error saving the exercise:', error);
@@ -58,7 +60,7 @@ const ExerciseForms = (): JSX.Element => {
   const handleDelete = async (exerciseId: number) => {
     try {
       await axios.delete(`/exercises/${exerciseId}`);
-      setExercises(exercises.filter((ex) => ex.uid !== exerciseId));
+      setExercises(exercises.filter((ex) => ex.uid !== exerciseId) as ExerciseResponse[]);
     } catch (error) {
       console.error('Error deleting exercise:', error);
       setError(true);
@@ -79,6 +81,7 @@ const ExerciseForms = (): JSX.Element => {
             value={exercise.prompt}
             onChange={handleEditorChange}
             height="300px"
+            data-testid="prompt"
           />
         </div>
         <div className="flex justify-end gap-2 mt-4">
@@ -101,7 +104,7 @@ const ExerciseForms = (): JSX.Element => {
             </tr>
           </thead>
           <tbody>
-            {exercises.map((ex) => (
+            {exercises.map((ex, index) => (
               <tr key={ex.uid} className="bg-gray-800 border-b border-gray-700">
                 <td className="px-4 py-2">
                   <div className="max-w-md md:max-w-2xl whitespace-nowrap overflow-hidden overflow-ellipsis">
@@ -109,12 +112,12 @@ const ExerciseForms = (): JSX.Element => {
                   </div>
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <button onClick={() => handleEdit(ex)} className="text-blue-500 hover:text-blue-700">
+                  <button data-testid={`edit-${index}`} onClick={() => handleEdit(ex)} className="text-blue-500 hover:text-blue-700">
                     Edit
                   </button>
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <button onClick={() => handleDelete(ex.uid)} className="text-red-500 hover:text-red-700">
+                  <button data-testid={`delete-${index}`} onClick={() => handleDelete(ex.uid)} className="text-red-500 hover:text-red-700">
                     Delete
                   </button>
                 </td>

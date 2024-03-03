@@ -30,10 +30,10 @@ const Video = ({ title, uid, amountExercises, isDeleting, handleEdit, handleDele
         </div>
       </Link>
       <div className = "flex flex-row justify-center items-center">
-        <div className="flex-grow p-3 min-w-0">
+        <Link to={`/read/${uid}`} className="flex-grow p-3 min-w-0">
               <h2 className="font-semibold text-accent-500 text-sm whitespace-nowrap overflow-hidden truncate">{title}</h2>
               <p className="text-xs text-gray-400 truncate">{amountExercises} Exercises</p>
-        </div>
+        </Link>
         <button data-testid="edit" onClick={(e) => handleMenuClick(e, 'edit')} className="p-1 text-sm font-medium text-accent-600 rounded-lg hover:text-accent-700 transition-colors duration-200">
           <PencilSquareIcon className="w-4 h-4" />
         </button>

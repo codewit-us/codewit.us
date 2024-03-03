@@ -19,7 +19,7 @@ const Home = (): JSX.Element => {
       try {
         setLoading(true);
         const res = await axios.get(`/demos`);
-        setDemo(res.data);
+        setDemo(res.data as DemoResponse[]);
       } catch (err) {
         setError(true);
       } finally {
