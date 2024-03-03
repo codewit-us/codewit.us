@@ -93,7 +93,7 @@ const ExerciseForms = (): JSX.Element => {
       <div className="w-full max-w-4xl overflow-x-auto rounded-lg">
         <h2 className="text-xl font-semibold text-white mb-2">Existing Exercises</h2>
         <table className="w-full text-white">
-          <thead className="bg-gray-800">
+          <thead className="bg-gray-900 ">
             <tr>
               <th className="px-4 py-2 text-left">Exercise Prompt</th>
               <th className="px-4 py-2 text-right">Edit</th>

@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loading from '../components/loading/LoadingPage';
 import Error from '../components/error/Error';
+import { PlusCircleIcon } from '@heroicons/react/24/solid'
 
 const Home = (): JSX.Element => {
   const [demos, setDemo] = useState<DemoResponse[]>([]);
@@ -63,9 +64,9 @@ const Home = (): JSX.Element => {
           <h2 className = "font-medium text-white">Theres Nothing Here!</h2>
           <Link to="/create" className="cursor-pointer hover:underline inline-flex justify-center items-center gap-1 font-small text-sm text-left tracking-wide text-white transition-colors">
             Create a Video!
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-              <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clipRule="evenodd" />
-            </svg>
+            <PlusCircleIcon 
+              className="h-4 w-4 text-white"
+            />
           </Link>
         </div>
       </div>
