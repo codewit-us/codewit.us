@@ -66,6 +66,11 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
     setSearchTerm('');
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedVideoTitle(''); 
+    setSearchTerm(e.target.value);
+  };
+
   return (
     <div className="mb-5" ref={wrapperRef}>
       <label htmlFor="youtube_id" className="block mb-2 text-sm font-medium text-white">Select YouTube Video</label>
@@ -77,7 +82,7 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
               <input
                 type="text"
                 value={selectedVideoTitle || searchTerm}
-                onChange={(e) => {setSelectedVideoTitle(''), setSearchTerm(e.target.value)}}
+                onChange={(e) => handleChange(e)}
                 onFocus={() => setIsOpen(true)}
                 placeholder="Search for a video"
                 required

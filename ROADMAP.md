@@ -19,7 +19,8 @@ The `codewit/client` directory contains the react app that drives the front-end.
   #### Current URLS
   - `/` -> Navigates to Home Page
   - `/read/:uid` -> Navigates to Read Page
-  - `/create` -> Navigates to Create Page
+  - `/create` -> Navigates to Create Page Which Defaults to Create Demo
+  - `/create/exercises` -> Navigates to Create Exercise Page
   - `*` -> Intercepts All Other URLS and displays Error Page
 
 ## Home Page
@@ -30,6 +31,7 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - **Delete Demo**: Users can remove demos directly from the Home Page through a dedicated delete button, immediately updating the displayed list of demos.
 - **Components**:
   - **Demos Component** (`<Demos />`): Responsible for displaying individual demos in a grid, each equipped with action buttons for editing, deleting, and viewing.
+    - Component Located under `../components/demos/`
   
 ## Read Page
 - Located at `codewit/client/src/pages/read.tsx`, the Read Page showcases the full details of a demo. Users can arrive at this page by selecting a demo on the Home Page or directly via the `/read/:uid` URL, where `uid` corresponds to the demo's unique identifier.
@@ -43,15 +45,15 @@ The `codewit/client` directory contains the react app that drives the front-end.
     - Components Located under `../components/codeblock/`
     
 ## Create Page
-- Located at `codewit/client/src/pages/create.tsx`, the Create Page allows users to create or edit demos. Accessible from the Home Page for new demos or via edit buttons on existing demos, it distinguishes between adding or editing through the `useLocation` state.
+- **Location**: `codewit/client/src/pages/create.tsx`. The Create Page is designed to display both Forms using React Router's `Links` & `Outlets`, enabling the display for both the `<DemoForms />` and `<ExerciseForms />`.
 - **Functionality**:
-  - **Creating New Demos**: Users can input details like title and YouTube video ID, and manage a list of exercises.
-  - **Editing Existing Demos**: Pre-populates form with demo's existing data for editing.
+  - **Navigation Between Forms**: Provides users the ability to navigate between the Create Demo Form and Create Exercise Form using a dashboard located on the left-hand side of the page.
+  - **Creating/Editing/Deleting Demos**: Users can input details like title and YouTube video ID, and manage a list of exercises. Furthermore, users have the option to edit or delete existing demos.
+  - **Creating/Editing/Deleting Exercises**: Users have the capability to input new exercises into a Markdown Editor. Furthermore, users have the option to edit or delete existing exercises.
 - **Components**:
-  - **VideoSelect (VideoSelect />**: Component for selecting a YouTube video fetched from the YouTube API.
-  - **ExerciseList (ExerciseList />**: Component for adding, editing, and removing exercises.
-    - Both Located under `../components/form/`
-
+  - **DemoForms (`<DemoForms />`)**: This component is responsible for rendering the form used for creating and editing demo information. It encapsulates all the necessary fields and functionalities, including input fields for demo details and submission controls.
+  - **ExerciseForms (`<ExerciseForms />`)**: Similar to `DemoForms`, this component focuses on managing exercises. It features a Markdown Editor for inputting exercise prompts, alongside functionalities for editing and deleting exercises.
+    - Both components are located under the same directory as the Create Page.
 
 
 ## Back-end
