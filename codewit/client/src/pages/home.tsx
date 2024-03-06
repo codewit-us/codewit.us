@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Demo from '../components/demos/Demos';
-import { DemoResponse } from '@codewit/validations';
+import { DemoResponse } from '@codewit/interfaces';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loading from '../components/loading/LoadingPage';

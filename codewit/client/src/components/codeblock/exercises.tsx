@@ -1,6 +1,6 @@
 import React from 'react';
 import MDEditor from '@uiw/react-markdown-editor';
-import { Exercise } from '@codewit/validations';
+import { Exercise } from '@codewit/interfaces';
 
 interface ExercisesProps {
   exercises: Exercise[];

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import VideoSelect from '../components/form_demo/VideoSelect';
 import Error from '../components/error/Error';
-import { DemoResponse } from '@codewit/validations';
+import { DemoResponse } from '@codewit/interfaces';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ExerciseSelect from '../components/form_demo/ExerciseSelect';

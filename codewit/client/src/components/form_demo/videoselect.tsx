@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
-interface YouTubeSearchResult {
-  id: { videoId: string };
-  snippet: { title: string };
-}
-
+import { YouTubeSearchResult } from '@codewit/interfaces';
+import axios from 'axios'
 interface VideoSelectProps {
   onSelectVideo: (videoId: string) => void;
   selectedVideoId: string;
@@ -22,18 +19,18 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
     const apiKey = import.meta.env.VITE_KEY;
     const channelId = import.meta.env.VITE_CHANNEL_ID;
     const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&type=video&maxResults=50`;
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error.message);
+    axios.get(url)
+    .then(response => {
+      if (response.data.error) {
+        throw new Error(response.data.error.message);
       }
-      setVideos(data.items);
+      setVideos(response.data.items);
       setError(null);
-    } catch (error) {
+    })
+    .catch(error => {
       setError('Failed to fetch videos. Please try again later.');
       console.error('Failed to fetch videos:', error);
-    }
+    });
   };
 
   useEffect(() => {

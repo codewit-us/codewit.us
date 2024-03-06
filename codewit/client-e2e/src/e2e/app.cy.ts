@@ -25,7 +25,7 @@ describe('Testing App & App Routes', () => {
 });
 
 
-describe.only('Exercise creation functionality', () => {
+describe('Exercise creation functionality', () => {
 
   beforeEach(() => {
     cy.visit('/create/exercise');

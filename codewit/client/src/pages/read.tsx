@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { DemoResponse, Demo as DemoType } from '@codewit/validations';
+import { DemoResponse, Demo as DemoType } from '@codewit/interfaces';
 import NotFound from '../components/notfound/NotFound';
 import CodeBlock from "../components/codeblock/Codeblock";
 import Checklist from "../components/codeblock/Checklist";
@@ -35,7 +35,7 @@ const Read = (): JSX.Element => {
       try {
         setLoading(true);
         const res = await axios.get(`/demos/${uid}`);
-        setDemo(res.data);
+        setDemo(res.data as DemoResponse);
         setLoading(false);
       } catch (err) {
         setError(true);

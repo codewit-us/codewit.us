@@ -3,11 +3,7 @@ import axios from 'axios';
 import Error from '../error/Error';
 import Select from 'react-select';
 import { MultiValue } from 'react-select';
-
-interface ExerciseGetResponse {
-  uid: string;
-  prompt: string;
-}
+import { ExerciseResponse } from '@codewit/interfaces';
 
 interface ExerciseSelectProps {
   onSelectExercises: (exercises: string[]) => void;
@@ -35,7 +31,7 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
     const fetchExercises = async () => {
       try {
         const response = await axios.get('/exercises');
-        const exerciseOptions = response.data.map((exercise: ExerciseGetResponse) => ({
+        const exerciseOptions = response.data.map((exercise: ExerciseResponse) => ({
           value: exercise.uid,
           label: exercise.prompt
         }));

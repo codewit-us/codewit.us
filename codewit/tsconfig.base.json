@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@codewit/interfaces": ["interfaces/src/index.ts"],
       "@codewit/validations": ["lib/shared/validations/src/index.ts"]
     }
   },
