@@ -1,7 +1,7 @@
 {
   "name": "interfaces",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "interfaces/src",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "lib/shared/interfaces/src",
   "projectType": "library",
   "targets": {
     "build": {
