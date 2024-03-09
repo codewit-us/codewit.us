@@ -6,13 +6,13 @@ import CodeBlock from "../components/codeblock/Codeblock";
 import Checklist from "../components/codeblock/Checklist";
 import Loading from '../components/loading/LoadingPage';
 import HelpfulLinks from '../components/videoui/HelpfulLinks';
-import VideoHeader from '../components/videoui/VideoHeader';
-import AuthorTags from '../components/videoui/AuthorTags';
-import RelatedDemos from '../components/videoui/RelatedDemos';
-import VideoPlayer from '../components/videoui/VideoPlayer';
 import Exercises from '../components/codeblock/Exercises';
 import axios from 'axios';
 import { Resizable } from 're-resizable';
+import VideoPlayer from '../components/videoui/VideoPlayer';
+import VideoHeader from '../components/videoui/VideoHeader';
+import AuthorTags from '../components/videoui/AuthorTags';
+import RelatedDemos from '../components/videoui/RelatedDemos';
 
 const Read = (): JSX.Element => {
   const [demo, setDemo] = useState<DemoResponse>();
