@@ -13,6 +13,6 @@ export default defineConfig({
       },
       ciWebServerCommand: 'nx run client:serve-static',
     }),
-    baseUrl: 'http://localhost:4200',
+    baseUrl: 'http://localhost:3001',
   },
 });

@@ -8,8 +8,18 @@ export default defineConfig({
   cacheDir: '../node_modules/.vite/client',
 
   server: {
-    port: 4200,
+    port: 3001,
     host: 'localhost',
+    proxy: {
+      '/demos': {
+        target: 'http://app:3000',
+        changeOrigin: true,
+      },
+      '/exercises': {
+        target: 'http://app:3000',
+        changeOrigin: true,
+      }
+    }
   },
 
   preview: {
@@ -45,5 +55,12 @@ export default defineConfig({
       reportsDirectory: '../coverage/client',
       provider: 'v8',
     },
+    alias: [
+      {
+        find: /^monaco-editor$/,
+        replacement:
+          __dirname + "../../node_modules/monaco-editor/esm/vs/editor/editor.api",
+      },
+    ],
   },
 });
