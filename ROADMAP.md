@@ -97,3 +97,12 @@ The `codewit/api` directory contains the express back-end.
 
   - demo.ts - for the demo routes
   - exercise.ts - for the exercise routes
+
+### lib/shared/validations
+
+- The `codewit/lib/shared/validations/src/lib` directory contains the validation schemas for the models. These are used to validate the data sent in the http request body whenever we try to create/update rows in the db. We also export interfaces that can be used by the frontend for autocompletion and type checking.
+
+  **Current validation schemas**
+
+  - demo.ts - for the demo validation schema
+  - exercise.ts - for the exercise validation schema
