@@ -31,32 +31,41 @@ class topic {
     return this.chosenTopic;
   }
 
-  // recursively finds the path to a topic used for distance calculation
-  private findPath(node: TopicNode, topic: string, path: string[] = []): string[] | null {
-    if (node.hasOwnProperty(topic)) return [...path, topic]; // path found!!!!!!!!!!!!!
+  private findFullPath(node: TopicNode, topic: string, path: string[] = []): string[] | null {
+    // checks if the current node has the topic directly
+    if (node.hasOwnProperty(topic)) return [...path, topic];
+
+    // recursively searches through child nodes for the topic
     for (const key of Object.keys(node)) {
-      const foundPath = this.findPath(node[key], topic, [...path, key]);
-      if (foundPath) return foundPath; // path found in a subtree
+        const fullPath = this.findFullPath(node[key], topic, [...path, key]); 
+        if (fullPath) return fullPath; 
     }
-    return null; // topic not found in this branch
+    return null; // not found :(
   }
 
-  // calculates the distance between two paths in the topic tree
-  private calculateDistance(path1: string[], path2: string[]): number {
-    let i = 0;
-    // find length of shared path
-    while (i < path1.length && i < path2.length && path1[i] === path2[i]) {
-      i++;
-    }
-    return path1.length + path2.length - 2 * i;
-  }
-
-  // calc & returns the distance between the chosen topic and another topic
   public distance(otherTopic: string): number {
-    if (!this.chosenTopic || !this.findTopic(this.topicsTree, otherTopic)) return -1;
-    const path1 = this.findPath(this.topicsTree, this.chosenTopic) ?? [];
-    const path2 = this.findPath(this.topicsTree, otherTopic) ?? [];
-    return this.chosenTopic === otherTopic ? 0 : this.calculateDistance(path1, path2);
+      // check if the topics are in tree 
+      if (!this.chosenTopic || !this.findTopic(this.topicsTree, otherTopic)) return -1;
+
+      // retrieves full paths from root to both the chosen topic and otherTopic
+      const pathToChosen = this.findFullPath(this.topicsTree, this.chosenTopic);
+      const pathToOther = this.findFullPath(this.topicsTree, otherTopic);
+
+      if (!pathToChosen || !pathToOther) return -1;
+
+      // calculate the length of the common path segment
+      let commonPathLength = 0;
+      while (commonPathLength < pathToChosen.length && commonPathLength < pathToOther.length && pathToChosen[commonPathLength] === pathToOther[commonPathLength]) {
+          commonPathLength++; 
+      }
+
+      // topics are direct siblings or parent-child, return 1
+      if (pathToChosen.length - commonPathLength <= 1 && pathToOther.length - commonPathLength <= 1) {
+          return 1;
+      }
+
+      // calculate distance as sum of steps from each topic to the divergence point
+      return (pathToChosen.length - commonPathLength) + (pathToOther.length - commonPathLength);
   }
 }
 
