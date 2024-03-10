@@ -1,0 +1,19 @@
+{
+  "name": "topics",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "topics/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/topics",
+        "main": "topics/src/index.ts",
+        "tsConfig": "topics/tsconfig.lib.json",
+        "assets": ["topics/*.md"]
+      }
+    }
+  },
+  "tags": []
+}
