@@ -46,7 +46,7 @@ class topic {
   public distance(otherTopic: string): number {
       // check if the topics are in tree 
       if (!this.chosenTopic || !this.findTopic(this.topicsTree, otherTopic)) return -1;
-
+      if(this.chosenTopic === otherTopic) return 0; // same topic :D
       // retrieves full paths from root to both the chosen topic and otherTopic
       const pathToChosen = this.findFullPath(this.topicsTree, this.chosenTopic);
       const pathToOther = this.findFullPath(this.topicsTree, otherTopic);
