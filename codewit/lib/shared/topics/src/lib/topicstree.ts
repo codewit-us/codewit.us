@@ -1,26 +1,26 @@
 const topicTree = {
   "operation": {
-    "input_output": {
-      "console_io": {},
-      "file_io": {}
+    "input output": {
+      "console io": {},
+      "file io": {}
     },
     "arithmetic": {
-      "number_system": {
+      "number system": {
         "binary": {},
         "decimal": {},
         "octal": {},
         "hexadecimal": {}
       },
-      "math_operation": {},
-      "string_manipulation": {},
-      "boolean_expression": {},
+      "math operation": {},
+      "string manipulation": {},
+      "boolean expression": {},
       "casting": {}
     }
   },
-  "control_flow": {
+  "control flow": {
     "decision": {
       "if": {},
-      "else_if": {},
+      "else if": {},
       "elif": {},
       "else": {},
       "switch": {},
@@ -28,30 +28,30 @@ const topicTree = {
       "ternary": {}
     },
     "iteration": {
-      "for_loop": {},
-      "while_loop": {},
-      "do_while_loop": {},
-      "for_each_loop": {},
-      "nested_loop": {},
+      "for loop": {},
+      "while loop": {},
+      "do while loop": {},
+      "for each loop": {},
+      "nested loop": {},
       "recursion": {
-        "head_recursion": {},
-        "tail_recursion": {}
+        "head recursion": {},
+        "tail recursion": {}
       }
     }
   },
   "modularity": {
     "function": {
-      "return_type": {
+      "return type": {
         "void": {}
       },
       "parameter": {
-        "pass_by_reference": {},
-        "pass_by_value": {}
+        "pass by reference": {},
+        "pass by value": {}
       }
     },
     "object": {
       "class": {
-        "access_control": {},
+        "access control": {},
         "method": {},
         "attribute": {},
         "constructor": {},
@@ -61,7 +61,7 @@ const topicTree = {
       }
     }
   },
-  "data_structure": {
+  "data structure": {
     "tuple": {},
     "namedtuple": {},
     "set": {},
@@ -69,21 +69,21 @@ const topicTree = {
     "dictionary": {},
     "array": {
       "vector": {},
-      "array_list": {},
-      "multidimensional_array": {}
+      "array list": {},
+      "multidimensional array": {}
     },
-    "nested_list": {}
+    "nested list": {}
   },
   "variable": {
-    "primitive_data_type": {},
+    "primitive data type": {},
     "constant": {},
     "static": {},
     "scope": {},
-    "enumerated_type": {}
+    "enumerated type": {}
   },
   "testing": {
     "assert": {},
-    "unit_test": {}
+    "unit test": {}
   }
 }
 
