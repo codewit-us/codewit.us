@@ -73,9 +73,9 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
             borderRadius: '0.5rem',
             borderColor: 'rgb(75 85 99)',
             padding: '2px',
-            boxShadow: 'none',
             '&:hover': {
-              borderColor: 'black'
+              borderColor: 'rgb(75 85 99)',
+              cursor: 'text',
             }
           }),
           menu: (provided) => ({
@@ -87,7 +87,8 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
             backgroundColor: state.isSelected ? 'none' : 'none',
             color: 'white',
             '&:hover': {
-              backgroundColor: 'gray'
+              backgroundColor: 'rgb(75 85 99)',
+              cursor: 'pointer',
             }
           }),
           multiValue: (provided) => ({
