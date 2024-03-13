@@ -16,6 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@codewit/interfaces": ["lib/shared/interfaces/src/index.ts"],
+      "@codewit/language": ["lib/shared/language/src/index.ts"],
+      "@codewit/tag": ["lib/shared/tag/src/index.ts"],
       "@codewit/topics": ["lib/shared/topics/src/index.ts"],
       "@codewit/validations": ["lib/shared/validations/src/index.ts"]
     }
