@@ -13,6 +13,6 @@ app.use('/demos', demoRouter);
 app.use('/exercises', exerciseRouter);
 
 app.listen(port, host, async () => {
-  await sequelize.sync({ force: true });
+  await sequelize.sync({ force: false });
   console.log(`[ ready ] http://${host}:${port}`);
 });
