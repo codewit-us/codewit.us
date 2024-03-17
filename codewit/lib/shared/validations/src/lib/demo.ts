@@ -3,6 +3,8 @@ import { z } from 'zod';
 const createDemoSchema = z.object({
   title: z.string(),
   youtube_id: z.string(),
+  language: z.string().optional(),
+  tags: z.string().array().optional(),
 });
 
 const updateDemoSchema = z.object({

@@ -1,6 +1,8 @@
 import { Sequelize } from 'sequelize';
 import { Demo } from './demo';
 import { Exercise } from './exercise';
+import { Tag } from './tag';
+import { Language } from './language';
 
 if (
   !process.env.DB_HOST ||
@@ -23,9 +25,21 @@ const sequelize = new Sequelize({
   dialect: 'postgres',
 });
 
-[Demo, Exercise].forEach((model) => model.initialize(sequelize));
+[Demo, Exercise, Tag, Language].forEach((model) => model.initialize(sequelize));
 
 Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
 Exercise.belongsToMany(Demo, { through: 'DemoExercises' });
 
-export { Demo, Exercise, sequelize };
+Demo.belongsToMany(Tag, { through: 'DemoTags' });
+Tag.belongsToMany(Demo, { through: 'DemoTags' });
+
+Demo.belongsTo(Language);
+Language.hasMany(Demo);
+
+Exercise.belongsToMany(Tag, { through: 'ExerciseTags' });
+Tag.belongsToMany(Exercise, { through: 'ExerciseTags' });
+
+Exercise.belongsTo(Language);
+Language.hasMany(Exercise);
+
+export { Demo, Exercise, Tag, Language, sequelize };
