@@ -49,7 +49,11 @@ exerciseRouter.post('/', async (req, res) => {
         .json({ message: fromZodError(validatedBody.error).toString() });
     }
 
-    const exercise = await createExercise(validatedBody.data.prompt);
+    const exercise = await createExercise(
+      validatedBody.data.prompt,
+      validatedBody.data.tags,
+      validatedBody.data.language
+    );
     res.json(exercise);
   } catch (err) {
     console.error(err);
@@ -69,7 +73,9 @@ exerciseRouter.patch('/:uid', async (req, res) => {
 
     const exercise = await updateExercise(
       Number(req.params.uid),
-      validatedBody.data.prompt
+      validatedBody.data.prompt,
+      validatedBody.data.tags,
+      validatedBody.data.language
     );
 
     if (exercise) {

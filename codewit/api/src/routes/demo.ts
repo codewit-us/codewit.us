@@ -82,7 +82,9 @@ demoRouter.patch('/:uid', async (req, res) => {
     const demo = await updateDemo(
       Number(req.params.uid),
       validatedBody.data.title,
-      validatedBody.data.youtube_id
+      validatedBody.data.youtube_id,
+      validatedBody.data.tags,
+      validatedBody.data.language
     );
 
     if (demo) {

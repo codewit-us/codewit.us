@@ -10,6 +10,8 @@ const createDemoSchema = z.object({
 const updateDemoSchema = z.object({
   title: z.string().optional(),
   youtube_id: z.string().optional(),
+  language: z.string().optional(),
+  tags: z.string().array().optional(),
 });
 
 const addExercisesToDemoSchema = z.object({
