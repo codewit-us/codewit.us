@@ -16,12 +16,14 @@ async function createDemo(
 ): Promise<Demo> {
   const demo = await Demo.create({ title, youtube_id });
   if (tags) {
-    const updatedTags = await Tag.bulkCreate(
-      tags.map((tag) => ({ name: tag })),
-      { ignoreDuplicates: true }
+    const updatedTags = await Promise.all(
+      tags.map(async (tag) => {
+        const [updatedTag] = await Tag.findOrCreate({ where: { name: tag } });
+        return updatedTag;
+      })
     );
 
-    await demo.setTags(updatedTags.map((tag) => tag[0]));
+    await demo.setTags(updatedTags);
   }
 
   if (language) {
@@ -42,15 +44,17 @@ async function updateDemo(
   tags?: string[],
   language?: string
 ): Promise<Demo | null> {
-  const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
+  let demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     if (tags) {
-      const updatedTags = await Tag.bulkCreate(
-        tags.map((tag) => ({ name: tag })),
-        { ignoreDuplicates: true }
+      const updatedTags = await Promise.all(
+        tags.map(async (tag) => {
+          const [updatedTag] = await Tag.findOrCreate({ where: { name: tag } });
+          return updatedTag;
+        })
       );
 
-      await demo.setTags(updatedTags.map((tag) => tag[0]));
+      await demo.setTags(updatedTags);
     }
     if (language) {
       const [updatedLanguage] = await Language.findOrCreate({
@@ -61,10 +65,9 @@ async function updateDemo(
     if (title) demo.title = title;
     if (youtube_id) demo.youtube_id = youtube_id;
 
-    await demo.save();
+    demo = await demo.save();
   }
 
-  await demo.reload();
   return demo;
 }
 
