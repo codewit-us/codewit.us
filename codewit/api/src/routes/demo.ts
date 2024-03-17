@@ -57,7 +57,9 @@ demoRouter.post('/', async (req, res) => {
 
     const demo = await createDemo(
       validatedBody.data.title,
-      validatedBody.data.youtube_id
+      validatedBody.data.youtube_id,
+      validatedBody.data.tags,
+      validatedBody.data.language
     );
 
     res.json(demo);

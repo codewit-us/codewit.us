@@ -15,12 +15,16 @@ import {
   HasManyRemoveAssociationMixin,
   HasManyRemoveAssociationsMixin,
   HasManySetAssociationsMixin,
+  BelongsToGetAssociationMixin,
+  BelongsToSetAssociationMixin,
 } from 'sequelize';
 import { Exercise } from './exercise';
+import { Language } from './language';
+import { Tag } from './tag';
 
 class Demo extends Model<
-  InferAttributes<Demo, { omit: 'exercises' }>,
-  InferCreationAttributes<Demo, { omit: 'exercises' }>
+  InferAttributes<Demo, { omit: 'exercises' | 'language' | 'tags' }>,
+  InferCreationAttributes<Demo, { omit: 'exercises' | 'language' | 'tags' }>
 > {
   declare uid: number;
   declare title: string;
@@ -28,8 +32,10 @@ class Demo extends Model<
   declare youtube_id: string;
 
   declare exercises?: NonAttribute<Exercise[]>;
+  declare language?: NonAttribute<Language>;
+  declare tags?: NonAttribute<Tag[]>;
 
-  declare getExercises: HasManyGetAssociationsMixin<Exercise>; // Note the null assertions!
+  declare getExercises: HasManyGetAssociationsMixin<Exercise>;
   declare addExercise: HasManyAddAssociationMixin<Exercise, number>;
   declare addExercises: HasManyAddAssociationsMixin<Exercise, number>;
   declare setExercises: HasManySetAssociationsMixin<Exercise, number>;
@@ -39,8 +45,20 @@ class Demo extends Model<
   declare hasExercises: HasManyHasAssociationsMixin<Exercise, number>;
   declare countExercises: HasManyCountAssociationsMixin;
 
+  declare getTags: HasManyGetAssociationsMixin<Tag>;
+  declare addTag: HasManyAddAssociationMixin<Tag, number>;
+  declare addTags: HasManyAddAssociationsMixin<Tag, number>;
+  declare setTags: HasManySetAssociationsMixin<Tag, number>;
+  declare removeTag: HasManyRemoveAssociationMixin<Tag, number>;
+  declare removeTags: HasManyRemoveAssociationsMixin<Tag, number>;
+
+  declare getLanguage: BelongsToGetAssociationMixin<Language>;
+  declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
+
   declare static associations: {
     exercises: Association<Demo, Exercise>;
+    language: Association<Demo, Language>;
+    tags: Association<Demo, Tag>;
   };
 
   static initialize(sequelize: Sequelize) {
@@ -58,7 +76,7 @@ class Demo extends Model<
         likes: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          defaultValue: 0,
+          defaultValue: 1,
         },
         youtube_id: {
           type: DataTypes.STRING,

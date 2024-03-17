@@ -10,59 +10,59 @@ services:
       - POSTGRES_USER=codewitus_user
       - POSTGRES_DB=codewitus_db
 
-  app:
-    depends_on:
-      - codewitus_db
-    build:
-      dockerfile: Dockerfile.backend
-    environment:
-      - DB_HOST=codewitus_db
-      - DB_USER=codewitus_user
-      - DB_PASSWORD=12345
-      - DB_NAME=codewitus_db
-      - DB_PORT=5432
-      - API_PORT=3000
-      - API_HOST=0.0.0.0
-    restart: unless-stopped
-    ports:
-      - 3000:3000
-    develop:
-      watch:
-        - path: package.json
-          action: rebuild
-        - path: package-lock.json
-          action: rebuild
-        - path: api/
-          target: /codewit/api/
-          action: sync
-        - path: lib/
-          target: /codewit/lib/
-          action: sync
-    stdin_open: true
-    tty: true
+  # app:
+  #   depends_on:
+  #     - codewitus_db
+  #   build:
+  #     dockerfile: Dockerfile.backend
+  #   environment:
+  #     - DB_HOST=codewitus_db
+  #     - DB_USER=codewitus_user
+  #     - DB_PASSWORD=12345
+  #     - DB_NAME=codewitus_db
+  #     - DB_PORT=5432
+  #     - API_PORT=3000
+  #     - API_HOST=0.0.0.0
+  #   restart: unless-stopped
+  #   ports:
+  #     - 3000:3000
+  #   develop:
+  #     watch:
+  #       - path: package.json
+  #         action: rebuild
+  #       - path: package-lock.json
+  #         action: rebuild
+  #       - path: api/
+  #         target: /codewit/api/
+  #         action: sync
+  #       - path: lib/
+  #         target: /codewit/lib/
+  #         action: sync
+  #   stdin_open: true
+  #   tty: true
     
 
-  frontend:
-    depends_on: 
-      - app
-      - codewitus_db
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
-    restart: unless-stopped
-    ports:
-      - 3001:3001
-    develop:
-      watch:
-        - path: package.json
-          action: rebuild
-        - path: package-lock.json
-          action: rebuild
-        - path: client/
-          target: /codewit/client/
-          action: sync
-        - path: lib/
-          target: /codewit/lib/
-          action: sync
-    stdin_open: true
-    tty: true
+  # frontend:
+  #   depends_on: 
+  #     - app
+  #     - codewitus_db
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - 3001:3001
+  #   develop:
+  #     watch:
+  #       - path: package.json
+  #         action: rebuild
+  #       - path: package-lock.json
+  #         action: rebuild
+  #       - path: client/
+  #         target: /codewit/client/
+  #         action: sync
+  #       - path: lib/
+  #         target: /codewit/lib/
+  #         action: sync
+  #   stdin_open: true
+  #   tty: true
