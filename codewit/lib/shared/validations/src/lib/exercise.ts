@@ -2,10 +2,14 @@ import { z } from 'zod';
 
 const createExerciseSchema = z.object({
   prompt: z.string(),
+  language: z.string().optional(),
+  tags: z.string().array().optional(),
 });
 
 const updateExerciseSchema = z.object({
   prompt: z.string().optional(),
+  language: z.string().optional(),
+  tags: z.string().array().optional(),
 });
 
 export type ZCreateExerciseSchema = z.infer<typeof createExerciseSchema>;
