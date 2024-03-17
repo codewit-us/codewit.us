@@ -6,9 +6,7 @@ class tag {
   // }
 
   // TODO: Implement the add method, make sure there are no duplicates
-  async add(tagName: string): Promise<void> {
-   
-  }
+  async add(tagName: string): Promise<void> {}
 }
 
-export default tag;
+export { tag };
