@@ -1,1 +1,3 @@
-export * from './lib/topics';
+import topic from './lib/topics';
+
+export { topic };
