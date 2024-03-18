@@ -30,6 +30,7 @@ class Demo extends Model<
   declare title: string;
   declare likes: number;
   declare youtube_id: string;
+  declare topic: string;
 
   declare exercises?: NonAttribute<Exercise[]>;
   declare language?: NonAttribute<Language>;
@@ -70,6 +71,10 @@ class Demo extends Model<
           primaryKey: true,
         },
         title: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        topic: {
           type: DataTypes.STRING,
           allowNull: false,
         },

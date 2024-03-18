@@ -25,6 +25,7 @@ class Exercise extends Model<
 > {
   declare uid: number;
   declare prompt: string;
+  declare topic: string;
 
   declare language?: NonAttribute<Language>;
   declare tags?: NonAttribute<Tag[]>;
@@ -53,6 +54,10 @@ class Exercise extends Model<
           primaryKey: true,
         },
         prompt: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        topic: {
           type: DataTypes.STRING,
           allowNull: false,
         },
