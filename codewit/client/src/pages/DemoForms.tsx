@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ExerciseSelect from '../components/form_demo/ExerciseSelect';
 import TagSelect from '../components/form_demo/TagSelect';
+import LanguageSelect from '../components/form_demo/LanguageSelect';
 
 const CreateDemo = (): JSX.Element => {
   const location = useLocation();
@@ -34,6 +35,7 @@ const CreateDemo = (): JSX.Element => {
       youtube_id: '',
       title: '',
       tags: [],
+      language: 'cpp'
     };
     if (location.state?.isEditing) {
       setIsEditing(true);
@@ -47,17 +49,21 @@ const CreateDemo = (): JSX.Element => {
     try {
       let response;
       if (isEditing) {
+        console.log('demo', demo);
+        const tagNames = demo.tags.map(tag => typeof tag === 'string' ? tag : tag.name);
+        const language = typeof demo.language === 'string' ? demo.language : demo.language.name;
         response = await axios.patch(`/demos/${demo.uid}`, {
           title: demo.title,
           youtube_id: demo.youtube_id,
-          tags: demo.tags,
+          tags: tagNames,
+          language: language
         });
       } else {
-        console.log('demo', demo);
         response = await axios.post('/demos', {
           title: demo.title,
           youtube_id: demo.youtube_id,
           tags: demo.tags,
+          language: demo.language
         });
       }
       const uid = response.data.uid
@@ -91,6 +97,13 @@ const CreateDemo = (): JSX.Element => {
     }));
   };
 
+  const handleLanguageChange = (language: string) => {
+    setDemo(prevDemo => ({
+      ...prevDemo,
+      language: language
+    }));
+  }
+
   const updateExercises = (selectedIds: string[]) => {
     const exerciseToBeDeleted = selectedExercises.filter(exercise => !selectedIds.includes(exercise));
     if(isEditing && selectedIds.length < selectedExercises.length) {
@@ -108,8 +121,8 @@ const CreateDemo = (): JSX.Element => {
   }
 
   return (
-    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className="bg-zinc-900 w-full max-w-4xl h-full p-6 space-y-6">
+    <div className="flex justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
+      <form onSubmit={handleSubmit} className="bg-gray-800 rounded-md bg-opacity-50 w-full max-w-4xl h-full p-6 space-y-6">
         <h2 className="text-xl font-semibold text-white">Create Demo Exercise</h2>
 
         <div>
@@ -135,17 +148,22 @@ const CreateDemo = (): JSX.Element => {
           onSelectExercises={updateExercises} 
           initialExercises={selectedExercises} 
         />
-
-        <TagSelect 
-          selectedTags={selectedTags} 
-          setSelectedTags={handleTagSelect}
-        />
+        <div className = "flex flex-row w-full gap-3">
+          <TagSelect 
+            selectedTags={selectedTags} 
+            setSelectedTags={handleTagSelect}
+          />
+          <LanguageSelect 
+            handleLanguageChange={handleLanguageChange}
+            initialLanguage={typeof demo.language === 'string' ? demo.language : demo.language.name}
+          />
+        </div>
 
         <div className="flex justify-end py-2">
           <button 
             type="submit"
             data-testid="submitbtn" 
-            className="text-white bg-accent-500 hover:bg-accent-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm py-2 px-3 text-center transition-colors duration-200"
+            className="text-white w-full bg-accent-500 hover:bg-accent-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm py-2 px-3 text-center transition-colors duration-200"
           >
             {isEditing ? 'confirm edit' : 'create'}
           </button>

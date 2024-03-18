@@ -1,5 +1,5 @@
 import { before } from "node:test";
-import topic from "./topics"
+  import {topic} from "./topics"
 
 describe('smoke test', () => {
 
