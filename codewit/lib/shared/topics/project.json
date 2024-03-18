@@ -3,19 +3,6 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "lib/shared/topics/src",
   "projectType": "library",
-  "targets": {
-    "build": {
-      "executor": "@nx/esbuild:esbuild",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/lib/shared/topics",
-        "main": "lib/shared/topics/src/index.ts",
-        "tsConfig": "lib/shared/topics/tsconfig.lib.json",
-        "assets": [],
-        "generatePackageJson": true,
-        "format": ["cjs"]
-      }
-    }
-  },
+  "targets": {},
   "tags": []
 }
