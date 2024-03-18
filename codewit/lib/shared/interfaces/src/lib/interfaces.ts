@@ -24,6 +24,16 @@ interface DemoPostResponse {
   youtube_id: string;
   updatedAt: string;
   createdAt: string;
+  tags?: Tag[];
+  language?: string;
+}
+
+interface Tag {
+  value: any;
+  uid?: number;
+  name: string; 
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface DemoResponse {
@@ -34,6 +44,9 @@ interface DemoResponse {
   updatedAt: string;
   createdAt: string;
   exercises: Exercise[];
+  tags: Tag[] | string[];
+  language: string;
+  languageUid: string;
 }
 
 // Interface to Youtube API Response
@@ -71,6 +84,7 @@ export type {
   Exercise, 
   ExerciseResponse,
   Demo,
+  Tag,
   DemoPostResponse,
   DemoResponse,
   YouTubeSearchResult, 

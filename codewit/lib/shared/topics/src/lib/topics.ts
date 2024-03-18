@@ -1,4 +1,4 @@
-import topicTree from './topicstree';
+import {topicTree} from './topicstree';
 
 type TopicNode = {
   [key: string]: TopicNode;
@@ -69,4 +69,4 @@ class topic {
   }
 }
 
-export default topic;
+export {topic};

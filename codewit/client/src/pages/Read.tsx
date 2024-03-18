@@ -79,7 +79,9 @@ const Read = (): JSX.Element => {
         <div className="space-y-4 w-full h-full">
           <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
           <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
-          <AuthorTags />
+          <AuthorTags 
+            tags={demo.tags}
+          />
           <RelatedDemos />
           <HelpfulLinks />
         </div>
@@ -96,7 +98,9 @@ const Read = (): JSX.Element => {
             <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
           </>
         )}
-        <AuthorTags />
+        <AuthorTags 
+          tags={demo?.tags}
+        />
         <RelatedDemos />
         <HelpfulLinks />
       </div>

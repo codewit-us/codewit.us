@@ -19,6 +19,7 @@ const Home = (): JSX.Element => {
       try {
         setLoading(true);
         const res = await axios.get(`/demos`);
+        console.log(res.data);
         setDemo(res.data as DemoResponse[]);
       } catch (err) {
         setError(true);

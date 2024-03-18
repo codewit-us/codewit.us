@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
-import { YouTubeSearchResult } from '@codewit/interfaces';
-import axios from 'axios'
+import { useState, useEffect } from 'react';
+import Select from 'react-select';
+import axios from 'axios';
+import { YouTubeSearchResult } from '@codewit/interfaces'; 
+
 interface VideoSelectProps {
   onSelectVideo: (videoId: string) => void;
   selectedVideoId: string;
@@ -9,98 +10,108 @@ interface VideoSelectProps {
 
 const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.Element => {
   const [videos, setVideos] = useState<YouTubeSearchResult[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedVideoTitle, setSelectedVideoTitle] = useState('');
+  const [selectedOption, setSelectedOption] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const fetchVideos = async () => {
     const apiKey = import.meta.env.VITE_KEY;
     const channelId = import.meta.env.VITE_CHANNEL_ID;
     const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&type=video&maxResults=50`;
     axios.get(url)
-    .then(response => {
-      if (response.data.error) {
-        throw new Error(response.data.error.message);
-      }
-      setVideos(response.data.items);
-      setError(null);
-    })
-    .catch(error => {
-      setError('Failed to fetch videos. Please try again later.');
-      console.error('Failed to fetch videos:', error);
-    });
+      .then(response => {
+        if (response.data.error) {
+          throw new Error(response.data.error.message);
+        }
+        setVideos(response.data.items.map((item: YouTubeSearchResult) => ({
+          value: item.id.videoId,
+          label: item.snippet.title
+        })));
+        setError(null);
+      })
+      .catch(error => {
+        setError('Failed to fetch videos. Please try again later.');
+        console.error('Failed to fetch videos:', error);
+      });
   };
 
   useEffect(() => {
     fetchVideos();
   }, []);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [wrapperRef]);
-
-  useEffect(() => {
-    const selectedVideo = videos.find(video => video.id.videoId === selectedVideoId);
-    setSelectedVideoTitle(selectedVideo ? selectedVideo.snippet.title : '');
-  }, [selectedVideoId, videos]);
-
-  const filteredVideos = videos.filter(video =>
-    video.snippet.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleSelect = (videoId: string, videoTitle: string) => {
-    onSelectVideo(videoId);
-    setSelectedVideoTitle(videoTitle);
-    setIsOpen(false); 
-    setSearchTerm('');
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedVideoTitle(''); 
-    setSearchTerm(e.target.value);
+  const handleChange = (selectedOption: {value: string, label: string}) => {
+    setSelectedOption(selectedOption);
+    onSelectVideo(selectedOption.value);
   };
 
   return (
-    <div className="mb-5" ref={wrapperRef}>
+    <div className="mb-5">
       <label htmlFor="youtube_id" className="block mb-2 text-sm font-medium text-white">Select YouTube Video</label>
       {error ? (
         <div className="text-red-500">{error}</div>
       ) : (
-          <div className="relative">
-            <div className="relative">
-              <input
-                type="text"
-                value={selectedVideoTitle || searchTerm}
-                onChange={(e) => handleChange(e)}
-                onFocus={() => setIsOpen(true)}
-                placeholder="Search for a video"
-                required
-                className="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              />
-              <MagnifyingGlassIcon className="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            </div>
-            {isOpen && (
-              <ul className="absolute z-10 bg-gray-700 border border-gray-600 text-white text-sm rounded-md w-full max-h-60 overflow-auto">
-                {filteredVideos.map((video) => (
-                  <li
-                    key={video.id.videoId}
-                    onClick={() => handleSelect(video.id.videoId, video.snippet.title)}
-                    className="p-2 hover:bg-gray-600 cursor-pointer"
-                  >
-                    {video.snippet.title}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+        <Select
+          id="youtube_id"
+          value={selectedOption}
+          onChange={handleChange}
+          options={videos}
+          className="text-sm bg-blue text-white border-none w-full rounded-lg"
+          styles={{
+            control: (provided) => ({
+              ...provided,
+              backgroundColor: 'rgb(55, 65, 81)',
+              borderRadius: '0.5rem',
+              borderColor: 'rgb(75 85 99)',
+              color: 'white !important',
+              padding: '2px',
+              boxShadow: 'none',
+              '&:hover': {
+                borderColor: 'rgb(75 85 99)',
+                cursor: 'text',
+              }
+            }),
+            menu: (provided) => ({
+              ...provided,
+              backgroundColor: 'rgb(55, 65, 81)',
+            }),
+            option: (provided, state) => ({
+              ...provided,
+              backgroundColor: state.isSelected ? 'none' : 'none',
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgb(75 85 99)',
+                cursor: 'pointer',
+              }
+            }),
+            multiValue: (provided) => ({
+              ...provided,
+              backgroundColor: 'rgb(31 41 55)',
+            }),
+            multiValueLabel: (provided) => ({
+              ...provided,
+              color: 'white',
+            }),
+            multiValueRemove: (provided) => ({
+              ...provided,
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgb(239 68 68)',
+                color: 'white',
+              },
+            }),
+            singleValue: (provided) => ({
+              ...provided,
+              color: 'white',
+            }),
+            placeholder: (provided) => ({
+              ...provided,
+              color: 'white',
+            }),
+            input: (provided) => ({
+              ...provided,
+              color: 'white',
+            }),
+          }}
+        />
       )}
     </div>
   );
