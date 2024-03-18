@@ -87,4 +87,4 @@ const topicTree = {
   }
 }
 
-export default topicTree;
+export {topicTree};

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Error from '../error/Error';
 import Select from 'react-select';
 import { MultiValue } from 'react-select';
 import { ExerciseResponse } from '@codewit/interfaces';
@@ -53,7 +52,7 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
   
 
   if (error) {
-    return <Error />;
+    return <span className="text-red-500">ERROR! Unable To Load Exercise Form</span>;
   }
 
   return (
@@ -72,7 +71,9 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
             backgroundColor: 'rgb(55, 65, 81)',
             borderRadius: '0.5rem',
             borderColor: 'rgb(75 85 99)',
+            color: 'white !important',
             padding: '2px',
+            boxShadow: 'none',
             '&:hover': {
               borderColor: 'rgb(75 85 99)',
               cursor: 'text',
@@ -106,6 +107,18 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
               backgroundColor: 'rgb(239 68 68)',
               color: 'white',
             },
+          }),
+          singleValue: (provided) => ({
+            ...provided,
+            color: 'white',
+          }),
+          placeholder: (provided) => ({
+            ...provided,
+            color: 'white',
+          }),
+          input: (provided) => ({
+            ...provided,
+            color: 'white',
           }),
         }}
       />

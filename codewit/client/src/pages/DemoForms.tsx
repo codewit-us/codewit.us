@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import VideoSelect from '../components/form_demo/VideoSelect';
 import Error from '../components/error/Error';
-import { DemoResponse } from '@codewit/interfaces';
+import { DemoResponse, Tag } from '@codewit/interfaces';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ExerciseSelect from '../components/form_demo/ExerciseSelect';
+import TagSelect from '../components/form_demo/TagSelect';
 
 const CreateDemo = (): JSX.Element => {
   const location = useLocation();
@@ -18,11 +19,21 @@ const CreateDemo = (): JSX.Element => {
     }
     return [];
   });
-  
+
+  const [selectedTags, setSelectedTags] = useState(() => {
+    if (location.state?.isEditing && location.state?.demo?.tags) {
+      return location.state.demo.tags.map((tag: Tag) => (
+        { value: tag.name, label: tag.name }
+      ));
+    }
+    return [];
+  });
+
   const [demo, setDemo] = useState<DemoResponse>(() => {
     const demoState: DemoResponse = location.state?.demo || {
       youtube_id: '',
       title: '',
+      tags: [],
     };
     if (location.state?.isEditing) {
       setIsEditing(true);
@@ -39,11 +50,14 @@ const CreateDemo = (): JSX.Element => {
         response = await axios.patch(`/demos/${demo.uid}`, {
           title: demo.title,
           youtube_id: demo.youtube_id,
+          tags: demo.tags,
         });
       } else {
+        console.log('demo', demo);
         response = await axios.post('/demos', {
           title: demo.title,
           youtube_id: demo.youtube_id,
+          tags: demo.tags,
         });
       }
       const uid = response.data.uid
@@ -66,7 +80,15 @@ const CreateDemo = (): JSX.Element => {
   };
 
   const handleVideoSelect = (videoId: string) => {
-    setDemo({ ...demo, youtube_id: videoId });
+    setDemo(currentDemo => ({ ...currentDemo, youtube_id: videoId }));
+  };
+
+  const handleTagSelect = (tags: {label: string, value: string}[]) => {
+    setSelectedTags(tags);
+    setDemo(prevDemo => ({
+      ...prevDemo,
+      tags: tags.map(tag => tag.value) 
+    }));
   };
 
   const updateExercises = (selectedIds: string[]) => {
@@ -109,7 +131,15 @@ const CreateDemo = (): JSX.Element => {
           selectedVideoId={demo.youtube_id}
         />
 
-        <ExerciseSelect onSelectExercises={updateExercises} initialExercises={selectedExercises} />
+        <ExerciseSelect 
+          onSelectExercises={updateExercises} 
+          initialExercises={selectedExercises} 
+        />
+
+        <TagSelect 
+          selectedTags={selectedTags} 
+          setSelectedTags={handleTagSelect}
+        />
 
         <div className="flex justify-end py-2">
           <button 
