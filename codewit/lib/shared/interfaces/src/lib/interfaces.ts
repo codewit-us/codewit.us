@@ -10,6 +10,8 @@ interface ExerciseResponse {
   prompt: string;
   updatedAt: string;
   createdAt: string;
+  language: string | {name:string;};
+  tags: Tag[];
 }
 
 interface Demo {
@@ -45,7 +47,7 @@ interface DemoResponse {
   createdAt: string;
   exercises: Exercise[];
   tags: Tag[] | string[];
-  language: string;
+  language: string | {name:string;};
   languageUid: string;
 }
 
