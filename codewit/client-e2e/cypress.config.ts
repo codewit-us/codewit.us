@@ -1,5 +1,4 @@
 import { nxE2EPreset } from '@nx/cypress/plugins/cypress-preset';
-
 import { defineConfig } from 'cypress';
 
 export default defineConfig({
@@ -14,5 +13,7 @@ export default defineConfig({
       ciWebServerCommand: 'nx run client:serve-static',
     }),
     baseUrl: 'http://localhost:3001',
+    viewportWidth: 1000, 
+    viewportHeight: 760,  
   },
 });
