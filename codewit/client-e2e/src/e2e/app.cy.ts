@@ -44,6 +44,11 @@ describe('Exercise creation functionality', () => {
 
   it('allows a user to create a new exercise', () => {
     cy.get('[data-testid="prompt"]').type('New Exercise Prompt');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get('[id="tag-select"]').click().type('console io{enter}');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get('[id="tag-select"]').click().type('customtag{enter}');
+    cy.get('select[name="language"]').select('cpp');
     cy.get('form').submit();
     cy.contains('New Exercise Prompt').should('be.visible');
   });
@@ -52,6 +57,7 @@ describe('Exercise creation functionality', () => {
     cy.get('[data-testid="edit-0"]').click();
     cy.get('[data-testid="prompt"]').clear();
     cy.get('[data-testid="prompt"]').type('Updated Exercise Prompt');
+    cy.get('select[name="language"]').select('Java');
     cy.get('form').submit();
     cy.contains('Updated Exercise').should('be.visible');
   });
@@ -127,8 +133,11 @@ describe('test out create form functionality', () => {
     }).as('getVideos');
     cy.wait('@getVideos');
     cy.get('input[name="title"]').type('New Demo Exercise');
-    cy.get('input[placeholder="Search for a video"]').type('Mock Video Title');
-    cy.contains('li', 'Mock Video Title').click();
+    cy.get('[id="youtube_id"]').type('Mock Video Title{enter}');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get('[id="tag-select"]').click().type('console io{enter}');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get('[id="tag-select"]').click().type('customtag{enter}');
     cy.get('button[type="submit"]').click();
     cy.contains('New Demo Exercise').should('be.visible');
     cy.contains('0 Exercises').should('be.visible');
@@ -148,11 +157,14 @@ describe('test out create form functionality', () => {
     }).as('getVideos');
     cy.wait('@getVideos');
     cy.get('input[name="title"]').type('2nd Demo Exercise');
-    cy.get('input[placeholder="Search for a video"]').type('Mock Video Title');
-    cy.contains('li', 'Mock Video Title').click();
+    cy.get('[id="youtube_id"]').type('Mock Video Title{enter}');
     cy.get('div[id="exercise-select"]').click();
-    cy.get('div[id="exercise-select"]').find('input').type('second exercise prompt', { force: true });
-    cy.contains('div', 'Second Exercise Prompt').click(); 
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get('[id="tag-select"]').click().type('console io{enter}');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get('[id="tag-select"]').click().type('customtag{enter}');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    cy.get('[id="exercise-select"]').click().type('Second Exercise Prompt{enter}');
     cy.get('button[type="submit"]').click();
     cy.contains('2nd Demo Exercise').should('be.visible');
     cy.contains('1 Exercises').should('be.visible');
@@ -228,6 +240,7 @@ describe('Testing Home Page & Create/Read Page Functionality', () => {
   });
   
   it('deletes a demo exercise', () => {
+    cy.get('[data-testid="delete"]').first().click();
     cy.get('[data-testid="delete"]').first().click();
     cy.contains('New Edited Name Exercise').should('not.exist');
   });

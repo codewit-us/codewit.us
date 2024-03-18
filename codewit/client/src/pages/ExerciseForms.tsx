@@ -5,25 +5,20 @@ import MDEditor from '@uiw/react-markdown-editor';
 import { ExerciseResponse } from '@codewit/interfaces';
 import TagSelect from '../components/form_demo/TagSelect';
 import LanguageSelect from '../components/form_demo/LanguageSelect';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Tag } from '@codewit/interfaces';
 
 const ExerciseForms = (): JSX.Element => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [exercise, setExercise] = useState({ prompt: ''});
   const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingUid, setEditingUid] = useState<number | null>(null);
   const [error, setError] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('cpp');
   const [selectedTags, setSelectedTags] = useState<{label: string, value: string}[]>();
 
   useEffect(() => {
     const fetchExercises = async () => {
       try {
         const { data } = await axios.get('/exercises');
-        console.log(data)
         setExercises(data as ExerciseResponse[]);
       } catch (error) {
         console.error('Error fetching exercises:', error);
@@ -107,11 +102,11 @@ const ExerciseForms = (): JSX.Element => {
       <div className=" shadow-lg h-full rounded-md p-4 w-full max-w-4xl bg-gray-800 bg-opacity-50">
         <form onSubmit={handleSubmit} className="w-full">
           <h2 className="text-xl font-semibold text-white mb-2">{isEditing ? 'Edit Exercise' : 'Create New Exercise'}</h2>
-          <div className="mb-2 h-full">
+          <div className="mb-2 h-full overflow-auto">
            <MDEditor
               value={exercise.prompt}
               onChange={handleEditorChange}
-              height="500px"
+              height="300px"
               data-testid="prompt"
             />
           </div>
