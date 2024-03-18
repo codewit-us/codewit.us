@@ -1,2 +1,2 @@
 export * from './lib/topics';
-export * from './lib/topicstree'
+export * from './lib/topicstree';
