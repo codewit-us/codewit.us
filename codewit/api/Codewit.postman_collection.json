@@ -29,13 +29,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/demos/1",
+					"raw": "{{url}}/demos/4",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"1"
+						"4"
 					]
 				}
 			},
@@ -48,7 +48,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Demo 10\",\r\n    \"youtube_id\": \"test123\"\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Demo 4\",\r\n    \"youtube_id\": \"12345\",\r\n    \"language\": \"cpp\",\r\n    \"tags\": [\"cpp\",\"abc\",\"def\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -93,7 +93,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\":\"Demo 2\",\r\n    \"youtube_id\": \"testttttttttt 2\"\r\n}",
+					"raw": "{\r\n    \"title\":\"Demo 4\",\r\n    \"youtube_id\": \"testttttttttt 4\",\r\n    \"language\": \"java\",\r\n    \"tags\": [\"java\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -101,13 +101,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/demos/2",
+					"raw": "{{url}}/demos/4",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"2"
+						"4"
 					]
 				}
 			},
@@ -176,7 +176,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"exercises\": [1,2,3]\r\n}",
+					"raw": "{\r\n    \"exercises\": [1,3]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -184,13 +184,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/demos/2/exercises",
+					"raw": "{{url}}/demos/3/exercises",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"2",
+						"3",
 						"exercises"
 					]
 				}
@@ -203,13 +203,13 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/demos/1",
+					"raw": "{{url}}/demos/2",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"1"
+						"2"
 					]
 				}
 			},
@@ -257,7 +257,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"prompt\": \"New exercise 10\"\r\n}",
+					"raw": "{\r\n    \"prompt\": \"New exercise 4\",\r\n    \"language\": \"cpp\",\r\n    \"tags\": [\"cpp\", \"cpp-l0\", \"cpp-l1\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -283,13 +283,13 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/exercises/10",
+					"raw": "{{url}}/exercises/3",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"exercises",
-						"10"
+						"3"
 					]
 				}
 			},
@@ -302,7 +302,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"prompt\": \"Updated Exercise\"\r\n}",
+					"raw": "{\r\n    \"prompt\": \"Updated Exercise\",\r\n    \"language\": \"java\",\r\n    \"tags\": [\"java\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -310,13 +310,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/exercises/9",
+					"raw": "{{url}}/exercises/1",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"exercises",
-						"9"
+						"1"
 					]
 				}
 			},
