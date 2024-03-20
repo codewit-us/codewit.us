@@ -15,6 +15,7 @@ The `codewit/client` directory contains the react app that drives the front-end.
 - The site icon, or favicon, which appears in the browser tab, is located under the `codewit/client/public/` directory alongside the logo and hexicon.
 
 ## App.tsx
+
 - App.tsx is a file that contains all of the routes of our front-end using react-router. It is located under `codewit/client/src/app/app.tsx`.
   #### Current URLS
   - `/` -> Navigates to Home Page
@@ -24,6 +25,7 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - `*` -> Intercepts All Other URLS and displays Error Page
 
 ## Home Page
+
 - Located at `codewit/client/src/pages/home.tsx`, the Home Page showcases demos in a responsive grid layout, directly accessible from the application's root URL as configured in `app.tsx`. This central page uses the `<Demos />` component, housed within `../components/demos/demos.tsx`, to render each demo's preview.
 - **Functionality**:
   - **View Demo Details**: Clicking on a demo directs users to the detailed Read Page for that demo, facilitated by the `<Read />` component at `./read.tsx`.
@@ -32,8 +34,9 @@ The `codewit/client` directory contains the react app that drives the front-end.
 - **Components**:
   - **Demos Component** (`<Demos />`): Responsible for displaying individual demos in a grid, each equipped with action buttons for editing, deleting, and viewing.
     - Component Located under `../components/demos/`
-  
+
 ## Read Page
+
 - Located at `codewit/client/src/pages/read.tsx`, the Read Page showcases the full details of a demo. Users can arrive at this page by selecting a demo on the Home Page or directly via the `/read/:uid` URL, where `uid` corresponds to the demo's unique identifier.
 - **Functionality**:
   - **Parsing**: Parses `uid` from the URL to fetch the corresponding demo details.
@@ -43,8 +46,9 @@ The `codewit/client` directory contains the react app that drives the front-end.
     - Components Located under `../components/videoui/`
   - **CodeBlock Components** (`<Exercises />`, `<CodeBlock />`, `<Progress />`, `<CheckList />`): For presenting associated exercises, an interactive code editor, a progress bar, and a checklist for tracking user progress.
     - Components Located under `../components/codeblock/`
-    
+
 ## Create Page
+
 - **Location**: `codewit/client/src/pages/create.tsx`. The Create Page is designed to display both Forms using React Router's `Links` & `Outlets`, enabling the display for both the `<DemoForms />` and `<ExerciseForms />`.
 - **Functionality**:
   - **Navigation Between Forms**: Provides users the ability to navigate between the Create Demo Form and Create Exercise Form using a dashboard located on the left-hand side of the page.
@@ -54,7 +58,6 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - **DemoForms (`<DemoForms />`)**: This component is responsible for rendering the form used for creating and editing demo information. It encapsulates all the necessary fields and functionalities, including input fields for demo details and submission controls.
   - **ExerciseForms (`<ExerciseForms />`)**: Similar to `DemoForms`, this component focuses on managing exercises. It features a Markdown Editor for inputting exercise prompts, alongside functionalities for editing and deleting exercises.
     - Both components are located under the same directory as the Create Page.
-
 
 ## Back-end
 
@@ -79,6 +82,8 @@ The `codewit/api` directory contains the express back-end.
 
   - demo.ts - for the demo model
   - exercise.ts - for the exercise model
+  - language.ts - for the language model
+  - tag.ts - for the tag model
 
 ### controllers
 
