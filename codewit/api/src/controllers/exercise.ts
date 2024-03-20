@@ -47,7 +47,7 @@ async function updateExercise(
   tags?: string[],
   language?: string
 ): Promise<Exercise | null> {
-  let exercise = await Exercise.findByPk(uid, { include: [Tag, Language] });
+  const exercise = await Exercise.findByPk(uid, { include: [Tag, Language] });
   if (exercise) {
     if (prompt) exercise.prompt = prompt;
     if (tags) {
@@ -68,7 +68,8 @@ async function updateExercise(
       await exercise.setLanguage(newLanguage);
     }
 
-    exercise = await exercise.save();
+    await exercise.save();
+    await exercise.reload();
   }
 
   return exercise;

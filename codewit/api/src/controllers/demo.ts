@@ -33,7 +33,7 @@ async function createDemo(
     await demo.setLanguage(updatedLanguage);
   }
 
-  demo.reload();
+  await demo.reload();
   return demo;
 }
 
@@ -44,7 +44,7 @@ async function updateDemo(
   tags?: string[],
   language?: string
 ): Promise<Demo | null> {
-  let demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
+  const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     if (tags) {
       const updatedTags = await Promise.all(
@@ -65,7 +65,8 @@ async function updateDemo(
     if (title) demo.title = title;
     if (youtube_id) demo.youtube_id = youtube_id;
 
-    demo = await demo.save();
+    await demo.save();
+    await demo.reload();
   }
 
   return demo;
