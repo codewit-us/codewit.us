@@ -48,8 +48,8 @@ The `codewit/client` directory contains the react app that drives the front-end.
 - **Location**: `codewit/client/src/pages/create.tsx`. The Create Page is designed to display both Forms using React Router's `Links` & `Outlets`, enabling the display for both the `<DemoForms />` and `<ExerciseForms />`.
 - **Functionality**:
   - **Navigation Between Forms**: Provides users the ability to navigate between the Create Demo Form and Create Exercise Form using a dashboard located on the left-hand side of the page.
-  - **Creating/Editing/Deleting Demos**: Users can input details like title and YouTube video ID, and manage a list of exercises. Furthermore, users have the option to edit or delete existing demos.
-  - **Creating/Editing/Deleting Exercises**: Users have the capability to input new exercises into a Markdown Editor. Furthermore, users have the option to edit or delete existing exercises.
+  - **Creating/Editing/Deleting Demos**: Users can input details like title, tags, language, YouTube video ID, and manage a list of exercises. Furthermore, users have the option to edit or delete existing demos.
+  - **Creating/Editing/Deleting Exercises**: Users have the capability to input new exercises into a Markdown Editor, tags, and language. Furthermore, users have the option to edit or delete existing exercises.
 - **Components**:
   - **DemoForms (`<DemoForms />`)**: This component is responsible for rendering the form used for creating and editing demo information. It encapsulates all the necessary fields and functionalities, including input fields for demo details and submission controls.
   - **ExerciseForms (`<ExerciseForms />`)**: Similar to `DemoForms`, this component focuses on managing exercises. It features a Markdown Editor for inputting exercise prompts, alongside functionalities for editing and deleting exercises.
