@@ -3,6 +3,7 @@ import { z } from 'zod';
 const createDemoSchema = z.object({
   title: z.string(),
   youtube_id: z.string(),
+  topic: z.string().optional(),
   language: z.string().optional(),
   tags: z.string().array().optional(),
 });
@@ -10,6 +11,7 @@ const createDemoSchema = z.object({
 const updateDemoSchema = z.object({
   title: z.string().optional(),
   youtube_id: z.string().optional(),
+  topic: z.string().optional(),
   language: z.string().optional(),
   tags: z.string().array().optional(),
 });

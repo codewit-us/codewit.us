@@ -51,6 +51,7 @@ exerciseRouter.post('/', async (req, res) => {
 
     const exercise = await createExercise(
       validatedBody.data.prompt,
+      validatedBody.data.topic,
       validatedBody.data.tags,
       validatedBody.data.language
     );
@@ -75,7 +76,8 @@ exerciseRouter.patch('/:uid', async (req, res) => {
       Number(req.params.uid),
       validatedBody.data.prompt,
       validatedBody.data.tags,
-      validatedBody.data.language
+      validatedBody.data.language,
+      validatedBody.data.topic
     );
 
     if (exercise) {

@@ -1,4 +1,5 @@
 import { Exercise, Language, Tag } from '../models';
+import { topic as TopicValidator } from '@codewit/topics';
 
 async function getAllExercises(): Promise<Exercise[]> {
   return await Exercise.findAll({ include: [Tag, Language] });
@@ -10,11 +11,19 @@ async function getExerciseById(uid: number): Promise<Exercise | null> {
 
 async function createExercise(
   prompt: string,
+  topic: string,
   tags?: string[],
   language?: string
 ): Promise<Exercise> {
+  const topicValidator = new TopicValidator();
+  topicValidator.setTopic(topic);
+
+  if (topicValidator.getTopic() == undefined) {
+    throw new Error('Invalid topic');
+  }
+
   const exercise = await Exercise.create(
-    { prompt },
+    { prompt, topic },
     { include: [Tag, Language] }
   );
 
@@ -45,7 +54,8 @@ async function updateExercise(
   uid: number,
   prompt?: string,
   tags?: string[],
-  language?: string
+  language?: string,
+  topic?: string
 ): Promise<Exercise | null> {
   let exercise = await Exercise.findByPk(uid, { include: [Tag, Language] });
   if (exercise) {
@@ -66,6 +76,17 @@ async function updateExercise(
         where: { name: language },
       });
       await exercise.setLanguage(newLanguage);
+    }
+
+    if (topic) {
+      const topicValidator = new TopicValidator();
+      topicValidator.setTopic(topic);
+
+      if (topicValidator.getTopic() == undefined) {
+        throw new Error('Invalid topic');
+      }
+
+      exercise.topic = topic;
     }
 
     exercise = await exercise.save();

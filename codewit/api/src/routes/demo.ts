@@ -58,6 +58,7 @@ demoRouter.post('/', async (req, res) => {
     const demo = await createDemo(
       validatedBody.data.title,
       validatedBody.data.youtube_id,
+      validatedBody.data.topic,
       validatedBody.data.tags,
       validatedBody.data.language
     );
@@ -84,7 +85,8 @@ demoRouter.patch('/:uid', async (req, res) => {
       validatedBody.data.title,
       validatedBody.data.youtube_id,
       validatedBody.data.tags,
-      validatedBody.data.language
+      validatedBody.data.language,
+      validatedBody.data.topic
     );
 
     if (demo) {
