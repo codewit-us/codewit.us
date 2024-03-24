@@ -1,4 +1,5 @@
 import { Demo, Exercise, Tag, Language } from '../models';
+import { topic as TopicValidator } from '@codewit/topics';
 
 async function getAllDemos(): Promise<Demo[]> {
   return await Demo.findAll({ include: [Exercise, Tag, Language] });
@@ -11,10 +12,18 @@ async function getDemoById(uid: number): Promise<Demo | null> {
 async function createDemo(
   title: string,
   youtube_id: string,
+  topic: string,
   tags?: string[],
   language?: string
 ): Promise<Demo> {
-  const demo = await Demo.create({ title, youtube_id });
+  const topicValidator = new TopicValidator();
+  topicValidator.setTopic(topic);
+
+  if (topicValidator.getTopic() == undefined) {
+    throw new Error('Invalid topic');
+  }
+
+  const demo = await Demo.create({ title, youtube_id, topic });
   if (tags) {
     const updatedTags = await Promise.all(
       tags.map(async (tag) => {
@@ -42,7 +51,8 @@ async function updateDemo(
   title?: string,
   youtube_id?: string,
   tags?: string[],
-  language?: string
+  language?: string,
+  topic?: string
 ): Promise<Demo | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
@@ -64,6 +74,16 @@ async function updateDemo(
     }
     if (title) demo.title = title;
     if (youtube_id) demo.youtube_id = youtube_id;
+    if (topic) {
+      const topicValidator = new TopicValidator();
+      topicValidator.setTopic(topic);
+
+      if (topicValidator.getTopic() == undefined) {
+        throw new Error('Invalid topic');
+      }
+
+      demo.topic = topic;
+    }
 
     await demo.save();
     await demo.reload();

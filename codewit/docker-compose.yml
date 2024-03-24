@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   codewitus_db:
-    image: postgres:14-alpine
+    image: postgres:16-bookworm
     ports:
       - 5432:5432
     environment:

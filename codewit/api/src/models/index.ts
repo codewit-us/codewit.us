@@ -3,6 +3,9 @@ import { Demo } from './demo';
 import { Exercise } from './exercise';
 import { Tag } from './tag';
 import { Language } from './language';
+import { Course } from './course';
+import { Module } from './module';
+import { Resource } from './resource';
 
 if (
   !process.env.DB_HOST ||
@@ -25,7 +28,9 @@ const sequelize = new Sequelize({
   dialect: 'postgres',
 });
 
-[Demo, Exercise, Tag, Language].forEach((model) => model.initialize(sequelize));
+[Demo, Exercise, Tag, Language, Resource, Module, Course].forEach((model) =>
+  model.initialize(sequelize)
+);
 
 Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
 Exercise.belongsToMany(Demo, { through: 'DemoExercises' });
@@ -42,4 +47,12 @@ Tag.belongsToMany(Exercise, { through: 'ExerciseTags' });
 Exercise.belongsTo(Language);
 Language.hasMany(Exercise);
 
-export { Demo, Exercise, Tag, Language, sequelize };
+Module.hasMany(Demo);
+Module.hasMany(Resource);
+Module.belongsTo(Language);
+
+Course.belongsTo(Language);
+Course.hasMany(Module);
+Language.hasMany(Course);
+
+export { Demo, Exercise, Tag, Language, Course, Module, Resource, sequelize };
