@@ -1,5 +1,5 @@
 import { Link, Outlet } from 'react-router-dom';
-import { VideoCameraIcon, BookOpenIcon} from '@heroicons/react/24/outline'
+import { VideoCameraIcon, BookOpenIcon, LinkIcon} from '@heroicons/react/24/outline'
 
 const Create = (): JSX.Element => {
 
@@ -14,6 +14,10 @@ const Create = (): JSX.Element => {
           <Link to="/create/exercise" className="flex items-center gap-2 text-gray-300 p-2 hover:bg-accent-900 rounded-md">
             <BookOpenIcon className="w-5 h-5" />
             Exercise
+          </Link>
+          <Link to="/create/resource" className="flex items-center gap-2 text-gray-300 p-2 hover:bg-accent-900 rounded-md">
+            <LinkIcon className="w-5 h-5" />
+            Resource
           </Link>
         </div>
       </div>
