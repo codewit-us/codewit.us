@@ -88,8 +88,9 @@ const ExerciseForms = (): JSX.Element => {
     setSelectedTags(tags);
   };
 
-  const handleLanguageChange = (language: string) => {
-    setSelectedLanguage(language);
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { value } = e.target;
+    setSelectedLanguage(value);
   }
   
 
@@ -111,14 +112,15 @@ const ExerciseForms = (): JSX.Element => {
             />
           </div>
           <div className = "flex flex-row w-full gap-3 mb-8">
-          <TagSelect 
-            selectedTags={selectedTags} 
-            setSelectedTags={handleTagSelect}
-          />
-          <LanguageSelect 
-            handleLanguageChange={handleLanguageChange}
-            initialLanguage={selectedLanguage}
-          />
+            <TagSelect 
+              selectedTags={selectedTags} 
+              setSelectedTags={handleTagSelect}
+              isMulti={true}
+            />
+            <LanguageSelect 
+              handleChange={handleLanguageChange}
+              initialLanguage={selectedLanguage}
+            />
         </div>
           <div className="flex justify-end gap-4">
             <button
