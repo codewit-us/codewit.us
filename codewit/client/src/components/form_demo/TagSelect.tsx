@@ -1,4 +1,5 @@
 import CreatableSelect from 'react-select/creatable';
+import Select, { SingleValue } from 'react-select';
 import { useState, useEffect } from 'react';
 import { topicTree } from '@codewit/topics';
 import { SelectStyles } from '../../utils/styles.js';
@@ -14,11 +15,12 @@ interface Tag {
 }
 
 interface TagSelectProps {
-  setSelectedTags: (tags: Tag[]) => void;
+  setSelectedTags: (tags: Tag | Tag[] ) => void;
   selectedTags: Tag[] | undefined;
+  isMulti?: boolean;
 }
 
-const TagSelect = ({ setSelectedTags, selectedTags }: TagSelectProps): JSX.Element => {
+const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectProps): JSX.Element => {
   const [tags, setTags] = useState<Tag[]>([]);
 
   useEffect(() => {
@@ -35,23 +37,35 @@ const TagSelect = ({ setSelectedTags, selectedTags }: TagSelectProps): JSX.Eleme
 
   }, []);
 
-  const handleChange = (newValue: MultiValue<Tag>, actionMeta: ActionMeta<Tag>) => {
-    setSelectedTags(newValue as Tag[]);
+  const handleChange = (newValue: MultiValue<Tag> | SingleValue<Tag>)  => {
+    setSelectedTags(newValue as Tag[] | Tag);
   };
 
 
   return (
     <div className="flex flex-col justify-center items-start w-full text-white">
       <label htmlFor="tag-select" className="block text-sm mb-2 font-medium text-white">Select/Create Tags</label>
-      <CreatableSelect
-        id='tag-select'
-        isMulti
-        value={selectedTags}
-        onChange={handleChange}
-        options={tags}
-        className="text-sm bg-blue text-white border-none w-full rounded-lg"
-        styles={SelectStyles}      
-      />
+      {isMulti
+        ?
+        <CreatableSelect
+          id='tag-select'
+          isMulti
+          value={selectedTags}
+          onChange={handleChange}
+          options={tags}
+          className="text-sm bg-blue text-white border-none w-full rounded-lg"
+          styles={SelectStyles}      
+        />     
+        :
+        <Select
+          id='tag-select'
+          value={selectedTags}
+          onChange={handleChange}
+          options={tags}
+          className="text-sm bg-blue text-white border-none w-full rounded-lg"
+          styles={SelectStyles}      
+        />  
+    }  
     </div>
   );
 }
