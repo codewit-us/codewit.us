@@ -4,11 +4,11 @@ import Home from '../pages/Home';
 import Read from '../pages/Read';
 import Create from '../pages/Create';
 import NotFound from '../components/notfound/NotFound';
-import ExerciseForms from '../pages/ExerciseForms';
+import ExerciseForms from '../pages/ExerciseForm';
 import ModuleForm from '../pages/ModuleForm';
 import ResourceForm from '../pages/ResourceForm';
 import CourseForm from '../pages/CourseForm';
-import DemoForms from '../pages/DemoForms';
+import DemoForms from '../pages/DemoForm';
 
 import { Route, Routes } from 'react-router-dom';
 

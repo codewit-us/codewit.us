@@ -97,13 +97,6 @@ const CreateDemo = (): JSX.Element => {
     }));
   };
 
-  const handleLanguageChange = (language: string) => {
-    setDemo(prevDemo => ({
-      ...prevDemo,
-      language: language
-    }));
-  }
-
   const updateExercises = (selectedIds: string[]) => {
     const exerciseToBeDeleted = selectedExercises.filter(exercise => !selectedIds.includes(exercise));
     if(isEditing && selectedIds.length < selectedExercises.length) {
@@ -152,9 +145,10 @@ const CreateDemo = (): JSX.Element => {
           <TagSelect 
             selectedTags={selectedTags} 
             setSelectedTags={handleTagSelect}
+            isMulti={true}
           />
           <LanguageSelect 
-            handleLanguageChange={handleLanguageChange}
+            handleChange={handleInputChange}
             initialLanguage={typeof demo.language === 'string' ? demo.language : demo.language.name}
           />
         </div>
