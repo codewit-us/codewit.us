@@ -23,7 +23,7 @@ export function App() {
 
         <Route path="/create" element={<Create />}>
           <Route index element={<DemoForms />} />
-          <Route path="" element={<DemoForms />} />
+          <Route path="demo" element={<DemoForms />} />
           <Route path="exercise" element={<ExerciseForms />} />
           <Route path="module" element={<ModuleForm />} />
           <Route path="resource" element={<ResourceForm />} />
