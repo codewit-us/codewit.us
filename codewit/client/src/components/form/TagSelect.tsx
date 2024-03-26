@@ -15,7 +15,7 @@ interface Tag {
 }
 
 interface TagSelectProps {
-  setSelectedTags: (tags: Tag | Tag[] ) => void;
+  setSelectedTags: (tags: Tag | Tag[] | any ) => void;
   selectedTags: Tag[] | undefined;
   isMulti?: boolean;
 }
@@ -60,6 +60,7 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
         <Select
           id='tag-select'
           value={selectedTags}
+          placeholder="Select..."
           onChange={handleChange}
           options={tags}
           className="text-sm bg-blue text-white border-none w-full rounded-lg"
