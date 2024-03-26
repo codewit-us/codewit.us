@@ -3,7 +3,7 @@ import Select, { SingleValue } from 'react-select';
 import { useState, useEffect } from 'react';
 import { topicTree } from '@codewit/topics';
 import { SelectStyles } from '../../utils/styles.js';
-import { ActionMeta, MultiValue } from 'react-select';
+import { MultiValue } from 'react-select';
 
 interface TopicNode {
   [key: string]: TopicNode;
@@ -16,7 +16,7 @@ interface Tag {
 
 interface TagSelectProps {
   setSelectedTags: (tags: Tag | Tag[] | any ) => void;
-  selectedTags: Tag[] | undefined;
+  selectedTags: Tag[] | Tag | null | undefined;
   isMulti?: boolean;
 }
 
@@ -44,7 +44,9 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
 
   return (
     <div className="flex flex-col justify-center items-start w-full text-white">
-      <label htmlFor="tag-select" className="block text-sm mb-2 font-medium text-white">Select/Create Tags</label>
+      <label htmlFor="tag-select" className="block text-sm mb-2 font-medium text-white">
+        {isMulti ? 'Select/Create Tags' : 'Select Tag'}
+      </label>
       {isMulti
         ?
         <CreatableSelect
@@ -60,7 +62,6 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
         <Select
           id='tag-select'
           value={selectedTags}
-          placeholder="Select..."
           onChange={handleChange}
           options={tags}
           className="text-sm bg-blue text-white border-none w-full rounded-lg"

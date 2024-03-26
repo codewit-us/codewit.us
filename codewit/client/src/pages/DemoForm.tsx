@@ -145,7 +145,10 @@ const CreateDemo = (): JSX.Element => {
             initialLanguage={typeof demo.language === 'string' ? demo.language : demo.language.name}
           />
         </div>
-        <SubmitBtn text={isEditing ? 'Confirm Edit' : 'Create'} />
+        <SubmitBtn 
+          disabled={demo.title === '' || demo.youtube_id === '' || demo.tags.length === 0}
+          text={isEditing ? 'Confirm Edit' : 'Create'} 
+        />
       </form>
     </div>
   );
