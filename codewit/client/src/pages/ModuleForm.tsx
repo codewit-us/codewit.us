@@ -1,11 +1,11 @@
-import Select from 'react-select';
+import { useState, useEffect, FormEvent } from 'react';
+import Select, { MultiValue } from 'react-select';
 import LanguageSelect from "../components/form/LanguageSelect";
 import SubmitBtn from "../components/form/SubmitButton";
 import TopicSelect from "../components/form/TagSelect";
 import axios from 'axios';
-import { DemoResponse } from '@codewit/interfaces';
-import { useEffect, useState } from 'react';
 import { SelectStyles } from '../utils/styles';
+import { DemoResponse } from '@codewit/interfaces';
 
 interface Tag {
   value: string;
@@ -36,7 +36,7 @@ const ModuleForm = (): JSX.Element => {
   const [resourceOptions, setResourceOptions] = useState<ResourceOption[]>([]);
 
   useEffect(() => {
-    axios.get('/demos')
+    axios.get<DemoResponse[]>('/demos')
       .then(res => {
         setDemos(res.data);
       })
@@ -51,7 +51,7 @@ const ModuleForm = (): JSX.Element => {
 
   useEffect(() => {
     if (module.language && module.topic) {
-      const filteredDemos = demos.filter(demo => (demo.language as { name: string }).name === module.language && demo.tags.some(tag => tag.name === module.topic));
+      const filteredDemos = demos.filter(demo => typeof demo.language === 'object' && demo.language.name === module.language && demo.tags.some(tag => tag.name === module.topic));
       setModule(prev => ({
         ...prev,
         demos: filteredDemos
@@ -59,10 +59,10 @@ const ModuleForm = (): JSX.Element => {
     }
   }, [module.language, module.topic, demos]);  
 
-  const handleChange = (selectedOptions: any) => {
+  const handleChange = (selectedOptions: MultiValue<ResourceOption>) => {
     setModule(prev => ({
       ...prev,
-      resources: selectedOptions ? selectedOptions.map((option: ResourceOption) => option.value) : []
+      resources: selectedOptions ? selectedOptions.map(option => option.value) : []
     }));
   };
 
@@ -72,13 +72,11 @@ const ModuleForm = (): JSX.Element => {
   };
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-
     e.preventDefault();
     const newModule = { ...module, id: Date.now() };
     const existingModules = JSON.parse(localStorage.getItem('modules') || '[]');
     existingModules.push(newModule);
     localStorage.setItem('modules', JSON.stringify(existingModules));
-    console.log('submitted', newModule);
   };
 
   return (
