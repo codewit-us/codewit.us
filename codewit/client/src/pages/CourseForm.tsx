@@ -37,7 +37,10 @@ const CourseForm = ():JSX.Element => {
             handleChange={handleChange}
             initialLanguage={course.language}
         />
-        <SubmitBtn text={'Create'} />
+        <SubmitBtn 
+          text={'Create'} 
+          disabled={course.title === ''}  
+        />
       </form>
     </div>
   )
