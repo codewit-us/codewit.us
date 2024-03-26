@@ -46,7 +46,7 @@ interface DemoResponse {
   updatedAt: string;
   createdAt: string;
   exercises: Exercise[];
-  tags: Tag[] | string[];
+  tags: Tag[] | string [];
   language: string | {name:string;};
   languageUid: string;
 }

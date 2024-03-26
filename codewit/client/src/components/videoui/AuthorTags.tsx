@@ -2,7 +2,7 @@ import { Tag } from "@codewit/interfaces";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 
 interface AuthorTagsProps {
-  tags: Tag[] | undefined;
+  tags: Tag[] | string[] | undefined;
 }
 
 const AuthorTags = ({tags}: AuthorTagsProps): JSX.Element => (
@@ -14,8 +14,8 @@ const AuthorTags = ({tags}: AuthorTagsProps): JSX.Element => (
     </span>
     { tags 
       ?
-        tags.map((tag: Tag, index: number) => (
-          <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag.name}</span>
+        (tags as string[]).map((tag: string, index: number) => (
+          <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag}</span>
         ))
       :
         ''
