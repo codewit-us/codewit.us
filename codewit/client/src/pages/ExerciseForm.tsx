@@ -3,8 +3,9 @@ import axios from 'axios';
 import Error from "../components/error/Error";
 import MDEditor from '@uiw/react-markdown-editor';
 import { ExerciseResponse } from '@codewit/interfaces';
-import TagSelect from '../components/form_demo/TagSelect';
-import LanguageSelect from '../components/form_demo/LanguageSelect';
+import TagSelect from '../components/form/TagSelect';
+import LanguageSelect from '../components/form/LanguageSelect';
+import SubmitBtn from '../components/form/SubmitButton';
 
 const ExerciseForms = (): JSX.Element => {
   const [exercise, setExercise] = useState({ prompt: ''});
@@ -111,7 +112,7 @@ const ExerciseForms = (): JSX.Element => {
               data-testid="prompt"
             />
           </div>
-          <div className = "flex flex-row w-full gap-3 mb-8">
+          <div className = "flex flex-row w-full gap-3 mb-6">
             <TagSelect 
               selectedTags={selectedTags} 
               setSelectedTags={handleTagSelect}
@@ -122,14 +123,7 @@ const ExerciseForms = (): JSX.Element => {
               initialLanguage={selectedLanguage}
             />
         </div>
-          <div className="flex justify-end gap-4">
-            <button
-              type="submit"
-              className="text-white w-full bg-accent-600 hover:bg-accent-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm px-5 py-2 transition-colors duration-200"
-            >
-              {isEditing ? 'Update' : 'Create'}
-            </button>
-          </div>
+        <SubmitBtn text={isEditing ? 'Confirm Edit' : 'Create'} />
         </form>
       </div>
       <div className="w-full max-w-4xl h-full rounded-md shadow-lg p-4 overflow-auto bg-gray-800 bg-opacity-50">
