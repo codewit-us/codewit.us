@@ -123,7 +123,10 @@ const ExerciseForms = (): JSX.Element => {
               initialLanguage={selectedLanguage}
             />
         </div>
-        <SubmitBtn text={isEditing ? 'Confirm Edit' : 'Create'} />
+        <SubmitBtn 
+          disabled={exercise.prompt === '' || selectedTags?.length === 0 || !selectedLanguage}
+          text={isEditing ? 'Confirm Edit' : 'Create'} 
+        />
         </form>
       </div>
       <div className="w-full max-w-4xl h-full rounded-md shadow-lg p-4 overflow-auto bg-gray-800 bg-opacity-50">

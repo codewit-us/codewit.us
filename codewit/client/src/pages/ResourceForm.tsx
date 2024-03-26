@@ -46,7 +46,10 @@ const ResourceForm = (): JSX.Element => {
           <InputLabel htmlFor="source">Source</InputLabel>
           <TextInput id="source" value={resource.source} name="source" placeholder="Enter Source" onChange={handleChange} required />
         </div>
-        <SubmitBtn text={'Create'} />
+        <SubmitBtn 
+          disabled={resource.url === '' || resource.title === '' || resource.source === ''}
+          text={'Create'} 
+        />
       </form>
     </div>
   );
