@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import VideoSelect from '../components/form_demo/VideoSelect';
+import VideoSelect from '../components/form/VideoSelect';
 import Error from '../components/error/Error';
 import { DemoResponse, Tag } from '@codewit/interfaces';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import ExerciseSelect from '../components/form_demo/ExerciseSelect';
-import TagSelect from '../components/form_demo/TagSelect';
-import LanguageSelect from '../components/form_demo/LanguageSelect';
+import ExerciseSelect from '../components/form/ExerciseSelect';
+import TagSelect from '../components/form/TagSelect';
+import LanguageSelect from '../components/form/LanguageSelect';
+import SubmitBtn from '../components/form/SubmitButton';
+import InputLabel from '../components/form/InputLabel';
+import TextInput from '../components/form/TextInput';
 
 const CreateDemo = (): JSX.Element => {
   const location = useLocation();
@@ -49,7 +52,6 @@ const CreateDemo = (): JSX.Element => {
     try {
       let response;
       if (isEditing) {
-        console.log('demo', demo);
         const tagNames = demo.tags.map(tag => typeof tag === 'string' ? tag : tag.name);
         const language = typeof demo.language === 'string' ? demo.language : demo.language.name;
         response = await axios.patch(`/demos/${demo.uid}`, {
@@ -119,17 +121,8 @@ const CreateDemo = (): JSX.Element => {
         <h2 className="text-xl font-semibold text-white">Create Demo Exercise</h2>
 
         <div>
-          <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-200">Title</label>
-          <input 
-            type="text" 
-            id="title" 
-            name="title" 
-            className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500" 
-            placeholder="Enter title" 
-            value={demo.title} 
-            onChange={handleInputChange} 
-            required 
-          />
+          <InputLabel htmlFor="title">Title</InputLabel>
+          <TextInput id="title" name="title" value = {demo.title} placeholder="Enter title" onChange={handleInputChange} required />
         </div>
 
         <VideoSelect
@@ -152,16 +145,7 @@ const CreateDemo = (): JSX.Element => {
             initialLanguage={typeof demo.language === 'string' ? demo.language : demo.language.name}
           />
         </div>
-
-        <div className="flex justify-end py-2">
-          <button 
-            type="submit"
-            data-testid="submitbtn" 
-            className="text-white w-full bg-accent-500 hover:bg-accent-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-md text-sm py-2 px-3 text-center transition-colors duration-200"
-          >
-            {isEditing ? 'confirm edit' : 'create'}
-          </button>
-        </div>
+        <SubmitBtn text={isEditing ? 'Confirm Edit' : 'Create'} />
       </form>
     </div>
   );
