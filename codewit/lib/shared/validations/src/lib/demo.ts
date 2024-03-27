@@ -1,9 +1,12 @@
 import { z } from 'zod';
+import { validateTopic } from './topic';
 
 const createDemoSchema = z.object({
   title: z.string(),
   youtube_id: z.string(),
-  topic: z.string().optional(),
+  topic: z
+    .string()
+    .refine((t) => validateTopic(t), { message: 'Invalid topic' }),
   language: z.string().optional(),
   tags: z.string().array().optional(),
 });
@@ -11,7 +14,10 @@ const createDemoSchema = z.object({
 const updateDemoSchema = z.object({
   title: z.string().optional(),
   youtube_id: z.string().optional(),
-  topic: z.string().optional(),
+  topic: z
+    .string()
+    .refine((t) => validateTopic(t), { message: 'Invalid topic' })
+    .optional(),
   language: z.string().optional(),
   tags: z.string().array().optional(),
 });
