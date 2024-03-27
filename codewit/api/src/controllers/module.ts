@@ -67,4 +67,22 @@ async function updateModule(
   return module;
 }
 
-export { createModule, getModule, updateModule };
+async function getModules(): Promise<Module[]> {
+  const modules = await Module.findAll({
+    include: [Language, Demo, Resource],
+  });
+
+  return modules;
+}
+
+async function deleteModule(uid: number): Promise<Module | null> {
+  const module = await Module.findByPk(uid);
+  if (!module) {
+    return null;
+  }
+
+  await module.destroy();
+  return module;
+}
+
+export { createModule, getModule, updateModule, getModules, deleteModule };
