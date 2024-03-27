@@ -38,6 +38,11 @@ interface Tag {
   updatedAt?: string;
 }
 
+interface SelectedTag {
+  value: string;
+  label: string;
+}
+
 interface DemoResponse {
   likes: number;
   uid: number;
@@ -87,6 +92,7 @@ export type {
   ExerciseResponse,
   Demo,
   Tag,
+  SelectedTag,
   DemoPostResponse,
   DemoResponse,
   YouTubeSearchResult, 
