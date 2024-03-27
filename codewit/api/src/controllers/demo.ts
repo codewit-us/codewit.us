@@ -1,5 +1,4 @@
 import { Demo, Exercise, Tag, Language } from '../models';
-import { topic as TopicValidator } from '@codewit/topics';
 
 async function getAllDemos(): Promise<Demo[]> {
   return await Demo.findAll({ include: [Exercise, Tag, Language] });
@@ -16,13 +15,6 @@ async function createDemo(
   tags?: string[],
   language?: string
 ): Promise<Demo> {
-  const topicValidator = new TopicValidator();
-  topicValidator.setTopic(topic);
-
-  if (topicValidator.getTopic() == undefined) {
-    throw new Error('Invalid topic');
-  }
-
   const demo = await Demo.create({ title, youtube_id, topic });
   if (tags) {
     const updatedTags = await Promise.all(
@@ -75,13 +67,6 @@ async function updateDemo(
     if (title) demo.title = title;
     if (youtube_id) demo.youtube_id = youtube_id;
     if (topic) {
-      const topicValidator = new TopicValidator();
-      topicValidator.setTopic(topic);
-
-      if (topicValidator.getTopic() == undefined) {
-        throw new Error('Invalid topic');
-      }
-
       demo.topic = topic;
     }
 
