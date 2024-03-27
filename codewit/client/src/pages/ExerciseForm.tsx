@@ -152,43 +152,41 @@ const ExerciseForms = (): JSX.Element => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row justify-start items-start w-full h-full bg-zinc-900 overflow-auto p-4 gap-4">
-      <div className="shadow-lg h-full rounded-md p-4 w-full max-w-4xl bg-gray-800 bg-opacity-50">
-        <form onSubmit={handleSubmit} className="w-full">
-          <h2 className="text-xl font-semibold text-white mb-2">
-            {formData.isEditing ? "Edit Exercise" : "Create New Exercise"}
-          </h2>
-          <div className="mb-2 h-full overflow-auto">
-            <MDEditor
-              value={formData.exercise.prompt}
-              onChange={handleEditorChange}
-              height="300px"
-              data-testid="prompt"
-            />
-          </div>
-          <div className="flex flex-row w-full gap-3 mb-6">
-            <TagSelect
-              selectedTags={formData.selectedTags}
-              setSelectedTags={handleTagSelect}
-              isMulti={true}
-            />
-            <LanguageSelect
-              handleChange={handleLanguageChange}
-              initialLanguage={formData.selectedLanguage}
-            />
-          </div>
-          <SubmitBtn
-            disabled={
-              formData.exercise.prompt === "" ||
-              formData.selectedTags.length === 0 ||
-              !formData.selectedLanguage
-            }
-            text={formData.isEditing ? "Confirm Edit" : "Create"}
+    <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
+      <form onSubmit={handleSubmit} className="bg-gray-800 rounded-md bg-opacity-50 w-full max-w-4xl h-full p-6 space-y-6">
+        <h2 className="text-xl font-semibold text-white mb-2">
+          {formData.isEditing ? "Edit Exercise" : "Create New Exercise"}
+        </h2>
+        <div className="mb-2 overflow-auto">
+          <MDEditor
+            value={formData.exercise.prompt}
+            onChange={handleEditorChange}
+            height="300px"
+            data-testid="prompt"
           />
-        </form>
-      </div>
+        </div>
+        <div className="flex flex-row w-full gap-3 mb-6">
+          <TagSelect
+            selectedTags={formData.selectedTags}
+            setSelectedTags={handleTagSelect}
+            isMulti={true}
+          />
+          <LanguageSelect
+            handleChange={handleLanguageChange}
+            initialLanguage={formData.selectedLanguage}
+          />
+        </div>
+        <SubmitBtn
+          disabled={
+            formData.exercise.prompt === "" ||
+            formData.selectedTags.length === 0 ||
+            !formData.selectedLanguage
+          }
+          text={formData.isEditing ? "Confirm Edit" : "Create"}
+        />
+      </form>
       <ExistingTable
-        exercises={exercises}
+        items={exercises}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
