@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import Select, { MultiValue } from 'react-select';
 import LanguageSelect from '../components/form/LanguageSelect';
 import InputLabel from '../components/form/InputLabel';
@@ -6,12 +6,13 @@ import TextInput from '../components/form/TextInput';
 import SubmitBtn from '../components/form/SubmitButton';
 import { SelectStyles } from '../utils/styles';
 import { SelectedTag } from '@codewit/interfaces';
+import ExistingTable from '../components/form/ExistingTable';
 
 interface Course {
   title: string;
   language: string;
   modules: string[];
-  id: string | number;
+  uid: string | number;
 }
 
 const CourseForm = (): JSX.Element => {
@@ -19,17 +20,20 @@ const CourseForm = (): JSX.Element => {
     title: '',
     language: 'cpp',
     modules: [],
-    id: '',
+    uid: '',
   });
 
   const [moduleOptions, setModuleOptions] = useState<SelectedTag[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   useEffect(() => {
     const storedModules = JSON.parse(localStorage.getItem('modules') || '[]');
-    console.log(storedModules);
-    const options: SelectedTag[] = storedModules.map((module: { id: string }) => ({
-      value: module.id,
-      label: module.id,
+    const storedCourses = JSON.parse(localStorage.getItem('courses') || '[]');
+    setCourses(storedCourses);
+    const options: SelectedTag[] = storedModules.map((module: { uid: string }) => ({
+      value: module.uid,
+      label: module.uid,
     }));
     setModuleOptions(options);
   }, []);
@@ -49,19 +53,41 @@ const CourseForm = (): JSX.Element => {
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleEdit = useCallback((uid: number) => {
+    setIsEditing(true);
+    const foundCourse = courses.find(course => course.uid === uid);
+    if (foundCourse) {
+      setCourse(foundCourse);
+    }
+  }, [courses]);
+  
+  const handleDelete = useCallback((uid: number) => {
+    const updatedCourses = courses.filter(course => course.uid !== uid);
+    setCourses(updatedCourses);
+    localStorage.setItem('courses', JSON.stringify(updatedCourses));
+  }, [courses]);
+  
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const storedCourses: Course[] = JSON.parse(localStorage.getItem('courses') || '[]');
-    const newCourse = {
-      ...course,
-      id: Date.now(),
-    };
-    localStorage.setItem('courses', JSON.stringify([...storedCourses, newCourse]));
-    setCourse({ title: '', language: 'cpp', modules: [], id: '' });
-  };
+    if(isEditing) {
+      const updatedCourses = courses.map(c => c.uid === course.uid ? course : c);
+      setCourses(updatedCourses);
+      localStorage.setItem('courses', JSON.stringify(updatedCourses));
+      setIsEditing(false);
+    } else {
+      const newCourse = {
+        ...course,
+        uid: Date.now(),
+      };
+      const newCoursesArray = [...courses, newCourse];
+      setCourses(newCoursesArray);
+      localStorage.setItem('courses', JSON.stringify(newCoursesArray));
+      setCourse({ title: '', language: 'cpp', modules: [], uid: '' }); 
+    }
+  }, [courses, course, isEditing]);
 
   return (
-    <div className="flex justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
+    <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
       <form onSubmit={handleSubmit} className="bg-gray-800 rounded-md bg-opacity-50 w-full max-w-4xl h-full p-6 space-y-6">
         <h2 className="text-xl font-semibold text-white">Create Course</h2>
         <div>
@@ -85,10 +111,16 @@ const CourseForm = (): JSX.Element => {
           />
         </div>
         <SubmitBtn
-          text={'Create'}
+          text={isEditing ? 'Confirm Edit' : 'Create'}
           disabled={course.title === '' || course.modules.length === 0}
         />
       </form>
+      <ExistingTable
+        items={courses}
+        name="Courses"
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 };
