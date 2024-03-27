@@ -5,11 +5,7 @@ import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
 import SubmitBtn from '../components/form/SubmitButton';
 import { SelectStyles } from '../utils/styles';
-
-interface ModuleOption {
-  value: string;
-  label: string;
-}
+import { SelectedTag } from '@codewit/interfaces';
 
 interface Course {
   title: string;
@@ -26,12 +22,12 @@ const CourseForm = (): JSX.Element => {
     id: '',
   });
 
-  const [moduleOptions, setModuleOptions] = useState<ModuleOption[]>([]);
+  const [moduleOptions, setModuleOptions] = useState<SelectedTag[]>([]);
 
   useEffect(() => {
     const storedModules = JSON.parse(localStorage.getItem('modules') || '[]');
     console.log(storedModules);
-    const options: ModuleOption[] = storedModules.map((module: { id: string }) => ({
+    const options: SelectedTag[] = storedModules.map((module: { id: string }) => ({
       value: module.id,
       label: module.id,
     }));
@@ -46,7 +42,7 @@ const CourseForm = (): JSX.Element => {
     }));
   };
 
-  const handleModuleChange = (selectedOption: MultiValue<ModuleOption>) => {
+  const handleModuleChange = (selectedOption: MultiValue<SelectedTag>) => {
     setCourse((prev) => ({
       ...prev,
       modules: selectedOption ? selectedOption.map((option) => option.value) : [],
