@@ -6,6 +6,9 @@ import {
   Sequelize,
   NonAttribute,
   Association,
+  BelongsToSetAssociationMixin,
+  HasManyGetAssociationsMixin,
+  HasManySetAssociationsMixin,
 } from 'sequelize';
 import { Module } from './module';
 import { Language } from './language';
@@ -25,6 +28,10 @@ class Course extends Model<
     language: Association<Course, Language>;
     modules: Association<Course, Module>;
   };
+
+  declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
+  declare setModules: HasManySetAssociationsMixin<Module, number>;
+  declare getModules: HasManyGetAssociationsMixin<Module>;
 
   static initialize(sequelize: Sequelize) {
     this.init(
