@@ -1,28 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
 import Error from "../components/error/Error";
-import MDEditor from '@uiw/react-markdown-editor';
-import { ExerciseResponse } from '@codewit/interfaces';
-import TagSelect from '../components/form/TagSelect';
-import LanguageSelect from '../components/form/LanguageSelect';
-import SubmitBtn from '../components/form/SubmitButton';
+import MDEditor from "@uiw/react-markdown-editor";
+import { ExerciseResponse, SelectedTag } from "@codewit/interfaces";
+import TagSelect from "../components/form/TagSelect";
+import LanguageSelect from "../components/form/LanguageSelect";
+import SubmitBtn from "../components/form/SubmitButton";
+import ExistingTable from "../components/form/ExistingTable";
+
+interface FormData {
+  exercise: { prompt: string };
+  isEditing: boolean;
+  editingUid: number;
+  selectedLanguage: string;
+  selectedTags: {label: string, value: string}[];
+}
 
 const ExerciseForms = (): JSX.Element => {
-  const [exercise, setExercise] = useState({ prompt: ''});
+  const [formData, setFormData] = useState<FormData>({
+    exercise: { prompt: "" },
+    isEditing: false,
+    editingUid: -1,
+    selectedLanguage: "cpp",
+    selectedTags: [],
+  });
   const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingUid, setEditingUid] = useState<number | null>(null);
-  const [error, setError] = useState<boolean>(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('cpp');
-  const [selectedTags, setSelectedTags] = useState<{label: string, value: string}[]>();
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const fetchExercises = async () => {
       try {
-        const { data } = await axios.get('/exercises');
+        const { data } = await axios.get("/exercises");
         setExercises(data as ExerciseResponse[]);
       } catch (error) {
-        console.error('Error fetching exercises:', error);
+        console.error("Error fetching exercises:", error);
         setError(true);
       }
     };
@@ -30,70 +41,111 @@ const ExerciseForms = (): JSX.Element => {
     fetchExercises();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!exercise.prompt.trim()) return;
-  
-    const exerciseData = {
-      ...exercise,
-      tags: selectedTags ? (selectedTags as {value:string,label: string}[]).map((tag: {value:string,label: string}) => tag.value) : [], 
-      language: selectedLanguage,
-    };
-  
-    let response: ExerciseResponse;
-    try {
-      if (isEditing && editingUid) {
-        const { data } = await axios.patch(`/exercises/${editingUid}`, exerciseData);
-        response = data;
-      } else {
-        const { data } = await axios.post('/exercises', exerciseData);
-        response = data;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const {
+        exercise,
+        selectedLanguage,
+        selectedTags,
+        editingUid,
+        isEditing,
+      } = formData;
+      if (!exercise.prompt.trim()) return;
+
+      const exerciseData = {
+        ...exercise,
+        tags: selectedTags.map((tag: { value: string }) => tag.value),
+        language: selectedLanguage,
+      };
+
+      try {
+        let response: ExerciseResponse;
+        if (isEditing && editingUid) {
+          const { data } = await axios.patch(
+            `/exercises/${editingUid}`,
+            exerciseData
+          );
+          response = data;
+        } else {
+          const { data } = await axios.post("/exercises", exerciseData);
+          response = data;
+        }
+        setExercises((prev) =>
+          isEditing
+            ? prev.map((ex) => (ex.uid === editingUid ? response : ex))
+            : [...prev, response]
+        );
+        setFormData((prev) => ({
+          ...prev,
+          exercise: { prompt: "" },
+          selectedTags: [],
+          selectedLanguage: "cpp",
+          isEditing: false,
+          editingUid: -1,
+        }));
+      } catch (error) {
+        setError(true);
+        console.error("Error saving the exercise:", error);
       }
-      setExercises(prev => isEditing ? prev.map(ex => ex.uid === editingUid ? response : ex) : [...prev, response]);
-      setExercise({ prompt: ''});
-      setSelectedTags([]);
-      setSelectedLanguage('');
-      setIsEditing(false);
-      setEditingUid(null);
-    } catch (error) {
-      setError(true);
-      console.error('Error saving the exercise:', error);
-    }
-  };
+    },
+    [formData]
+  );
 
-  const handleEditorChange = (value: string | undefined) => {
-    setExercise({ prompt: value || '' });
-  };
+  const handleEditorChange = useCallback((value: string | undefined) => {
+    setFormData((prev) => ({ ...prev, exercise: { prompt: value || "" } }));
+  }, []);
 
-  const handleEdit = (exercise: ExerciseResponse) => {
-    setIsEditing(true);
-    setEditingUid(exercise.uid);
-    const tagNames = exercise.tags.map(tag => typeof tag === 'string' ? tag : tag.name);
-    const language = typeof exercise.language === 'string' ? exercise.language : exercise.language.name;
-    setExercise({prompt: exercise.prompt});
-    setSelectedTags(tagNames.map(tagName => ({ label: tagName, value: tagName })));
-    setSelectedLanguage(language);
-  };
+  const handleEdit = useCallback(
+    (exerciseUID: number) => {
+      console.log(exerciseUID)
+      const exerciseToEdit = exercises.find((ex) => ex.uid === exerciseUID);
+      if (!exerciseToEdit) {
+        console.error("Exercise with UID not found:", exerciseUID);
+        return;
+      }
+      setFormData({
+        ...formData,
+        exercise: { prompt: exerciseToEdit.prompt },
+        isEditing: true,
+        editingUid: exerciseUID as number,
+        selectedTags: exerciseToEdit.tags.map((tag) => ({
+          label: typeof tag === "string" ? tag : tag.name,
+          value: typeof tag === "string" ? tag : tag.name,
+        })),
+        selectedLanguage:
+          typeof exerciseToEdit.language === "string"
+            ? exerciseToEdit.language
+            : exerciseToEdit.language.name,
+      });
+    },
+    [exercises, formData]
+  );
 
-  const handleDelete = async (exerciseId: number) => {
-    try {
-      await axios.delete(`/exercises/${exerciseId}`);
-      setExercises(exercises.filter((ex) => ex.uid !== exerciseId) as ExerciseResponse[]);
-    } catch (error) {
-      console.error('Error deleting exercise:', error);
-      setError(true);
-    }
-  };
+  const handleDelete = useCallback(
+    async (exerciseId: number) => {
+      try {
+        await axios.delete(`/exercises/${exerciseId}`);
+        setExercises(exercises.filter((ex) => ex.uid !== exerciseId));
+      } catch (error) {
+        console.error("Error deleting exercise:", error);
+        setError(true);
+      }
+    },
+    [exercises]
+  );
 
-  const handleTagSelect = (tags: {label: string, value: string}[]) => {
-    setSelectedTags(tags);
-  };
+  const handleTagSelect = useCallback((tags: SelectedTag[]) => {
+    console.log(tags);
+    setFormData(prev => ({ ...prev, selectedTags: tags }));
+  }, []);
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target;
-    setSelectedLanguage(value);
-  }
-  
+  const handleLanguageChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
+    },
+    []
+  );
 
   if (error) {
     return <Error />;
@@ -101,69 +153,45 @@ const ExerciseForms = (): JSX.Element => {
 
   return (
     <div className="flex flex-col md:flex-row justify-start items-start w-full h-full bg-zinc-900 overflow-auto p-4 gap-4">
-      <div className=" shadow-lg h-full rounded-md p-4 w-full max-w-4xl bg-gray-800 bg-opacity-50">
+      <div className="shadow-lg h-full rounded-md p-4 w-full max-w-4xl bg-gray-800 bg-opacity-50">
         <form onSubmit={handleSubmit} className="w-full">
-          <h2 className="text-xl font-semibold text-white mb-2">{isEditing ? 'Edit Exercise' : 'Create New Exercise'}</h2>
+          <h2 className="text-xl font-semibold text-white mb-2">
+            {formData.isEditing ? "Edit Exercise" : "Create New Exercise"}
+          </h2>
           <div className="mb-2 h-full overflow-auto">
-           <MDEditor
-              value={exercise.prompt}
+            <MDEditor
+              value={formData.exercise.prompt}
               onChange={handleEditorChange}
               height="300px"
               data-testid="prompt"
             />
           </div>
-          <div className = "flex flex-row w-full gap-3 mb-6">
-            <TagSelect 
-              selectedTags={selectedTags} 
+          <div className="flex flex-row w-full gap-3 mb-6">
+            <TagSelect
+              selectedTags={formData.selectedTags}
               setSelectedTags={handleTagSelect}
               isMulti={true}
             />
-            <LanguageSelect 
+            <LanguageSelect
               handleChange={handleLanguageChange}
-              initialLanguage={selectedLanguage}
+              initialLanguage={formData.selectedLanguage}
             />
-        </div>
-        <SubmitBtn 
-          disabled={exercise.prompt === '' || selectedTags?.length === 0 || !selectedLanguage}
-          text={isEditing ? 'Confirm Edit' : 'Create'} 
-        />
+          </div>
+          <SubmitBtn
+            disabled={
+              formData.exercise.prompt === "" ||
+              formData.selectedTags.length === 0 ||
+              !formData.selectedLanguage
+            }
+            text={formData.isEditing ? "Confirm Edit" : "Create"}
+          />
         </form>
       </div>
-      <div className="w-full max-w-4xl h-full rounded-md shadow-lg p-4 overflow-auto bg-gray-800 bg-opacity-50">
-        <h2 className="text-xl font-semibold text-white mb-2">Existing Exercises</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-white">
-            <thead className="text-xs text-gray-400 uppercase bg-gray-700">
-              <tr>
-                <th className="px-6 py-3">Exercise Prompt</th>
-                <th className="px-6 py-3 text-right">Edit</th>
-                <th className="px-6 py-3 text-right">Delete</th>
-              </tr>
-            </thead>
-            <tbody>
-              {exercises.map((ex, index) => (
-                <tr key={ex.uid} className="border-b border-gray-700 ">
-                  <td className="px-6 py-4">
-                    <div className="max-w-md md:max-w-2xl whitespace-nowrap overflow-hidden overflow-ellipsis">
-                      {ex.prompt}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button data-testid={`edit-${index}`} onClick={() => handleEdit(ex)} className="text-blue-400 hover:text-blue-600">
-                      Edit
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button data-testid={`delete-${index}`} onClick={() => handleDelete(ex.uid)} className="text-red-400 hover:text-red-600">
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ExistingTable
+        exercises={exercises}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 };
