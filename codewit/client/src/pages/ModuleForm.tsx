@@ -1,21 +1,11 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Select, { MultiValue } from 'react-select';
 import LanguageSelect from "../components/form/LanguageSelect";
 import SubmitBtn from "../components/form/SubmitButton";
 import TopicSelect from "../components/form/TagSelect";
 import axios from 'axios';
 import { SelectStyles } from '../utils/styles';
-import { DemoResponse } from '@codewit/interfaces';
-
-interface Tag {
-  value: string;
-  label: string;
-}
-
-interface ResourceOption {
-  value: string;
-  label: string;
-}
+import { DemoResponse, SelectedTag } from '@codewit/interfaces';
 
 interface ModuleState {
   language: string;
@@ -33,7 +23,7 @@ const ModuleForm = (): JSX.Element => {
   });
 
   const [demos, setDemos] = useState<DemoResponse[]>([]);
-  const [resourceOptions, setResourceOptions] = useState<ResourceOption[]>([]);
+  const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);
 
   useEffect(() => {
     axios.get<DemoResponse[]>('/demos')
@@ -59,17 +49,15 @@ const ModuleForm = (): JSX.Element => {
     }
   }, [module.language, module.topic, demos]);  
 
-  const handleChange = (selectedOptions: MultiValue<ResourceOption>) => {
-    setModule(prev => ({
-      ...prev,
-      resources: selectedOptions ? selectedOptions.map(option => option.value) : []
-    }));
-  };
+  const handleChange = useCallback((selectedOptions: MultiValue<SelectedTag>) => {
+    const resources = selectedOptions.map(option => option.value);
+    setModule(prev => ({ ...prev, resources }));
+  }, []);
 
-  const handleTagSelect = (tag: Tag | Tag[]) => {
-    const selectedTag = Array.isArray(tag) ? tag[0] : tag;
-    setModule(prev => ({...prev, topic: selectedTag.value}));
-  };
+  const handleTagSelect = useCallback((tag: SelectedTag | SelectedTag[]) => {
+    const topic = Array.isArray(tag) ? tag[0].value : tag.value;
+    setModule(prev => ({ ...prev, topic }));
+  }, []);
   
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
