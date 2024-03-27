@@ -6,12 +6,14 @@ import TopicSelect from "../components/form/TagSelect";
 import axios from 'axios';
 import { SelectStyles } from '../utils/styles';
 import { DemoResponse, SelectedTag } from '@codewit/interfaces';
+import ExistingTable from '../components/form/ExistingTable';
 
 interface ModuleState {
   language: string;
   topic: string;
   demos: DemoResponse[];
   resources: string[]; 
+  uid?: number;
 }
 
 const ModuleForm = (): JSX.Element => {
@@ -21,7 +23,7 @@ const ModuleForm = (): JSX.Element => {
     demos: [],
     resources: []
   });
-
+  const [existingModules, setExistingModules] = useState<ModuleState[]>([module]);
   const [demos, setDemos] = useState<DemoResponse[]>([]);
   const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);
 
@@ -32,8 +34,10 @@ const ModuleForm = (): JSX.Element => {
       })
     .catch(err => console.error(err));
     const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
+    const existingModules = JSON.parse(localStorage.getItem('modules') || '[]');
+    setExistingModules(existingModules);
     const options = storedResources.map((res: any) => ({
-      value: res.id, 
+      value: res.uid, 
       label: res.title 
     }));
     setResourceOptions(options);
@@ -58,17 +62,30 @@ const ModuleForm = (): JSX.Element => {
     const topic = Array.isArray(tag) ? tag[0].value : tag.value;
     setModule(prev => ({ ...prev, topic }));
   }, []);
+
+  const handleEdit = useCallback((uid: number) => {
+    const editModule = existingModules.find(module => module.uid === uid);
+    if (editModule) {
+      setModule(editModule);
+    }
+  }, [existingModules]); 
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleDelete = useCallback((uid: number) => {
+    const updatedModules = existingModules.filter(module => module.uid !== uid);
+    setExistingModules(updatedModules);
+  }, [existingModules]); 
+  
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const newModule = { ...module, id: Date.now() };
+    const newModule = { ...module, uid: Date.now() };
     const existingModules = JSON.parse(localStorage.getItem('modules') || '[]');
     existingModules.push(newModule);
     localStorage.setItem('modules', JSON.stringify(existingModules));
-  };
+    setModule({ language: 'cpp', topic: '', demos: [], resources: [] });
+  }, [module]); 
 
   return (
-    <div className="flex justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
+    <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
         <form onSubmit={handleSubmit} className="bg-gray-800 rounded-md bg-opacity-50 w-full max-w-4xl h-full p-6 space-y-6">
           <h2 className="text-xl font-semibold text-white">Create Module</h2>
           <div className="flex flex-row w-full gap-3 mb-8">
@@ -114,6 +131,12 @@ const ModuleForm = (): JSX.Element => {
             )}
           </div>
         </form>
+        <ExistingTable 
+          items={existingModules} 
+          name="Modules" 
+          onEdit={handleEdit} 
+          onDelete={handleDelete}
+        />
     </div>
   );
 }
