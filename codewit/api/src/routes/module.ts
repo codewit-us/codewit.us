@@ -98,4 +98,4 @@ moduleRouter.delete('/:uid', async (req, res) => {
   }
 });
 
-export { moduleRouter };
+export default moduleRouter;
