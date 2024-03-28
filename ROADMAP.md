@@ -49,15 +49,17 @@ The `codewit/client` directory contains the react app that drives the front-end.
 
 ## Create Page
 
-- **Location**: `codewit/client/src/pages/create.tsx`. The Create Page is designed to display both Forms using React Router's `Links` & `Outlets`, enabling the display for both the `<DemoForms />` and `<ExerciseForms />`.
+- **Location**: `codewit/client/src/pages/create.tsx`. The Create Page is designed to display both Forms using React Router's `Links` & `Outlets`, enabling the display for `<DemoForm />`, `<ExerciseForm />`, `<ModuleForm />`,`<CourseForm />`,`<ResourceForm />`.
 - **Functionality**:
-  - **Navigation Between Forms**: Provides users the ability to navigate between the Create Demo Form and Create Exercise Form using a dashboard located on the left-hand side of the page.
-  - **Creating/Editing/Deleting Demos**: Users can input details like title, tags, language, YouTube video ID, and manage a list of exercises. Furthermore, users have the option to edit or delete existing demos.
-  - **Creating/Editing/Deleting Exercises**: Users have the capability to input new exercises into a Markdown Editor, tags, and language. Furthermore, users have the option to edit or delete existing exercises.
+  - **Navigation Between Forms**: Provides users the ability to navigate between the Create Demo, Exercise, Module, Course, and Resource Forms using a dashboard located on the left-hand side of the page.
+  - **Creating/Editing/Deleting Forms**: Allows users to create new instances of forms, edit existing ones, and delete them as needed.
 - **Components**:
-  - **DemoForms (`<DemoForms />`)**: This component is responsible for rendering the form used for creating and editing demo information. It encapsulates all the necessary fields and functionalities, including input fields for demo details and submission controls.
-  - **ExerciseForms (`<ExerciseForms />`)**: Similar to `DemoForms`, this component focuses on managing exercises. It features a Markdown Editor for inputting exercise prompts, alongside functionalities for editing and deleting exercises.
-    - Both components are located under the same directory as the Create Page.
+  - **DemoForm (`<DemoForm />`)**: This component is responsible for rendering the form used for creating and editing demo information. It encapsulates all the necessary fields and functionalities, including input fields for demo details and submission controls.
+  - **ExerciseForm (`<ExerciseForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting courses. It features a Markdown Editor for inputting exercise prompts and other necessary fields and functionalities to create exercises.
+  - **CourseForm (`<CourseForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting courses. It encapsulates all the necessary fields and functionalities, including input fields for course details and submission controls.
+  - **ModuleForm (`<ModuleForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting modules. It encapsulates all the necessary fields and functionalities, including input fields for module details and submission controls.
+  - **ResourceForm (`<ResourceForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting resources. It encapsulates all the necessary fields and functionalities, including input fields for resource details and submission controls.
+    - All pages are located under the same directory as the Create Page and  use components located under `../components/form/` to render various inputs/fields
 
 ## Back-end
 
