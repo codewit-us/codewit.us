@@ -118,4 +118,4 @@ resourceRouter.patch('/:uid/like', async (req, res) => {
   }
 });
 
-export { resourceRouter };
+export default resourceRouter;
