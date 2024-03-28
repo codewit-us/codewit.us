@@ -1,16 +1,16 @@
 interface LanguageSelectProps {
-  handleLanguageChange : (language: string) => void;
+  handleChange : (e: React.ChangeEvent<HTMLSelectElement>) => void;
   initialLanguage: string;
 }
 
-const LanguageSelect = ({handleLanguageChange, initialLanguage}: LanguageSelectProps): JSX.Element => {
+const LanguageSelect = ({handleChange, initialLanguage}: LanguageSelectProps): JSX.Element => {
   return (
     <div className='w-full'>
       <label htmlFor="language" className="block mb-2 text-sm font-medium text-gray-200">Language</label>
       <select 
         id="language" 
         name="language" 
-        onChange={(e) => handleLanguageChange(e.target.value)}
+        onChange={handleChange}
         className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500" 
         required
         value={initialLanguage.length > 0 ? initialLanguage : "cpp"}

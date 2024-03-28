@@ -38,6 +38,11 @@ interface Tag {
   updatedAt?: string;
 }
 
+interface SelectedTag {
+  value: string;
+  label: string;
+}
+
 interface DemoResponse {
   likes: number;
   uid: number;
@@ -46,7 +51,7 @@ interface DemoResponse {
   updatedAt: string;
   createdAt: string;
   exercises: Exercise[];
-  tags: Tag[] | string[];
+  tags: Tag[] | string [];
   language: string | {name:string;};
   languageUid: string;
 }
@@ -87,6 +92,7 @@ export type {
   ExerciseResponse,
   Demo,
   Tag,
+  SelectedTag,
   DemoPostResponse,
   DemoResponse,
   YouTubeSearchResult, 
