@@ -1,4 +1,4 @@
-import { Demo, Exercise, Tag, Language } from '../models';
+import { Demo, Exercise, Tag, Language, Module } from '../models';
 
 async function getAllDemos(): Promise<Demo[]> {
   return await Demo.findAll({ include: [Exercise, Tag, Language] });
@@ -28,10 +28,23 @@ async function createDemo(
   }
 
   if (language) {
-    const [updatedLanguage] = await Language.findOrCreate({
+    const [languageInstance] = await Language.findOrCreate({
       where: { name: language },
     });
-    await demo.setLanguage(updatedLanguage);
+    await demo.setLanguage(languageInstance);
+
+    const modules = await Module.findAll({
+      where: {
+        topic,
+      },
+      include: [{ model: Language, where: { uid: languageInstance.uid } }],
+    });
+
+    await Promise.all(
+      modules.map(async (module) => {
+        await module.addDemo(demo);
+      })
+    );
   }
 
   await demo.reload();
@@ -47,6 +60,9 @@ async function updateDemo(
   topic?: string
 ): Promise<Demo | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
+  const oldTopic = demo.topic;
+  const oldLanguage = demo.language;
+
   if (demo) {
     if (tags) {
       const updatedTags = await Promise.all(
@@ -59,10 +75,10 @@ async function updateDemo(
       await demo.setTags(updatedTags);
     }
     if (language) {
-      const [updatedLanguage] = await Language.findOrCreate({
+      const [languageInstance] = await Language.findOrCreate({
         where: { name: language },
       });
-      await demo.setLanguage(updatedLanguage);
+      await demo.setLanguage(languageInstance);
     }
     if (title) demo.title = title;
     if (youtube_id) demo.youtube_id = youtube_id;
@@ -71,7 +87,37 @@ async function updateDemo(
     }
 
     await demo.save();
-    await demo.reload();
+    await demo.reload({ include: [Exercise, Tag, Language] });
+
+    if (topic || language) {
+      if (oldLanguage && oldTopic) {
+        const oldmodules = await Module.findAll({
+          where: {
+            topic: oldTopic,
+          },
+          include: [{ model: Language, where: { uid: oldLanguage.uid } }],
+        });
+
+        Promise.all(
+          oldmodules.map(async (module) => {
+            await module.removeDemo(demo.uid);
+          })
+        );
+      }
+
+      const modules = await Module.findAll({
+        where: {
+          topic: demo.topic,
+        },
+        include: [{ model: Language, where: { uid: demo.language.uid } }],
+      });
+
+      Promise.all(
+        modules.map(async (module) => {
+          await module.addDemo(demo);
+        })
+      );
+    }
   }
 
   return demo;
