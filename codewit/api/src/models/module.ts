@@ -2,7 +2,9 @@ import {
   Association,
   BelongsToSetAssociationMixin,
   DataTypes,
+  HasManyAddAssociationMixin,
   HasManyGetAssociationsMixin,
+  HasManyRemoveAssociationMixin,
   HasManySetAssociationsMixin,
   InferAttributes,
   InferCreationAttributes,
@@ -33,6 +35,10 @@ class Module extends Model<
 
   // module has many demos mixins
   declare setDemos: HasManySetAssociationsMixin<Demo, number>;
+  declare getDemos: HasManyGetAssociationsMixin<Demo>;
+  declare addDemo: HasManyAddAssociationMixin<Demo, number>;
+  declare removeDemo: HasManyRemoveAssociationMixin<Demo, number>;
+
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
   declare setResources: HasManySetAssociationsMixin<Resource, number>;
   declare getResources: HasManyGetAssociationsMixin<Resource>;
