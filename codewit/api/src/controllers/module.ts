@@ -41,7 +41,10 @@ async function updateModule(
   language?: string,
   resources?: number[]
 ): Promise<Module | null> {
-  const module = await Module.findByPk(uid);
+  const module = await Module.findByPk(uid, {
+    include: [Language, Demo, Resource],
+  });
+
   if (!module) {
     return;
   }
@@ -60,6 +63,20 @@ async function updateModule(
   }
 
   await module.save();
+
+  if (topic || language) {
+    await module.reload({
+      include: [Language],
+    });
+
+    const demos = await Demo.findAll({
+      include: [{ model: Language, where: { uid: module.language.uid } }],
+      where: { topic: module.topic },
+    });
+
+    await module.setDemos(demos);
+  }
+
   await module.reload({
     include: [Language, Demo, Resource],
   });
