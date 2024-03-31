@@ -47,7 +47,7 @@ async function createDemo(
     );
   }
 
-  await demo.reload();
+  await demo.reload({ include: [Exercise, Tag, Language] });
   return demo;
 }
 
