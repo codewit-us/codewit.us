@@ -49,7 +49,7 @@ async function updateExercise(
   language?: string,
   topic?: string
 ): Promise<Exercise | null> {
-  const exercise = await Exercise.findByPk(uid, { include: [Tag, Language] });
+  let exercise = await Exercise.findByPk(uid, { include: [Tag, Language] });
   if (exercise) {
     if (prompt) exercise.prompt = prompt;
     if (tags) {
