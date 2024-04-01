@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   createResource,
+  deleteResource,
   getAllResources,
   getResource,
   likeResource,
@@ -91,7 +92,7 @@ resourceRouter.patch('/:uid', async (req, res) => {
 resourceRouter.delete('/:uid', async (req, res) => {
   try {
     const uid = parseInt(req.params.uid);
-    const resource = await getResource(uid);
+    const resource = await deleteResource(uid);
     if (resource) {
       res.json(resource);
     } else {
