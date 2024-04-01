@@ -29,13 +29,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/demos/4",
+					"raw": "{{url}}/demos/1",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"4"
+						"1"
 					]
 				}
 			},
@@ -48,7 +48,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Demo 4\",\r\n    \"youtube_id\": \"12345\",\r\n    \"language\": \"cpp\",\r\n    \"tags\": [\"cpp\",\"abc\",\"def\"]\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Demo 14\",\r\n    \"youtube_id\": \"12345\",\r\n    \"language\": \"cpp\",\r\n    \"tags\": [\"cpp\",\"abc\",\"def\"],\r\n    \"topic\": \"math operation\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -93,7 +93,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\":\"Demo 4\",\r\n    \"youtube_id\": \"testttttttttt 4\",\r\n    \"language\": \"java\",\r\n    \"tags\": [\"java\"]\r\n}",
+					"raw": "{\r\n    \"title\":\"Demo 1\",\r\n    \"youtube_id\": \"testttttttttt 4\",\r\n    \"language\": \"java\",\r\n    \"tags\": [\"java\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -101,13 +101,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/demos/4",
+					"raw": "{{url}}/demos/1",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"4"
+						"1"
 					]
 				}
 			},
@@ -120,7 +120,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"exercises\": [1,2,3]\r\n}",
+					"raw": "{\r\n    \"exercises\": [1]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -128,13 +128,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/demos/2/exercises",
+					"raw": "{{url}}/demos/1/exercises",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"2",
+						"1",
 						"exercises"
 					]
 				}
@@ -146,23 +146,14 @@
 			"request": {
 				"method": "DELETE",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"exercises\": [3]\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
 				"url": {
-					"raw": "{{url}}/demos/2/exercises",
+					"raw": "{{url}}/demos/1/exercises",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"2",
+						"1",
 						"exercises"
 					]
 				}
@@ -257,7 +248,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"prompt\": \"New exercise 4\",\r\n    \"language\": \"cpp\",\r\n    \"tags\": [\"cpp\", \"cpp-l0\", \"cpp-l1\"]\r\n}",
+					"raw": "{\r\n    \"prompt\": \"New exercise 1\",\r\n    \"language\": \"cpp\",\r\n    \"topic\": \"math operation\",\r\n    \"tags\": [\"cpp\", \"cpp-l0\", \"cpp-l1\"]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -316,6 +307,318 @@
 					],
 					"path": [
 						"exercises",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Module",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"language\": \"Python\",\r\n    \"topic\": \"math operation\",\r\n    \"resources\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/modules",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"modules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Modules",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/modules/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"modules",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Module by Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/modules/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"modules",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Module",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"language\": \"cpp\",\r\n    \"resources\": [1,2]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/modules/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"modules",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Module",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/modules/3",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"modules",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Resource",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"url\": \"coursera.com\",\r\n    \"title\": \"algos\",\r\n    \"source\": \"coursera\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/resources",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resources"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Resource",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"url\": \"www.coursera.com\",\r\n    \"title\": \"Algorithms\",\r\n    \"source\": \"coursera-web\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/resources/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resources",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Resources",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/resources",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resources"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Resources by id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/resources/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resources",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Resources by id",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/resources/2",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resources",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Courses",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/courses/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"courses",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Course by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/courses/giant-bobcats-pull",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"courses",
+						"giant-bobcats-pull"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Course by ID",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/courses/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"courses",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post Course",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"cpp\",\r\n    \"language\": \"cpp\",\r\n    \"modules\": [1, 2]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/courses/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"courses",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Course",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/courses/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"courses",
 						"1"
 					]
 				}
