@@ -1,4 +1,4 @@
-import { Sequelize } from 'sequelize';
+import { DataTypes, Sequelize } from 'sequelize';
 import { Demo } from './demo';
 import { Exercise } from './exercise';
 import { Tag } from './tag';
@@ -35,14 +35,30 @@ const sequelize = new Sequelize({
 Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
 Exercise.belongsToMany(Demo, { through: 'DemoExercises' });
 
-Demo.belongsToMany(Tag, { through: 'DemoTags' });
-Tag.belongsToMany(Demo, { through: 'DemoTags' });
+const DemoTags = sequelize.define(
+  'DemoTags',
+  {
+    ordering: DataTypes.INTEGER,
+  },
+  { timestamps: false }
+);
+
+Demo.belongsToMany(Tag, { through: DemoTags });
+Tag.belongsToMany(Demo, { through: DemoTags });
 
 Demo.belongsTo(Language);
 Language.hasMany(Demo);
 
-Exercise.belongsToMany(Tag, { through: 'ExerciseTags' });
-Tag.belongsToMany(Exercise, { through: 'ExerciseTags' });
+const ExerciseTags = sequelize.define(
+  'ExerciseTags',
+  {
+    ordering: DataTypes.INTEGER,
+  },
+  { timestamps: false }
+);
+
+Exercise.belongsToMany(Tag, { through: ExerciseTags });
+Tag.belongsToMany(Exercise, { through: ExerciseTags });
 
 Exercise.belongsTo(Language);
 Language.hasMany(Exercise);
@@ -55,4 +71,15 @@ Course.belongsTo(Language);
 Course.hasMany(Module);
 Language.hasMany(Course);
 
-export { Demo, Exercise, Tag, Language, Course, Module, Resource, sequelize };
+export {
+  Demo,
+  Exercise,
+  Tag,
+  DemoTags,
+  ExerciseTags,
+  Language,
+  Course,
+  Module,
+  Resource,
+  sequelize,
+};

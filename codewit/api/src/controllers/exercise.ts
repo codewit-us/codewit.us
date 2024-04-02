@@ -1,11 +1,17 @@
-import { Exercise, Language, Tag } from '../models';
+import { Exercise, ExerciseTags, Language, Tag } from '../models';
 
 async function getAllExercises(): Promise<Exercise[]> {
-  return await Exercise.findAll({ include: [Tag, Language] });
+  return await Exercise.findAll({
+    include: [Tag, Language],
+    order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
+  });
 }
 
 async function getExerciseById(uid: number): Promise<Exercise | null> {
-  return await Exercise.findByPk(uid, { include: [Tag, Language] });
+  return await Exercise.findByPk(uid, {
+    include: [Tag, Language],
+    order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
+  });
 }
 
 async function createExercise(
@@ -20,14 +26,12 @@ async function createExercise(
   );
 
   if (tags) {
-    const updatedTags = await Promise.all(
-      tags.map(async (tag) => {
-        const [updatedTag] = await Tag.findOrCreate({ where: { name: tag } });
-        return updatedTag;
+    await Promise.all(
+      tags.map(async (tag, idx) => {
+        const [tagInstance] = await Tag.findOrCreate({ where: { name: tag } });
+        await exercise.addTag(tagInstance, { through: { ordering: idx + 1 } });
       })
     );
-
-    await exercise.setTags(updatedTags);
   }
 
   if (language) {
@@ -37,7 +41,10 @@ async function createExercise(
     await exercise.setLanguage(newLanguage);
   }
 
-  await exercise.reload();
+  await exercise.reload({
+    include: [Tag, Language],
+    order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
+  });
 
   return exercise;
 }
@@ -49,18 +56,22 @@ async function updateExercise(
   language?: string,
   topic?: string
 ): Promise<Exercise | null> {
-  let exercise = await Exercise.findByPk(uid, { include: [Tag, Language] });
+  const exercise = await Exercise.findByPk(uid, { include: [Tag, Language] });
   if (exercise) {
     if (prompt) exercise.prompt = prompt;
     if (tags) {
-      const updatedTags = await Promise.all(
-        tags.map(async (tag) => {
-          const [updatedTag] = await Tag.findOrCreate({ where: { name: tag } });
-          return updatedTag;
+      await exercise.setTags([]);
+
+      await Promise.all(
+        tags.map(async (tag, idx) => {
+          const [tagInstance] = await Tag.findOrCreate({
+            where: { name: tag },
+          });
+          await exercise.addTag(tagInstance, {
+            through: { ordering: idx + 1 },
+          });
         })
       );
-
-      await exercise.setTags(updatedTags);
     }
 
     if (language) {
@@ -74,7 +85,11 @@ async function updateExercise(
       exercise.topic = topic;
     }
 
-    exercise = await exercise.save();
+    await exercise.save();
+    await exercise.reload({
+      include: [Tag, Language],
+      order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
+    });
   }
 
   return exercise;

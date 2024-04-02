@@ -6,17 +6,17 @@ import {
   Sequelize,
   Association,
   NonAttribute,
-  HasManyAddAssociationMixin,
-  HasManyAddAssociationsMixin,
-  HasManyCountAssociationsMixin,
-  HasManyGetAssociationsMixin,
-  HasManyHasAssociationMixin,
-  HasManyHasAssociationsMixin,
-  HasManyRemoveAssociationMixin,
-  HasManyRemoveAssociationsMixin,
-  HasManySetAssociationsMixin,
   BelongsToGetAssociationMixin,
   BelongsToSetAssociationMixin,
+  BelongsToManyAddAssociationMixin,
+  BelongsToManyAddAssociationsMixin,
+  BelongsToManyGetAssociationsMixin,
+  BelongsToManyRemoveAssociationMixin,
+  BelongsToManyRemoveAssociationsMixin,
+  BelongsToManySetAssociationsMixin,
+  BelongsToManyCountAssociationsMixin,
+  BelongsToManyHasAssociationMixin,
+  BelongsToManyHasAssociationsMixin,
 } from 'sequelize';
 import { Exercise } from './exercise';
 import { Language } from './language';
@@ -36,22 +36,25 @@ class Demo extends Model<
   declare language?: NonAttribute<Language>;
   declare tags?: NonAttribute<Tag[]>;
 
-  declare getExercises: HasManyGetAssociationsMixin<Exercise>;
-  declare addExercise: HasManyAddAssociationMixin<Exercise, number>;
-  declare addExercises: HasManyAddAssociationsMixin<Exercise, number>;
-  declare setExercises: HasManySetAssociationsMixin<Exercise, number>;
-  declare removeExercise: HasManyRemoveAssociationMixin<Exercise, number>;
-  declare removeExercises: HasManyRemoveAssociationsMixin<Exercise, number>;
-  declare hasExercise: HasManyHasAssociationMixin<Exercise, number>;
-  declare hasExercises: HasManyHasAssociationsMixin<Exercise, number>;
-  declare countExercises: HasManyCountAssociationsMixin;
+  declare getExercises: BelongsToManyGetAssociationsMixin<Exercise>;
+  declare addExercise: BelongsToManyAddAssociationMixin<Exercise, number>;
+  declare addExercises: BelongsToManyAddAssociationsMixin<Exercise, number>;
+  declare setExercises: BelongsToManySetAssociationsMixin<Exercise, number>;
+  declare removeExercise: BelongsToManyRemoveAssociationMixin<Exercise, number>;
+  declare removeExercises: BelongsToManyRemoveAssociationsMixin<
+    Exercise,
+    number
+  >;
+  declare hasExercise: BelongsToManyHasAssociationMixin<Exercise, number>;
+  declare hasExercises: BelongsToManyHasAssociationsMixin<Exercise, number>;
+  declare countExercises: BelongsToManyCountAssociationsMixin;
 
-  declare getTags: HasManyGetAssociationsMixin<Tag>;
-  declare addTag: HasManyAddAssociationMixin<Tag, number>;
-  declare addTags: HasManyAddAssociationsMixin<Tag, number>;
-  declare setTags: HasManySetAssociationsMixin<Tag, number>;
-  declare removeTag: HasManyRemoveAssociationMixin<Tag, number>;
-  declare removeTags: HasManyRemoveAssociationsMixin<Tag, number>;
+  declare getTags: BelongsToManyGetAssociationsMixin<Tag>;
+  declare addTag: BelongsToManyAddAssociationMixin<Tag, number>;
+  declare addTags: BelongsToManyAddAssociationsMixin<Tag, number>;
+  declare setTags: BelongsToManySetAssociationsMixin<Tag, number>;
+  declare removeTag: BelongsToManyRemoveAssociationMixin<Tag, number>;
+  declare removeTags: BelongsToManyRemoveAssociationsMixin<Tag, number>;
 
   declare getLanguage: BelongsToGetAssociationMixin<Language>;
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;

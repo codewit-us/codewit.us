@@ -1,11 +1,17 @@
-import { Demo, Exercise, Tag, Language, Module } from '../models';
+import { Demo, Exercise, Tag, Language, Module, DemoTags } from '../models';
 
 async function getAllDemos(): Promise<Demo[]> {
-  return await Demo.findAll({ include: [Exercise, Tag, Language] });
+  return await Demo.findAll({
+    include: [Exercise, Tag, Language],
+    order: [[Tag, DemoTags, 'ordering', 'ASC']],
+  });
 }
 
 async function getDemoById(uid: number): Promise<Demo | null> {
-  return await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
+  return await Demo.findByPk(uid, {
+    include: [Exercise, Tag, Language],
+    order: [[Tag, DemoTags, 'ordering', 'ASC']],
+  });
 }
 
 async function createDemo(
@@ -17,14 +23,12 @@ async function createDemo(
 ): Promise<Demo> {
   const demo = await Demo.create({ title, youtube_id, topic });
   if (tags) {
-    const updatedTags = await Promise.all(
-      tags.map(async (tag) => {
-        const [updatedTag] = await Tag.findOrCreate({ where: { name: tag } });
-        return updatedTag;
+    await Promise.all(
+      tags.map(async (tag, idx) => {
+        const [tagInstance] = await Tag.findOrCreate({ where: { name: tag } });
+        await demo.addTag(tagInstance, { through: { ordering: idx + 1 } });
       })
     );
-
-    await demo.setTags(updatedTags);
   }
 
   if (language) {
@@ -47,7 +51,11 @@ async function createDemo(
     );
   }
 
-  await demo.reload({ include: [Exercise, Tag, Language] });
+  await demo.reload({
+    include: [Exercise, Tag, Language],
+    order: [[Tag, DemoTags, 'ordering', 'ASC']],
+  });
+
   return demo;
 }
 
@@ -65,14 +73,16 @@ async function updateDemo(
 
   if (demo) {
     if (tags) {
-      const updatedTags = await Promise.all(
-        tags.map(async (tag) => {
-          const [updatedTag] = await Tag.findOrCreate({ where: { name: tag } });
-          return updatedTag;
+      await demo.setTags([]);
+
+      await Promise.all(
+        tags.map(async (tag, idx) => {
+          const [tagInstance] = await Tag.findOrCreate({
+            where: { name: tag },
+          });
+          await demo.addTag(tagInstance, { through: { ordering: idx + 1 } });
         })
       );
-
-      await demo.setTags(updatedTags);
     }
     if (language) {
       const [languageInstance] = await Language.findOrCreate({
@@ -87,7 +97,10 @@ async function updateDemo(
     }
 
     await demo.save();
-    await demo.reload({ include: [Exercise, Tag, Language] });
+    await demo.reload({
+      include: [Exercise, Tag, Language],
+      order: [[Tag, DemoTags, 'ordering', 'ASC']],
+    });
 
     if (topic || language) {
       if (oldLanguage && oldTopic) {
