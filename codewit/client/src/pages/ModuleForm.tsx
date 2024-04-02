@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Select, { MultiValue } from 'react-select';
 import LanguageSelect from "../components/form/LanguageSelect";
 import SubmitBtn from "../components/form/SubmitButton";
@@ -53,36 +53,36 @@ const ModuleForm = (): JSX.Element => {
     }
   }, [module.language, module.topic, demos]);  
 
-  const handleChange = useCallback((selectedOptions: MultiValue<SelectedTag>) => {
+  const handleChange = (selectedOptions: MultiValue<SelectedTag>) => {
     const resources = selectedOptions.map(option => option.value);
     setModule(prev => ({ ...prev, resources }));
-  }, []);
+  }
 
-  const handleTagSelect = useCallback((tag: SelectedTag | SelectedTag[]) => {
+  const handleTagSelect = (tag: SelectedTag | SelectedTag[]) => {
     const topic = Array.isArray(tag) ? tag[0].value : tag.value;
     setModule(prev => ({ ...prev, topic }));
-  }, []);
+  };
 
-  const handleEdit = useCallback((uid: number) => {
+  const handleEdit = (uid: number) => {
     const editModule = existingModules.find(module => module.uid === uid);
     if (editModule) {
       setModule(editModule);
     }
-  }, [existingModules]); 
+  }
   
-  const handleDelete = useCallback((uid: number) => {
+  const handleDelete = (uid: number) => {
     const updatedModules = existingModules.filter(module => module.uid !== uid);
     setExistingModules(updatedModules);
-  }, [existingModules]); 
+  }; 
   
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newModule = { ...module, uid: Date.now() };
     const existingModules = JSON.parse(localStorage.getItem('modules') || '[]');
     existingModules.push(newModule);
     localStorage.setItem('modules', JSON.stringify(existingModules));
     setModule({ language: 'cpp', topic: '', demos: [], resources: [] });
-  }, [module]); 
+  }; 
 
   return (
     <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">

@@ -37,115 +37,100 @@ const ExerciseForms = (): JSX.Element => {
         setError(true);
       }
     };
-
     fetchExercises();
   }, []);
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      const {
-        exercise,
-        selectedLanguage,
-        selectedTags,
-        editingUid,
-        isEditing,
-      } = formData;
-      if (!exercise.prompt.trim()) return;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const {
+      exercise,
+      selectedLanguage,
+      selectedTags,
+      editingUid,
+      isEditing,
+    } = formData;
+    if (!exercise.prompt.trim()) return;
 
-      const exerciseData = {
-        ...exercise,
-        tags: selectedTags.map((tag: { value: string }) => tag.value),
-        language: selectedLanguage,
-      };
+    const exerciseData = {
+      ...exercise,
+      tags: selectedTags.map((tag: { value: string }) => tag.value),
+      language: selectedLanguage,
+    };
 
-      try {
-        let response: ExerciseResponse;
-        if (isEditing && editingUid) {
-          const { data } = await axios.patch(
-            `/exercises/${editingUid}`,
-            exerciseData
-          );
-          response = data;
-        } else {
-          const { data } = await axios.post("/exercises", exerciseData);
-          response = data;
-        }
-        setExercises((prev) =>
-          isEditing
-            ? prev.map((ex) => (ex.uid === editingUid ? response : ex))
-            : [...prev, response]
+    try {
+      let response: ExerciseResponse;
+      if (isEditing && editingUid) {
+        const { data } = await axios.patch(
+          `/exercises/${editingUid}`,
+          exerciseData
         );
-        setFormData((prev) => ({
-          ...prev,
-          exercise: { prompt: "" },
-          selectedTags: [],
-          selectedLanguage: "cpp",
-          isEditing: false,
-          editingUid: -1,
-        }));
-      } catch (error) {
-        setError(true);
-        console.error("Error saving the exercise:", error);
+        response = data;
+      } else {
+        const { data } = await axios.post("/exercises", exerciseData);
+        response = data;
       }
-    },
-    [formData]
-  );
+      setExercises((prev) =>
+        isEditing
+          ? prev.map((ex) => (ex.uid === editingUid ? response : ex))
+          : [...prev, response]
+      );
+      setFormData((prev) => ({
+        ...prev,
+        exercise: { prompt: "" },
+        selectedTags: [],
+        selectedLanguage: "cpp",
+        isEditing: false,
+        editingUid: -1,
+      }));
+    } catch (error) {
+      setError(true);
+      console.error("Error saving the exercise:", error);
+    }
+  }
 
-  const handleEditorChange = useCallback((value: string | undefined) => {
+  const handleEditorChange = (value: string | undefined) => {
     setFormData((prev) => ({ ...prev, exercise: { prompt: value || "" } }));
-  }, []);
+  };
 
-  const handleEdit = useCallback(
-    (exerciseUID: number) => {
-      console.log(exerciseUID)
-      const exerciseToEdit = exercises.find((ex) => ex.uid === exerciseUID);
-      if (!exerciseToEdit) {
-        console.error("Exercise with UID not found:", exerciseUID);
-        return;
-      }
-      setFormData({
-        ...formData,
-        exercise: { prompt: exerciseToEdit.prompt },
-        isEditing: true,
-        editingUid: exerciseUID as number,
-        selectedTags: exerciseToEdit.tags.map((tag) => ({
-          label: typeof tag === "string" ? tag : tag.name,
-          value: typeof tag === "string" ? tag : tag.name,
-        })),
-        selectedLanguage:
-          typeof exerciseToEdit.language === "string"
-            ? exerciseToEdit.language
-            : exerciseToEdit.language.name,
+  const handleEdit =  (exerciseUID: number) => {
+    const exerciseToEdit = exercises.find((ex) => ex.uid === exerciseUID);
+    if (!exerciseToEdit) {
+      console.error("Exercise with UID not found:", exerciseUID);
+      return;
+    }
+    setFormData({
+      ...formData,
+      exercise: { prompt: exerciseToEdit.prompt },
+      isEditing: true,
+      editingUid: exerciseUID as number,
+      selectedTags: exerciseToEdit.tags.map((tag) => ({
+        label: typeof tag === "string" ? tag : tag.name,
+        value: typeof tag === "string" ? tag : tag.name,
+      })),
+      selectedLanguage:
+        typeof exerciseToEdit.language === "string"
+          ? exerciseToEdit.language
+          : exerciseToEdit.language.name,
       });
-    },
-    [exercises, formData]
-  );
+  }
 
-  const handleDelete = useCallback(
-    async (exerciseId: number) => {
-      try {
-        await axios.delete(`/exercises/${exerciseId}`);
-        setExercises(exercises.filter((ex) => ex.uid !== exerciseId));
-      } catch (error) {
-        console.error("Error deleting exercise:", error);
-        setError(true);
-      }
-    },
-    [exercises]
-  );
+  const handleDelete = async (exerciseId: number) => {
+    try {
+      await axios.delete(`/exercises/${exerciseId}`);
+      setExercises(exercises.filter((ex) => ex.uid !== exerciseId));
+    } catch (error) {
+      console.error("Error deleting exercise:", error);
+      setError(true);
+    }
+  }
 
-  const handleTagSelect = useCallback((tags: SelectedTag[]) => {
-    console.log(tags);
+  const handleTagSelect = (tags: SelectedTag[]) => {
     setFormData(prev => ({ ...prev, selectedTags: tags }));
-  }, []);
+  }
 
-  const handleLanguageChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
-    },
-    []
-  );
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
+  }
 
   if (error) {
     return <Error />;

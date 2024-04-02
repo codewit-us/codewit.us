@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import Select, { MultiValue } from 'react-select';
 import LanguageSelect from '../components/form/LanguageSelect';
 import InputLabel from '../components/form/InputLabel';
@@ -53,21 +53,21 @@ const CourseForm = (): JSX.Element => {
     }));
   };
 
-  const handleEdit = useCallback((uid: number) => {
+  const handleEdit = (uid: number) => {
     setIsEditing(true);
     const foundCourse = courses.find(course => course.uid === uid);
     if (foundCourse) {
       setCourse(foundCourse);
     }
-  }, [courses]);
+  }
   
-  const handleDelete = useCallback((uid: number) => {
+  const handleDelete = (uid: number) => {
     const updatedCourses = courses.filter(course => course.uid !== uid);
     setCourses(updatedCourses);
     localStorage.setItem('courses', JSON.stringify(updatedCourses));
-  }, [courses]);
+  }
   
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if(isEditing) {
       const updatedCourses = courses.map(c => c.uid === course.uid ? course : c);
@@ -84,7 +84,7 @@ const CourseForm = (): JSX.Element => {
       localStorage.setItem('courses', JSON.stringify(newCoursesArray));
       setCourse({ title: '', language: 'cpp', modules: [], uid: '' }); 
     }
-  }, [courses, course, isEditing]);
+  };
 
   return (
     <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
