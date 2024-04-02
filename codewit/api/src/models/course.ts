@@ -9,10 +9,10 @@ import {
   BelongsToSetAssociationMixin,
   HasManyGetAssociationsMixin,
   HasManySetAssociationsMixin,
+  HasManyAddAssociationMixin,
 } from 'sequelize';
 import { Module } from './module';
 import { Language } from './language';
-import { humanId } from 'human-id';
 
 class Course extends Model<
   InferAttributes<Course>,
@@ -32,6 +32,7 @@ class Course extends Model<
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
   declare setModules: HasManySetAssociationsMixin<Module, number>;
   declare getModules: HasManyGetAssociationsMixin<Module>;
+  declare addModule: HasManyAddAssociationMixin<Module, number>;
 
   static initialize(sequelize: Sequelize) {
     this.init(
@@ -39,10 +40,6 @@ class Course extends Model<
         id: {
           type: DataTypes.STRING,
           primaryKey: true,
-          defaultValue: humanId({
-            separator: '-',
-            capitalize: false,
-          }),
         },
         title: {
           type: DataTypes.STRING,
