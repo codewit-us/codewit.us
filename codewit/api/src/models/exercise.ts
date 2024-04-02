@@ -6,12 +6,12 @@ import {
   Sequelize,
   NonAttribute,
   Association,
-  HasManyAddAssociationMixin,
-  HasManyAddAssociationsMixin,
-  HasManyGetAssociationsMixin,
-  HasManyRemoveAssociationMixin,
-  HasManyRemoveAssociationsMixin,
-  HasManySetAssociationsMixin,
+  BelongsToManyAddAssociationMixin,
+  BelongsToManyAddAssociationsMixin,
+  BelongsToManyGetAssociationsMixin,
+  BelongsToManyRemoveAssociationMixin,
+  BelongsToManyRemoveAssociationsMixin,
+  BelongsToManySetAssociationsMixin,
   BelongsToGetAssociationMixin,
   BelongsToSetAssociationMixin,
 } from 'sequelize';
@@ -30,12 +30,12 @@ class Exercise extends Model<
   declare language?: NonAttribute<Language>;
   declare tags?: NonAttribute<Tag[]>;
 
-  declare getTags: HasManyGetAssociationsMixin<Tag>;
-  declare addTag: HasManyAddAssociationMixin<Tag, number>;
-  declare addTags: HasManyAddAssociationsMixin<Tag, number>;
-  declare setTags: HasManySetAssociationsMixin<Tag, number>;
-  declare removeTag: HasManyRemoveAssociationMixin<Tag, number>;
-  declare removeTags: HasManyRemoveAssociationsMixin<Tag, number>;
+  declare getTags: BelongsToManyGetAssociationsMixin<Tag>;
+  declare addTag: BelongsToManyAddAssociationMixin<Tag, number>;
+  declare addTags: BelongsToManyAddAssociationsMixin<Tag, number>;
+  declare setTags: BelongsToManySetAssociationsMixin<Tag, number>;
+  declare removeTag: BelongsToManyRemoveAssociationMixin<Tag, number>;
+  declare removeTags: BelongsToManyRemoveAssociationsMixin<Tag, number>;
 
   declare getLanguage: BelongsToGetAssociationMixin<Language>;
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
