@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 import SubmitBtn from '../components/form/SubmitButton';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
@@ -36,20 +36,20 @@ const ResourceForm = (): JSX.Element => {
     });
   };
 
-  const handleEdit = useCallback((uid: number) => {
+  const handleEdit = (uid: number) => {
     const editResource = existingResources.find((res) => res.uid === uid);
     if (editResource) {
       setIsEditing(true);
       setResource(editResource);
     }
-  }, [existingResources]); 
+  } 
   
-  const handleDelete = useCallback((uid: number) => {
+  const handleDelete = (uid: number) => {
     const updatedResources = existingResources.filter((res) => res.uid !== uid);
     setExistingResources(updatedResources);
-  }, [existingResources]);
+  }
   
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isEditing) {
       const updatedResources = existingResources.map((res) => res.uid === resource.uid ? resource : res);
@@ -65,7 +65,7 @@ const ResourceForm = (): JSX.Element => {
       console.log('submitted', newResource);
       setResource({ url: '', title: '', source: '', likes: 1, uid: -1 });
     }
-  }, [existingResources, resource, isEditing]);
+  }
 
   return (
     <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
