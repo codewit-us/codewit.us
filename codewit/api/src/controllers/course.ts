@@ -1,3 +1,9 @@
+import {
+  uniqueNamesGenerator,
+  adjectives,
+  colors,
+  animals,
+} from 'unique-names-generator';
 import { Course, Language, Module } from '../models';
 
 async function createCourse(
@@ -6,6 +12,12 @@ async function createCourse(
   modules?: number[]
 ): Promise<Course> {
   const course = await Course.create({
+    id: uniqueNamesGenerator({
+      dictionaries: [adjectives, colors, animals],
+      separator: '-',
+      // use the current count of courses as the seed to ensure uniqueness
+      seed: (await Course.count()) + 1,
+    }),
     title,
   });
 
@@ -18,7 +30,10 @@ async function createCourse(
   }
 
   if (modules) {
-    await course.setModules(modules);
+    // Loop through the modules array and associate each module individually to preserve ordering
+    for (const moduleId of modules) {
+      await course.addModule(moduleId);
+    }
   }
 
   await course.reload({ include: [Language, Module] });
@@ -51,7 +66,13 @@ async function updateCourse(
   }
 
   if (modules) {
-    await course.setModules(modules);
+    // Remove all existing module associations
+    await course.setModules([]);
+
+    // Loop through the modules array and associate each module individually to preserve ordering
+    for (const moduleId of modules) {
+      await course.addModule(moduleId);
+    }
   }
 
   await course.save();
