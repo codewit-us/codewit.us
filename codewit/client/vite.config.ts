@@ -18,6 +18,18 @@ export default defineConfig({
       '/exercises': {
         target: 'http://app:3000',
         changeOrigin: true,
+      },
+      '/modules': {
+        target: 'http://app:3000',
+        changeOrigin: true,
+      },
+      '/resources': {
+        target: 'http://app:3000',
+        changeOrigin: true,
+      },
+      '/courses': {
+        target: 'http://app:3000',
+        changeOrigin: true,
       }
     }
   },
