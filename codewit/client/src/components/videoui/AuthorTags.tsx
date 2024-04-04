@@ -14,8 +14,8 @@ const AuthorTags = ({tags}: AuthorTagsProps): JSX.Element => (
     </span>
     { tags 
       ?
-        (tags as string[]).map((tag: string, index: number) => (
-          <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag}</span>
+        (tags as Tag[]).map((tag: Tag, index: number) => (
+          <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag.name}</span>
         ))
       :
         ''

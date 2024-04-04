@@ -43,7 +43,6 @@ const ModuleForm = (): JSX.Element => {
 
     axios.get('/modules').then(res => {
       setExistingModules(res.data);
-      console.log(res.data);
     }).catch(err => {
       console.error(err);
       setError(true);
@@ -66,6 +65,9 @@ const ModuleForm = (): JSX.Element => {
     if (editModule) {
       setIsEditing(true);
       setModule(editModule);
+      // get an array of select resources id
+      const options = editModule.resources.map(resource => (resource.uid))
+      setModule(prev => ({ ...prev, resources: options }));
     }
   }
   
@@ -78,7 +80,15 @@ const ModuleForm = (): JSX.Element => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isEditing) {
-      const response = await axios.patch(`/modules/${module.uid}`, module);
+      const resources = module.resources ? module.resources : module.resources.map(resource => (resource.uid));
+      const topic = module.topic;
+      const language = module.language.name ? module.language.name : module.language;
+      const editedModule = {
+        language: language,
+        topic: topic,
+        resources: resources
+      }
+      const response = await axios.patch(`/modules/${module.uid}`, editedModule);
       const updatedModules = existingModules.map(mod => mod.uid === module.uid ? response.data : mod);
       setExistingModules(updatedModules);
       setModule({ language: 'cpp', topic: '', resources: [] });

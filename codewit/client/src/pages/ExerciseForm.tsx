@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Error from "../components/error/Error";
 import MDEditor from "@uiw/react-markdown-editor";
@@ -13,6 +13,7 @@ interface FormData {
   isEditing: boolean;
   editingUid: number;
   selectedLanguage: string;
+  topic: string;
   selectedTags: {label: string, value: string}[];
 }
 
@@ -21,6 +22,7 @@ const ExerciseForms = (): JSX.Element => {
     exercise: { prompt: "" },
     isEditing: false,
     editingUid: -1,
+    topic: '',
     selectedLanguage: "cpp",
     selectedTags: [],
   });
@@ -31,6 +33,7 @@ const ExerciseForms = (): JSX.Element => {
     const fetchExercises = async () => {
       try {
         const { data } = await axios.get("/exercises");
+        console.log(data);
         setExercises(data as ExerciseResponse[]);
       } catch (error) {
         console.error("Error fetching exercises:", error);
@@ -43,18 +46,15 @@ const ExerciseForms = (): JSX.Element => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const {
-      exercise,
-      selectedLanguage,
-      selectedTags,
       editingUid,
       isEditing,
     } = formData;
-    if (!exercise.prompt.trim()) return;
 
     const exerciseData = {
-      ...exercise,
-      tags: selectedTags.map((tag: { value: string }) => tag.value),
-      language: selectedLanguage,
+      prompt: formData.exercise.prompt.trim(),
+      topic: formData.topic,
+      tags: formData.selectedTags.map((tag: { value: string }) => tag.value),
+      language: formData.selectedLanguage,
     };
 
     try {
@@ -78,6 +78,7 @@ const ExerciseForms = (): JSX.Element => {
         ...prev,
         exercise: { prompt: "" },
         selectedTags: [],
+        topic: '',  
         selectedLanguage: "cpp",
         isEditing: false,
         editingUid: -1,
@@ -102,6 +103,7 @@ const ExerciseForms = (): JSX.Element => {
       ...formData,
       exercise: { prompt: exerciseToEdit.prompt },
       isEditing: true,
+      topic: exerciseToEdit.topic,
       editingUid: exerciseUID as number,
       selectedTags: exerciseToEdit.tags.map((tag) => ({
         label: typeof tag === "string" ? tag : tag.name,
@@ -127,6 +129,11 @@ const ExerciseForms = (): JSX.Element => {
   const handleTagSelect = (tags: SelectedTag[]) => {
     setFormData(prev => ({ ...prev, selectedTags: tags }));
   }
+
+  const handleTopicSelect = (topics: {label: string, value: string}[] | {label: string, value: string}) => {
+    const topic = Array.isArray(topics) ? topics[0].value : topics.value;
+    setFormData(prev => ({ ...prev, topic: topic }));
+  };
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
@@ -161,6 +168,11 @@ const ExerciseForms = (): JSX.Element => {
             initialLanguage={formData.selectedLanguage}
           />
         </div>
+        <TagSelect 
+            selectedTags={[{value: formData.topic, label: formData.topic}]} 
+            setSelectedTags={handleTopicSelect}
+            isMulti={false}
+        />
         <SubmitBtn
           disabled={
             formData.exercise.prompt === "" ||

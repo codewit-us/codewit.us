@@ -36,6 +36,7 @@ const Read = (): JSX.Element => {
         setLoading(true);
         const res = await axios.get(`/demos/${uid}`);
         setDemo(res.data as DemoResponse);
+        console.log(res.data.tags)
         setLoading(false);
       } catch (err) {
         setError(true);

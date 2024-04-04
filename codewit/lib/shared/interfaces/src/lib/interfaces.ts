@@ -7,6 +7,7 @@ interface Exercise {
 
 interface ExerciseResponse {
   uid: number;
+  topic: string;
   prompt: string;
   updatedAt: string;
   createdAt: string;
