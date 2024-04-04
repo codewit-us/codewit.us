@@ -2,8 +2,8 @@ type ExistingTableProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   items: any[];
   name?: string
-  onEdit: (uid: number) => void;
-  onDelete: (uid: number) => void;
+  onEdit: (uid: number | string) => void;
+  onDelete: (uid: number | string) => void;
 };
 
 const ExistingTable = ({ items, name = "Exercises", onEdit, onDelete }: ExistingTableProps): JSX.Element => (
@@ -27,12 +27,12 @@ const ExistingTable = ({ items, name = "Exercises", onEdit, onDelete }: Existing
                 </div>
               </td>
               <td className="px-6 py-4 text-right">
-                <button onClick={() => onEdit(ex.uid)} className="text-blue-400 hover:text-blue-600">
+                <button onClick={() => onEdit(ex.uid ? ex.uid : ex.id)} className="text-blue-400 hover:text-blue-600">
                   Edit
                 </button>
               </td>
               <td className="px-6 py-4 text-right">
-                <button onClick={() => onDelete(ex.uid)} className="text-red-400 hover:text-red-600">
+                <button onClick={() => onDelete(ex.uid ? ex.uid : ex.id)} className="text-red-400 hover:text-red-600">
                   Delete
                 </button>
               </td>
