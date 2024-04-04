@@ -37,6 +37,7 @@ const CreateDemo = (): JSX.Element => {
     const demoState: DemoResponse = location.state?.demo || {
       youtube_id: '',
       title: '',
+      topic: '',
       tags: [],
       language: 'cpp'
     };
@@ -57,6 +58,7 @@ const CreateDemo = (): JSX.Element => {
         response = await axios.patch(`/demos/${demo.uid}`, {
           title: demo.title,
           youtube_id: demo.youtube_id,
+          topic: demo.topic,
           tags: tagNames,
           language: language
         });
@@ -64,6 +66,7 @@ const CreateDemo = (): JSX.Element => {
         response = await axios.post('/demos', {
           title: demo.title,
           youtube_id: demo.youtube_id,
+          topic: demo.topic,
           tags: demo.tags,
           language: demo.language
         });
@@ -97,6 +100,11 @@ const CreateDemo = (): JSX.Element => {
       ...prevDemo,
       tags: tags.map(tag => tag.value) 
     }));
+  };
+
+  const handleTopicSelect = (topics: {label: string, value: string}[] | {label: string, value: string}) => {
+    const topic = Array.isArray(topics) ? topics[0].value : topics.value;
+    setDemo(prev => ({ ...prev, topic: topic }));
   };
 
   const updateExercises = (selectedIds: string[]) => {
@@ -145,6 +153,11 @@ const CreateDemo = (): JSX.Element => {
             initialLanguage={typeof demo.language === 'string' ? demo.language : demo.language.name}
           />
         </div>
+        <TagSelect 
+            selectedTags={[{value: demo.topic, label: demo.topic}]} 
+            setSelectedTags={handleTopicSelect}
+            isMulti={false}
+        />
         <SubmitBtn 
           disabled={demo.title === '' || demo.youtube_id === '' || demo.tags.length === 0}
           text={isEditing ? 'Confirm Edit' : 'Create'} 

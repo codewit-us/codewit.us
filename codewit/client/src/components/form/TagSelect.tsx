@@ -45,7 +45,7 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
   return (
     <div className="flex flex-col justify-center items-start w-full text-white">
       <label htmlFor="tag-select" className="block text-sm mb-2 font-medium text-white">
-        {isMulti ? 'Select/Create Tags' : 'Select Tag'}
+        {isMulti ? 'Select/Create Tags' : 'Select Topic'}
       </label>
       {isMulti
         ?

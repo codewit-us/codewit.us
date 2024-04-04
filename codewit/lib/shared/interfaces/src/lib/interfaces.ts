@@ -47,6 +47,7 @@ interface DemoResponse {
   likes: number;
   uid: number;
   title: string;
+  topic: string;
   youtube_id: string;
   updatedAt: string;
   createdAt: string;
