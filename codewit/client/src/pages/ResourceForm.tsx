@@ -1,7 +1,9 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import SubmitBtn from '../components/form/SubmitButton';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
+import Error from '../components/error/Error';
+import axios from 'axios';
 import ExistingTable from '../components/form/ExistingTable';
 
 interface Resource {
@@ -12,7 +14,6 @@ interface Resource {
   uid?: number
 }
 
-
 const ResourceForm = (): JSX.Element => {
   const [resource, setResource] = useState<Resource>({
     url: '',
@@ -20,12 +21,22 @@ const ResourceForm = (): JSX.Element => {
     source: '',
     likes: 1,
   });
+
+  const [error, setError] = useState<boolean>(false);
   const [existingResources, setExistingResources] = useState<Resource[]>([]); 
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
-    setExistingResources(storedResources);
+    const fetchResources = async () => {
+      try {
+        const res = await axios.get(`/resources`);
+        setExistingResources(res.data);
+      } catch (err) {
+        console.error("Error fetching resources: ", err);
+        setError(true);
+      }
+    };
+    fetchResources();
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,27 +55,31 @@ const ResourceForm = (): JSX.Element => {
     }
   } 
   
-  const handleDelete = (uid: number) => {
+  const handleDelete = async (uid: number) => {
+    await axios.delete(`/resources/${uid}`);
     const updatedResources = existingResources.filter((res) => res.uid !== uid);
     setExistingResources(updatedResources);
   }
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isEditing) {
-      const updatedResources = existingResources.map((res) => res.uid === resource.uid ? resource : res);
-      localStorage.setItem('resources', JSON.stringify(updatedResources));
+      // axios patch request /resources/:id
+      const response = await axios.patch(`/resources/${resource.uid}`, resource);
+      const updatedResources = existingResources.map((res) => res.uid === resource.uid ? response.data : res);
       setExistingResources(updatedResources);
-      setResource({ url: '', title: '', source: '', likes: 1, uid: -1 });
+      setResource({ url: '', title: '', source: '', likes: 1 });
       setIsEditing(false);
     } else {
-      const newResource = { ...resource, uid: Date.now() };
-      const updatedResources = [...existingResources, newResource];
-      localStorage.setItem('resources', JSON.stringify(updatedResources));
-      setExistingResources(updatedResources);
-      console.log('submitted', newResource);
-      setResource({ url: '', title: '', source: '', likes: 1, uid: -1 });
+      // axios post request /resources
+      const response = await axios.post('/resources', resource);
+      setExistingResources([...existingResources, response.data]);
+      setResource({ url: '', title: '', source: '', likes: 1 });
     }
+  }
+
+  if (error) {
+    return <Error />;
   }
 
   return (
