@@ -2,10 +2,10 @@ import {
   Association,
   BelongsToSetAssociationMixin,
   DataTypes,
-  HasManyAddAssociationMixin,
-  HasManyGetAssociationsMixin,
-  HasManyRemoveAssociationMixin,
-  HasManySetAssociationsMixin,
+  BelongsToManyAddAssociationMixin,
+  BelongsToManyGetAssociationsMixin,
+  BelongsToManyRemoveAssociationMixin,
+  BelongsToManySetAssociationsMixin,
   InferAttributes,
   InferCreationAttributes,
   Model,
@@ -34,14 +34,14 @@ class Module extends Model<
   };
 
   // module has many demos mixins
-  declare setDemos: HasManySetAssociationsMixin<Demo, number>;
-  declare getDemos: HasManyGetAssociationsMixin<Demo>;
-  declare addDemo: HasManyAddAssociationMixin<Demo, number>;
-  declare removeDemo: HasManyRemoveAssociationMixin<Demo, number>;
+  declare setDemos: BelongsToManySetAssociationsMixin<Demo, number>;
+  declare getDemos: BelongsToManyGetAssociationsMixin<Demo>;
+  declare addDemo: BelongsToManyAddAssociationMixin<Demo, number>;
+  declare removeDemo: BelongsToManyRemoveAssociationMixin<Demo, number>;
 
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
-  declare setResources: HasManySetAssociationsMixin<Resource, number>;
-  declare getResources: HasManyGetAssociationsMixin<Resource>;
+  declare setResources: BelongsToManySetAssociationsMixin<Resource, number>;
+  declare getResources: BelongsToManyGetAssociationsMixin<Resource>;
 
   static initialize(sequelize: Sequelize) {
     this.init(

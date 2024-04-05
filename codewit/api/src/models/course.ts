@@ -7,9 +7,9 @@ import {
   NonAttribute,
   Association,
   BelongsToSetAssociationMixin,
-  HasManyGetAssociationsMixin,
-  HasManySetAssociationsMixin,
-  HasManyAddAssociationMixin,
+  BelongsToManyAddAssociationMixin,
+  BelongsToManyGetAssociationsMixin,
+  BelongsToManySetAssociationsMixin,
 } from 'sequelize';
 import { Module } from './module';
 import { Language } from './language';
@@ -30,9 +30,9 @@ class Course extends Model<
   };
 
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
-  declare setModules: HasManySetAssociationsMixin<Module, number>;
-  declare getModules: HasManyGetAssociationsMixin<Module>;
-  declare addModule: HasManyAddAssociationMixin<Module, number>;
+  declare setModules: BelongsToManySetAssociationsMixin<Module, number>;
+  declare getModules: BelongsToManyGetAssociationsMixin<Module>;
+  declare addModule: BelongsToManyAddAssociationMixin<Module, number>;
 
   static initialize(sequelize: Sequelize) {
     this.init(

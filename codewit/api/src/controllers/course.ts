@@ -4,7 +4,7 @@ import {
   colors,
   animals,
 } from 'unique-names-generator';
-import { Course, Language, Module } from '../models';
+import { Course, CourseModules, Language, Module } from '../models';
 
 async function createCourse(
   title: string,
@@ -30,13 +30,17 @@ async function createCourse(
   }
 
   if (modules) {
-    // Loop through the modules array and associate each module individually to preserve ordering
-    for (const moduleId of modules) {
-      await course.addModule(moduleId);
-    }
+    await Promise.all(
+      modules.map(async (moduleId, idx) => {
+        await course.addModule(moduleId, { through: { ordering: idx + 1 } });
+      })
+    );
   }
 
-  await course.reload({ include: [Language, Module] });
+  await course.reload({
+    include: [Language, Module],
+    order: [[Module, CourseModules, 'ordering', 'ASC']],
+  });
 
   return course;
 }
@@ -69,14 +73,18 @@ async function updateCourse(
     // Remove all existing module associations
     await course.setModules([]);
 
-    // Loop through the modules array and associate each module individually to preserve ordering
-    for (const moduleId of modules) {
-      await course.addModule(moduleId);
-    }
+    await Promise.all(
+      modules.map(async (moduleId, idx) => {
+        await course.addModule(moduleId, { through: { ordering: idx + 1 } });
+      })
+    );
   }
 
   await course.save();
-  await course.reload({ include: [Language, Module] });
+  await course.reload({
+    include: [Language, Module],
+    order: [[Module, CourseModules, 'ordering', 'ASC']],
+  });
 
   return course;
 }
@@ -96,6 +104,7 @@ async function deleteCourse(uid: string): Promise<Course | null> {
 async function getCourse(uid: string): Promise<Course | null> {
   const course = await Course.findByPk(uid, {
     include: [Language, Module],
+    order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
 
   return course;
@@ -104,6 +113,7 @@ async function getCourse(uid: string): Promise<Course | null> {
 async function getAllCourses(): Promise<Course[]> {
   const courses = await Course.findAll({
     include: [Language, Module],
+    order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
 
   return courses;
