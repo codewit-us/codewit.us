@@ -331,7 +331,7 @@ describe('Testing Resource Form Functionality', () => {
 
 });
 
-describe.only('Testing Module Form Functionality', () => {
+describe('Testing Module Form Functionality', () => {
   
   beforeEach(() => { cy.visit('/create/module') });
 
