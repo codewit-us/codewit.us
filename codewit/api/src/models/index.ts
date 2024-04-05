@@ -63,13 +63,28 @@ Tag.belongsToMany(Exercise, { through: ExerciseTags });
 Exercise.belongsTo(Language);
 Language.hasMany(Exercise);
 
-Module.hasMany(Demo);
-Module.hasMany(Resource);
+Demo.belongsToMany(Module, { through: 'ModuleDemos' });
+Module.belongsToMany(Demo, { through: 'ModuleDemos' });
+
+Resource.belongsToMany(Module, { through: 'ModuleResources' });
+Module.belongsToMany(Resource, { through: 'ModuleResources' });
+
 Module.belongsTo(Language);
+Language.hasMany(Module);
 
 Course.belongsTo(Language);
-Course.hasMany(Module);
 Language.hasMany(Course);
+
+const CourseModules = sequelize.define(
+  'CourseModules',
+  {
+    ordering: DataTypes.INTEGER,
+  },
+  { timestamps: false }
+);
+
+Course.belongsToMany(Module, { through: CourseModules });
+Module.belongsToMany(Course, { through: CourseModules });
 
 export {
   Demo,
@@ -80,6 +95,7 @@ export {
   Language,
   Course,
   Module,
+  CourseModules,
   Resource,
   sequelize,
 };
