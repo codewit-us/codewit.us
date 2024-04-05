@@ -1,4 +1,12 @@
-import { Demo, Exercise, Tag, Language, Module, DemoTags } from '../models';
+import {
+  Demo,
+  Exercise,
+  Tag,
+  Language,
+  Module,
+  DemoTags,
+  sequelize,
+} from '../models';
 
 async function getAllDemos(): Promise<Demo[]> {
   return await Demo.findAll({
@@ -21,42 +29,56 @@ async function createDemo(
   tags?: string[],
   language?: string
 ): Promise<Demo> {
-  const demo = await Demo.create({ title, youtube_id, topic });
-  if (tags) {
-    await Promise.all(
-      tags.map(async (tag, idx) => {
-        const [tagInstance] = await Tag.findOrCreate({ where: { name: tag } });
-        await demo.addTag(tagInstance, { through: { ordering: idx + 1 } });
-      })
+  return await sequelize.transaction(async (transaction) => {
+    const demo = await Demo.create(
+      { title, youtube_id, topic },
+      { transaction }
     );
-  }
+    if (tags) {
+      await Promise.all(
+        tags.map(async (tag, idx) => {
+          const [tagInstance] = await Tag.findOrCreate({
+            where: { name: tag },
+            transaction,
+          });
+          await demo.addTag(tagInstance, {
+            through: { ordering: idx + 1 },
+            transaction,
+          });
+        })
+      );
+    }
 
-  if (language) {
-    const [languageInstance] = await Language.findOrCreate({
-      where: { name: language },
+    if (language) {
+      const [languageInstance] = await Language.findOrCreate({
+        where: { name: language },
+        transaction,
+      });
+      await demo.setLanguage(languageInstance, { transaction });
+
+      const modules = await Module.findAll({
+        where: {
+          topic,
+        },
+        include: [{ model: Language, where: { uid: languageInstance.uid } }],
+        transaction,
+      });
+
+      await Promise.all(
+        modules.map(async (module) => {
+          await module.addDemo(demo, { transaction });
+        })
+      );
+    }
+
+    await demo.reload({
+      include: [Exercise, Tag, Language],
+      order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      transaction,
     });
-    await demo.setLanguage(languageInstance);
 
-    const modules = await Module.findAll({
-      where: {
-        topic,
-      },
-      include: [{ model: Language, where: { uid: languageInstance.uid } }],
-    });
-
-    await Promise.all(
-      modules.map(async (module) => {
-        await module.addDemo(demo);
-      })
-    );
-  }
-
-  await demo.reload({
-    include: [Exercise, Tag, Language],
-    order: [[Tag, DemoTags, 'ordering', 'ASC']],
+    return demo;
   });
-
-  return demo;
 }
 
 async function updateDemo(
@@ -67,73 +89,86 @@ async function updateDemo(
   language?: string,
   topic?: string
 ): Promise<Demo | null> {
-  const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
-  const oldTopic = demo.topic;
-  const oldLanguage = demo.language;
-
-  if (demo) {
-    if (tags) {
-      await demo.setTags([]);
-
-      await Promise.all(
-        tags.map(async (tag, idx) => {
-          const [tagInstance] = await Tag.findOrCreate({
-            where: { name: tag },
-          });
-          await demo.addTag(tagInstance, { through: { ordering: idx + 1 } });
-        })
-      );
-    }
-    if (language) {
-      const [languageInstance] = await Language.findOrCreate({
-        where: { name: language },
-      });
-      await demo.setLanguage(languageInstance);
-    }
-    if (title) demo.title = title;
-    if (youtube_id) demo.youtube_id = youtube_id;
-    if (topic) {
-      demo.topic = topic;
-    }
-
-    await demo.save();
-    await demo.reload({
+  return await sequelize.transaction(async (transaction) => {
+    const demo = await Demo.findByPk(uid, {
       include: [Exercise, Tag, Language],
-      order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      transaction,
     });
+    const oldTopic = demo.topic;
+    const oldLanguage = demo.language;
 
-    if (topic || language) {
-      if (oldLanguage && oldTopic) {
-        const oldmodules = await Module.findAll({
-          where: {
-            topic: oldTopic,
-          },
-          include: [{ model: Language, where: { uid: oldLanguage.uid } }],
-        });
+    if (demo) {
+      if (tags) {
+        await demo.setTags([], { transaction });
 
-        Promise.all(
-          oldmodules.map(async (module) => {
-            await module.removeDemo(demo.uid);
+        await Promise.all(
+          tags.map(async (tag, idx) => {
+            const [tagInstance] = await Tag.findOrCreate({
+              where: { name: tag },
+              transaction,
+            });
+            await demo.addTag(tagInstance, {
+              through: { ordering: idx + 1 },
+              transaction,
+            });
           })
         );
       }
+      if (language) {
+        const [languageInstance] = await Language.findOrCreate({
+          where: { name: language },
+          transaction,
+        });
+        await demo.setLanguage(languageInstance, { transaction });
+      }
+      if (title) demo.title = title;
+      if (youtube_id) demo.youtube_id = youtube_id;
+      if (topic) {
+        demo.topic = topic;
+      }
 
-      const modules = await Module.findAll({
-        where: {
-          topic: demo.topic,
-        },
-        include: [{ model: Language, where: { uid: demo.language.uid } }],
+      await demo.save({ transaction });
+      await demo.reload({
+        include: [Exercise, Tag, Language],
+        order: [[Tag, DemoTags, 'ordering', 'ASC']],
+        transaction,
       });
 
-      Promise.all(
-        modules.map(async (module) => {
-          await module.addDemo(demo);
-        })
-      );
-    }
-  }
+      if (topic || language) {
+        if (oldLanguage && oldTopic) {
+          const oldmodules = await Module.findAll({
+            where: {
+              topic: oldTopic,
+            },
+            include: [{ model: Language, where: { uid: oldLanguage.uid } }],
+            transaction,
+          });
 
-  return demo;
+          Promise.all(
+            oldmodules.map(async (module) => {
+              await module.removeDemo(demo.uid, { transaction });
+            })
+          );
+        }
+
+        const modules = await Module.findAll({
+          where: {
+            topic: demo.topic,
+          },
+          include: [{ model: Language, where: { uid: demo.language.uid } }],
+          transaction,
+        });
+
+        Promise.all(
+          modules.map(async (module) => {
+            await module.addDemo(demo, { transaction });
+          })
+        );
+      }
+    }
+
+    return demo;
+  });
 }
 
 async function addExercisesToDemo(
