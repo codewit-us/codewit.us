@@ -4,45 +4,64 @@ import {
   colors,
   animals,
 } from 'unique-names-generator';
-import { Course, CourseModules, Language, Module } from '../models';
+import { Course, CourseModules, Language, Module, sequelize } from '../models';
 
 async function createCourse(
   title: string,
   language?: string,
   modules?: number[]
 ): Promise<Course> {
-  const course = await Course.create({
-    id: uniqueNamesGenerator({
-      dictionaries: [adjectives, colors, animals],
-      separator: '-',
-      // use the current count of courses as the seed to ensure uniqueness
-      seed: (await Course.count()) + 1,
-    }),
-    title,
-  });
-
-  if (language) {
-    const [lang] = await Language.findOrCreate({
-      where: { name: language },
+  return sequelize.transaction(async (transaction) => {
+    // acquire SHARE ROW EXCLUSIVE lock, This lock allows concurrent reads
+    // and locks the table against concurrent writes to avoid race conditions
+    // when reading the current count of courses to create a unique course id
+    // refer: https://www.postgresql.org/docs/16/explicit-locking.html
+    await sequelize.query('LOCK TABLE "courses" IN SHARE ROW EXCLUSIVE MODE', {
+      transaction,
     });
 
-    await course.setLanguage(lang);
-  }
-
-  if (modules) {
-    await Promise.all(
-      modules.map(async (moduleId, idx) => {
-        await course.addModule(moduleId, { through: { ordering: idx + 1 } });
-      })
+    const course_count = await Course.count({ transaction });
+    const course = await Course.create(
+      {
+        id: uniqueNamesGenerator({
+          dictionaries: [adjectives, colors, animals],
+          separator: '-',
+          // use the current count of courses as the seed to ensure uniqueness
+          seed: course_count + 1,
+        }),
+        title,
+      },
+      { transaction }
     );
-  }
 
-  await course.reload({
-    include: [Language, Module],
-    order: [[Module, CourseModules, 'ordering', 'ASC']],
+    if (language) {
+      const [lang] = await Language.findOrCreate({
+        where: { name: language },
+        transaction,
+      });
+
+      await course.setLanguage(lang, { transaction });
+    }
+
+    if (modules) {
+      await Promise.all(
+        modules.map(async (moduleId, idx) => {
+          await course.addModule(moduleId, {
+            through: { ordering: idx + 1 },
+            transaction,
+          });
+        })
+      );
+    }
+
+    await course.reload({
+      include: [Language, Module],
+      order: [[Module, CourseModules, 'ordering', 'ASC']],
+      transaction,
+    });
+
+    return course;
   });
-
-  return course;
 }
 
 async function updateCourse(
@@ -51,42 +70,49 @@ async function updateCourse(
   language?: string,
   modules?: number[]
 ): Promise<Course | null> {
-  const course = await Course.findByPk(uid);
+  return sequelize.transaction(async (transaction) => {
+    const course = await Course.findByPk(uid, { transaction });
 
-  if (!course) {
-    return null;
-  }
+    if (!course) {
+      return null;
+    }
 
-  if (title) {
-    course.title = title;
-  }
+    if (title) {
+      course.title = title;
+    }
 
-  if (language) {
-    const [lang] = await Language.findOrCreate({
-      where: { name: language },
+    if (language) {
+      const [lang] = await Language.findOrCreate({
+        where: { name: language },
+        transaction,
+      });
+
+      await course.setLanguage(lang, { transaction });
+    }
+
+    if (modules) {
+      // Remove all existing module associations
+      await course.setModules([], { transaction });
+
+      await Promise.all(
+        modules.map(async (moduleId, idx) => {
+          await course.addModule(moduleId, {
+            through: { ordering: idx + 1 },
+            transaction,
+          });
+        })
+      );
+    }
+
+    await course.save({ transaction });
+    await course.reload({
+      include: [Language, Module],
+      order: [[Module, CourseModules, 'ordering', 'ASC']],
+      transaction,
     });
 
-    await course.setLanguage(lang);
-  }
-
-  if (modules) {
-    // Remove all existing module associations
-    await course.setModules([]);
-
-    await Promise.all(
-      modules.map(async (moduleId, idx) => {
-        await course.addModule(moduleId, { through: { ordering: idx + 1 } });
-      })
-    );
-  }
-
-  await course.save();
-  await course.reload({
-    include: [Language, Module],
-    order: [[Module, CourseModules, 'ordering', 'ASC']],
+    return course;
   });
-
-  return course;
 }
 
 async function deleteCourse(uid: string): Promise<Course | null> {
