@@ -159,7 +159,7 @@ const CreateDemo = (): JSX.Element => {
             isMulti={false}
         />
         <SubmitBtn 
-          disabled={demo.title === '' || demo.youtube_id === '' || demo.tags.length === 0}
+          disabled={demo.title === '' || demo.youtube_id === '' || demo.tags.length === 0 || demo.topic === ''}
           text={isEditing ? 'Confirm Edit' : 'Create'} 
         />
       </form>
