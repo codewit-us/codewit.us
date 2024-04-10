@@ -5,16 +5,17 @@ import TextInput from '../components/form/TextInput';
 import Error from '../components/error/Error';
 import axios from 'axios';
 import ExistingTable from '../components/form/ExistingTable';
-
-interface Resource {
-  url: string;
-  title: string;
-  source: string;
-  likes: number;
-  uid?: number
-}
+import { Resource } from '@codewit/interfaces';
+import useFetchResources from '../hooks/modulehooks/useFetchResources';
+import useDeleteResource from '../hooks/modulehooks/useDeleteResources';
+import usePostResource from '../hooks/modulehooks/usePostResources';
+import usePatchResource from '../hooks/modulehooks/usePatchResources';
 
 const ResourceForm = (): JSX.Element => {
+  const { fetchResources } = useFetchResources();
+  const { deleteResource } = useDeleteResource();
+  const { postResource } = usePostResource();
+  const { patchResource } = usePatchResource();
   const [resource, setResource] = useState<Resource>({
     url: '',
     title: '',
@@ -27,16 +28,16 @@ const ResourceForm = (): JSX.Element => {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const fetchResources = async () => {
+    const fResource = async () => {
       try {
-        const res = await axios.get(`/resources`);
-        setExistingResources(res.data);
+        const res = await fetchResources();
+        setExistingResources(res);
       } catch (err) {
         console.error("Error fetching resources: ", err);
         setError(true);
       }
     };
-    fetchResources();
+    fResource();
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,25 +57,35 @@ const ResourceForm = (): JSX.Element => {
   } 
   
   const handleDelete = async (uid: number) => {
-    await axios.delete(`/resources/${uid}`);
-    const updatedResources = existingResources.filter((res) => res.uid !== uid);
-    setExistingResources(updatedResources);
+    try {
+      await deleteResource(uid);
+      const updatedResources = existingResources.filter((res) => res.uid !== uid);
+      setExistingResources(updatedResources);    
+    } catch (error) {
+      setError(true);
+      console.error('Error deleting resource: ', error);
+    }
   }
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isEditing) {
-      // axios patch request /resources/:id
-      const response = await axios.patch(`/resources/${resource.uid}`, resource);
-      const updatedResources = existingResources.map((res) => res.uid === resource.uid ? response.data : res);
-      setExistingResources(updatedResources);
-      setResource({ url: '', title: '', source: '', likes: 1 });
-      setIsEditing(false);
-    } else {
-      // axios post request /resources
-      const response = await axios.post('/resources', resource);
-      setExistingResources([...existingResources, response.data]);
-      setResource({ url: '', title: '', source: '', likes: 1 });
+    try {
+      if (isEditing) {
+        // axios patch request /resources/:id
+        const response = await patchResource(resource, resource.uid ?? -1);
+        const updatedResources = existingResources.map((res) => res.uid === resource.uid ? response : res);
+        setExistingResources(updatedResources);
+        setResource({ url: '', title: '', source: '', likes: 1 });
+        setIsEditing(false);
+      } else {
+        // axios post request /resources
+        const response = await postResource(resource);
+        setExistingResources([...existingResources, response]);
+        setResource({ url: '', title: '', source: '', likes: 1 });
+      }
+    } catch (err) {
+      console.error("Error submitting resource: ", err);
+      setError(true);
     }
   }
 

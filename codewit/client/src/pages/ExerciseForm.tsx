@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Error from "../components/error/Error";
 import MDEditor from "@uiw/react-markdown-editor";
 import { ExerciseResponse, SelectedTag } from "@codewit/interfaces";

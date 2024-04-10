@@ -58,6 +58,14 @@ interface DemoResponse {
   languageUid: string;
 }
 
+interface Resource {
+  url: string;
+  title: string;
+  source: string;
+  likes: number;
+  uid?: number
+}
+
 // Interface to Youtube API Response
 
 interface YouTubeSearchResult {
@@ -98,5 +106,6 @@ export type {
   DemoPostResponse,
   DemoResponse,
   YouTubeSearchResult, 
-  Thumbnail 
+  Thumbnail,
+  Resource
 };
