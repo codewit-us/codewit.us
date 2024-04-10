@@ -26,4 +26,4 @@ const useDeleteDemo = (onSuccess: (demoUid: number) => void): UseDeleteDemosRetu
   return { deleteDemo, isDeleting, error };
 };
 
-export { useDeleteDemo };
+export default useDeleteDemo;

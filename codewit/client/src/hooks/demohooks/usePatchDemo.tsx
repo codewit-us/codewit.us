@@ -15,4 +15,4 @@ const usePatchDemo = () => {
   return { patchDemo }; 
 };
 
-export { usePatchDemo };
+export default usePatchDemo;

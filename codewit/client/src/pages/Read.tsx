@@ -13,7 +13,7 @@ import VideoPlayer from '../components/videoui/VideoPlayer';
 import VideoHeader from '../components/videoui/VideoHeader';
 import AuthorTags from '../components/videoui/AuthorTags';
 import RelatedDemos from '../components/videoui/RelatedDemos';
-import { useFetchSingleDemo } from '../hooks/demohooks/useFetchSingleDemo';
+import useFetchSingleDemo from '../hooks/demohooks/useFetchSingleDemo';
 
 const Read = (): JSX.Element => {
   const [isMdScreen, setIsMdScreen] = useState<boolean>(window.innerWidth >= 768);

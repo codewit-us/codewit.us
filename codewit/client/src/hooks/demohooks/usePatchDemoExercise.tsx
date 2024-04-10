@@ -14,4 +14,4 @@ const usePatchDemoExercise = () => {
   return { patchDemoExercise }; 
 };
 
-export { usePatchDemoExercise };
+export default usePatchDemoExercise;

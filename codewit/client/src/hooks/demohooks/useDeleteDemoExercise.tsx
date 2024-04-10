@@ -16,6 +16,6 @@ const useDeleteDemoExercise = () => {
   return { deleteDemoExercise }; 
 };
 
-export { useDeleteDemoExercise };
+export default useDeleteDemoExercise;
 
  

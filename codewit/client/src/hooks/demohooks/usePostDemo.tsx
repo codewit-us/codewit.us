@@ -15,4 +15,4 @@ const usePostDemo = () => {
   return { postDemo }; 
 };
 
-export { usePostDemo };
+export default usePostDemo;

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { useFetchDemos } from '../hooks/demohooks/useFetchDemos';
-import { useDeleteDemo } from '../hooks/demohooks/useDeleteDemo';
+import useFetchDemos from '../hooks/demohooks/useFetchDemos';
+import useDeleteDemo from '../hooks/demohooks/useDeleteDemo';
 import Loading from '../components/loading/LoadingPage';
 import Error from '../components/error/Error';
 import Demo from '../components/demos/Demos';

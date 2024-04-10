@@ -24,4 +24,4 @@ const useFetchDemos = () => {
   return { demos, loading, error, setDemos };
 };
 
-export { useFetchDemos };
+export default useFetchDemos;

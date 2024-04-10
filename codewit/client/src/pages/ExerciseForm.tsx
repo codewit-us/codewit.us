@@ -7,6 +7,10 @@ import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
 import SubmitBtn from "../components/form/SubmitButton";
 import ExistingTable from "../components/form/ExistingTable";
+import useFetchExercises from "../hooks/exercisehooks/useFetchExercises";
+import usePostExercise from "../hooks/exercisehooks/usePostExercise";
+import usePatchExercises from "../hooks/exercisehooks/usePatchExercises";
+import useDeleteExercise from "../hooks/exercisehooks/useDeleteExercise";
 
 interface FormData {
   exercise: { prompt: string };
@@ -18,6 +22,10 @@ interface FormData {
 }
 
 const ExerciseForms = (): JSX.Element => {
+  const { fetchExercises } = useFetchExercises();
+  const { postExercise } = usePostExercise();
+  const { patchExercises } = usePatchExercises();
+  const { deleteExercise } = useDeleteExercise();
   const [formData, setFormData] = useState<FormData>({
     exercise: { prompt: "" },
     isEditing: false,
@@ -30,17 +38,16 @@ const ExerciseForms = (): JSX.Element => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const fetchExercises = async () => {
+    const fExercises = async () => {
       try {
-        const { data } = await axios.get("/exercises");
-        console.log(data);
-        setExercises(data as ExerciseResponse[]);
+        const data  = await fetchExercises();
+        setExercises(data as unknown as ExerciseResponse[]);
       } catch (error) {
         console.error("Error fetching exercises:", error);
         setError(true);
       }
     };
-    fetchExercises();
+    fExercises();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -60,14 +67,9 @@ const ExerciseForms = (): JSX.Element => {
     try {
       let response: ExerciseResponse;
       if (isEditing && editingUid) {
-        const { data } = await axios.patch(
-          `/exercises/${editingUid}`,
-          exerciseData
-        );
-        response = data;
+        response = await patchExercises(exerciseData, editingUid);
       } else {
-        const { data } = await axios.post("/exercises", exerciseData);
-        response = data;
+        response = await postExercise(exerciseData);
       }
       setExercises((prev) =>
         isEditing
@@ -118,7 +120,7 @@ const ExerciseForms = (): JSX.Element => {
 
   const handleDelete = async (exerciseId: number) => {
     try {
-      await axios.delete(`/exercises/${exerciseId}`);
+      await deleteExercise(exerciseId);
       setExercises(exercises.filter((ex) => ex.uid !== exerciseId));
     } catch (error) {
       console.error("Error deleting exercise:", error);

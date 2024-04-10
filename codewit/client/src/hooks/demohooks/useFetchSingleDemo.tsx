@@ -33,4 +33,4 @@ const useFetchSingleDemo = (uid: string): UseFetchSingleDemoReturn => {
   return { demo, loading, error };
 };
 
-export { useFetchSingleDemo };
+export default useFetchSingleDemo;
