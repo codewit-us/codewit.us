@@ -13,13 +13,12 @@ import VideoPlayer from '../components/videoui/VideoPlayer';
 import VideoHeader from '../components/videoui/VideoHeader';
 import AuthorTags from '../components/videoui/AuthorTags';
 import RelatedDemos from '../components/videoui/RelatedDemos';
+import { useFetchSingleDemo } from '../hooks/demohooks/useFetchSingleDemo';
 
 const Read = (): JSX.Element => {
-  const [demo, setDemo] = useState<DemoResponse>();
-  const [error, setError] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
   const [isMdScreen, setIsMdScreen] = useState<boolean>(window.innerWidth >= 768);
   const { uid } = useParams<{ uid: string }>();
+  const { demo, loading, error } = useFetchSingleDemo(uid!);
 
   useEffect(() => {
     const handleResize = () => {
@@ -30,20 +29,6 @@ const Read = (): JSX.Element => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const fetchVideo = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`/demos/${uid}`);
-        setDemo(res.data as DemoResponse);
-        console.log(res.data.tags)
-        setLoading(false);
-      } catch (err) {
-        setError(true);
-      }  
-    }
-    fetchVideo();  
-  }, [uid]);
 
   const likeVideo = async (uid: number) => {
     try {

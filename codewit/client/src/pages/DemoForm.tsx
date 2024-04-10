@@ -10,8 +10,16 @@ import LanguageSelect from '../components/form/LanguageSelect';
 import SubmitBtn from '../components/form/SubmitButton';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
-
+import { usePostDemo } from '../hooks/demohooks/usePostDemo';
+import { usePatchDemo } from '../hooks/demohooks/usePatchDemo';
+import { usePatchDemoExercise } from '../hooks/demohooks/usePatchDemoExercise';
+import { useDeleteDemoExercise } from '../hooks/demohooks/useDeleteDemoExercise';
+ 
 const CreateDemo = (): JSX.Element => {
+  const { postDemo } = usePostDemo();
+  const { patchDemo } = usePatchDemo();
+  const { patchDemoExercise } = usePatchDemoExercise();
+  const { deleteDemoExercise } = useDeleteDemoExercise();
   const location = useLocation();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -49,38 +57,39 @@ const CreateDemo = (): JSX.Element => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
       let response;
+      const demoTemplate = {
+        title: demo.title,
+        youtube_id: demo.youtube_id,
+        topic: demo.topic,
+      };
       if (isEditing) {
         const tagNames = demo.tags.map(tag => typeof tag === 'string' ? tag : tag.name);
         const language = typeof demo.language === 'string' ? demo.language : demo.language.name;
-        response = await axios.patch(`/demos/${demo.uid}`, {
-          title: demo.title,
-          youtube_id: demo.youtube_id,
-          topic: demo.topic,
+        response = await patchDemo({
+          ...demoTemplate,
           tags: tagNames,
           language: language
-        });
+        }, demo.uid);
       } else {
-        response = await axios.post('/demos', {
-          title: demo.title,
-          youtube_id: demo.youtube_id,
-          topic: demo.topic,
+        response = await postDemo({
+          ...demoTemplate,
           tags: demo.tags,
           language: demo.language
         });
       }
-      const uid = response.data.uid
-      await axios.patch(`/demos/${uid}/exercises`, {
-        exercises: selectedExercises,
-      });
-      navigate('/'); 
+      if(response) {
+        await patchDemoExercise({
+          exercises: selectedExercises
+        }, response.uid,);
+        navigate('/'); 
+      } 
     } catch (error) {
       setError(true);
-      console.error('Error saving the demo:', error);
+      console.error('Error processing the form:', error);
     }
-  };
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -107,14 +116,15 @@ const CreateDemo = (): JSX.Element => {
     setDemo(prev => ({ ...prev, topic: topic }));
   };
 
-  const updateExercises = (selectedIds: string[]) => {
-    const exerciseToBeDeleted = selectedExercises.filter(exercise => !selectedIds.includes(exercise));
+  const updateExercises = async (selectedIds: string[]) => {
+    const exercises = selectedExercises.filter(exercise => !selectedIds.includes(exercise));
     if(isEditing && selectedIds.length < selectedExercises.length) {
-      axios.delete(`/demos/${demo.uid}/exercises`, {
-        data: {
-          exercises: exerciseToBeDeleted
-        }
-      })
+      try {
+        await deleteDemoExercise({exercises: exercises}, demo.uid);
+      } catch (error) {
+        setError(true);
+        console.error('Error deleting exercises:', error);
+      }
     }
     setSelectedExercises(selectedIds);
   };
@@ -137,11 +147,12 @@ const CreateDemo = (): JSX.Element => {
           onSelectVideo={handleVideoSelect}
           selectedVideoId={demo.youtube_id}
         />
-
+        
         <ExerciseSelect 
           onSelectExercises={updateExercises} 
           initialExercises={selectedExercises} 
         />
+
         <div className = "flex flex-row w-full gap-3">
           <TagSelect 
             selectedTags={selectedTags} 
