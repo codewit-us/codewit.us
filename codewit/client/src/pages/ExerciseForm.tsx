@@ -6,10 +6,12 @@ import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
 import SubmitBtn from "../components/form/SubmitButton";
 import ExistingTable from "../components/form/ExistingTable";
-import useFetchExercises from "../hooks/exercisehooks/useFetchExercises";
-import usePostExercise from "../hooks/exercisehooks/usePostExercise";
-import usePatchExercises from "../hooks/exercisehooks/usePatchExercises";
-import useDeleteExercise from "../hooks/exercisehooks/useDeleteExercise";
+import {
+  usePostExercise,
+  usePatchExercises,
+  useFetchExercises,
+  useDeleteExercise
+} from "../hooks/exercisehooks/useExerciseHooks";
 
 interface FormData {
   exercise: { prompt: string };

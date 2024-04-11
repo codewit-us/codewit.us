@@ -10,11 +10,14 @@ import LanguageSelect from '../components/form/LanguageSelect';
 import SubmitBtn from '../components/form/SubmitButton';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
-import usePostDemo from '../hooks/demohooks/usePostDemo';
-import usePatchDemo from '../hooks/demohooks/usePatchDemo';
-import usePatchDemoExercise from '../hooks/demohooks/usePatchDemoExercise';
-import useDeleteDemoExercise from '../hooks/demohooks/useDeleteDemoExercise';
  
+import {
+  usePatchDemo,
+  usePatchDemoExercise,
+  usePostDemo,
+  useDeleteDemoExercise
+} from '../hooks/demohooks/useDemoHooks';
+
 const CreateDemo = (): JSX.Element => {
   const { postDemo } = usePostDemo();
   const { patchDemo } = usePatchDemo();

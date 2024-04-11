@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import useFetchDemos from '../hooks/demohooks/useFetchDemos';
-import useDeleteDemo from '../hooks/demohooks/useDeleteDemo';
 import Loading from '../components/loading/LoadingPage';
 import Error from '../components/error/Error';
 import Demo from '../components/demos/Demos';
 import { PlusCircleIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
+
+import {
+  useFetchDemos,
+  useDeleteDemo
+} from '../hooks/demohooks/useDemoHooks';
 
 const Home = (): JSX.Element => {
   const { demos, loading, error: fetchError, setDemos } = useFetchDemos();

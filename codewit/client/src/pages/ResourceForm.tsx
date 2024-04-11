@@ -3,13 +3,14 @@ import SubmitBtn from '../components/form/SubmitButton';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
 import Error from '../components/error/Error';
-import axios from 'axios';
 import ExistingTable from '../components/form/ExistingTable';
 import { Resource } from '@codewit/interfaces';
-import useFetchResources from '../hooks/modulehooks/useFetchResources';
-import useDeleteResource from '../hooks/modulehooks/useDeleteResources';
-import usePostResource from '../hooks/modulehooks/usePostResources';
-import usePatchResource from '../hooks/modulehooks/usePatchResources';
+import {
+  usePostResource,
+  usePatchResource,
+  useFetchResources,
+  useDeleteResource
+} from '../hooks/resourcehooks/useResourceHooks';
 
 const ResourceForm = (): JSX.Element => {
   const { fetchResources } = useFetchResources();
