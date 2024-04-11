@@ -9,13 +9,8 @@ import Error from '../components/error/Error';
 import { SelectedTag } from '@codewit/interfaces';
 import ExistingTable from '../components/form/ExistingTable';
 import axios from 'axios';
+import { Course } from '@codewit/interfaces';
 
-interface Course {
-  title: string;
-  language: string;
-  modules: string[];
-  id?: string | number;
-}
 
 const CourseForm = (): JSX.Element => {
   const [course, setCourse] = useState<Course>({

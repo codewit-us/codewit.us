@@ -66,6 +66,22 @@ interface Resource {
   uid?: number
 }
 
+interface Course {
+  title: string;
+  language: string;
+  modules: string[];
+  id?: string | number;
+}
+
+interface Module {
+  language: string;
+  topic: string;
+  demos?: DemoResponse[];
+  resources: string[]; 
+  uid?: number;
+}
+
+
 // Interface to Youtube API Response
 
 interface YouTubeSearchResult {
@@ -107,5 +123,7 @@ export type {
   DemoResponse,
   YouTubeSearchResult, 
   Thumbnail,
-  Resource
+  Resource,
+  Course,
+  Module
 };

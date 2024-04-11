@@ -6,48 +6,47 @@ import TopicSelect from "../components/form/TagSelect";
 import axios from 'axios';
 import { SelectStyles } from '../utils/styles';
 import Error from '../components/error/Error';
-import { DemoResponse, SelectedTag } from '@codewit/interfaces';
+import { SelectedTag } from '@codewit/interfaces';
 import ExistingTable from '../components/form/ExistingTable';
-
-interface ModuleState {
-  language: string;
-  topic: string;
-  demos?: DemoResponse[];
-  resources: string[]; 
-  uid?: number;
-}
-
+import { Module } from '@codewit/interfaces';
+import { useFetchResources } from '../hooks/resourcehooks/useResourceHooks';
+import { usePostModule, useFetchModules, useDeleteModule, usePatchModule } from '../hooks/modulehooks/useModuleHooks';
 const ModuleForm = (): JSX.Element => {
-  const [module, setModule] = useState<ModuleState>({
+  const { fetchResources } = useFetchResources();
+  const { fetchModules } = useFetchModules();
+  const { deleteModule } = useDeleteModule();
+  const { patchModule } = usePatchModule();
+  const { postModule } = usePostModule();
+  const [module, setModule] = useState<Module>({
     language: 'cpp',
     topic: '',
     resources: []
   });
-  const [existingModules, setExistingModules] = useState<ModuleState[]>([module]);
+  const [existingModules, setExistingModules] = useState<Module[]>([module]);
   const [isEditing, setIsEditing] = useState(false);
   const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
+    const fetchItems = async () => {
+      try {
 
-    axios.get('/resources').then(res => {
-      const options = res.data.map((resource: any) => ({
-        value: resource.uid, 
-        label: resource.title 
-      }));
-      setResourceOptions(options);
-    }).catch(err => {
-      console.error(err);
-      setError(true);
-    })
+        const resResources = await fetchResources()
+        const options = resResources.map((resource: any) => ({
+          value: resource.uid,
+          label: resource.title
+        }));
+        setResourceOptions(options);
 
-    axios.get('/modules').then(res => {
-      setExistingModules(res.data);
-    }).catch(err => {
-      console.error(err);
-      setError(true);
-    })
+        const resModules = await fetchModules();
+        setExistingModules(resModules);
 
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      }
+    }
+    fetchItems();
   }, []);
 
   const handleChange = (selectedOptions: MultiValue<SelectedTag>) => {
@@ -71,10 +70,15 @@ const ModuleForm = (): JSX.Element => {
     }
   }
   
-  const handleDelete = (uid: number) => {
-    axios.delete(`/modules/${uid}`);
-    const updatedModules = existingModules.filter(module => module.uid !== uid);
-    setExistingModules(updatedModules);
+  const handleDelete = async (uid: number) => {
+    try {
+      await deleteModule(uid);
+      const updatedModules = existingModules.filter(module => module.uid !== uid);
+      setExistingModules(updatedModules);
+    } catch (err) {
+      console.error('Error removing module', err);
+      setError(true);
+    }
   }; 
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -88,14 +92,14 @@ const ModuleForm = (): JSX.Element => {
         topic: topic,
         resources: resources
       }
-      const response = await axios.patch(`/modules/${module.uid}`, editedModule);
-      const updatedModules = existingModules.map(mod => mod.uid === module.uid ? response.data : mod);
+      const res = await patchModule(editedModule, module.uid ?? -1);
+      const updatedModules = existingModules.map(mod => mod.uid === module.uid ? res : mod);
       setExistingModules(updatedModules);
       setModule({ language: 'cpp', topic: '', resources: [] });
       setIsEditing(false);
     } else {
-      const response = await axios.post('/modules', module);
-      setExistingModules([...existingModules, response.data]);
+      const response = await postModule(module);
+      setExistingModules([...existingModules, response]);
     }
     setModule({ language: 'cpp', topic: '', resources: [] });
   }; 
