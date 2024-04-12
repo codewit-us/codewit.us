@@ -56,3 +56,10 @@ const useDeleteModule = () => {
 
   return { deleteModule };
 };
+
+export { 
+  usePostModule, 
+  usePatchModule, 
+  useFetchModules, 
+  useDeleteModule 
+};

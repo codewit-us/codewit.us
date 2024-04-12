@@ -8,11 +8,22 @@ import { SelectStyles } from '../utils/styles';
 import Error from '../components/error/Error';
 import { SelectedTag } from '@codewit/interfaces';
 import ExistingTable from '../components/form/ExistingTable';
-import axios from 'axios';
 import { Course } from '@codewit/interfaces';
-
+import { 
+  usePostCourse, 
+  usePatchCourse, 
+  useFetchCourses, 
+  useDeleteCourse  
+} from '../hooks/coursehooks/useCourseHook';
+import { useFetchModules } from '../hooks/modulehooks/useModuleHooks';
 
 const CourseForm = (): JSX.Element => {
+  const { fetchModules } = useFetchModules();
+  const { fetchCourses } = useFetchCourses();
+  const { deleteCourse } = useDeleteCourse();
+  const { patchCourse } = usePatchCourse();
+  const { postCourse } = usePostCourse();
+
   const [course, setCourse] = useState<Course>({
     title: '',
     language: 'cpp',
@@ -26,24 +37,23 @@ const CourseForm = (): JSX.Element => {
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    axios.get('/modules').then(res => {
-      const options: SelectedTag[] = res.data.map((module: any) => ({
-        value: module.uid, 
-        label: `Module ${module.uid}` 
-      }));
-      setModuleOptions(options);
-    }).catch(err => {
-      console.error(err);
-      setError(true);
-    })
+    const fetchItems = async () => {
+      try {
+        const resModules = await fetchModules();
+        const options = resModules.map((module: any) => ({
+          value: module.uid,
+          label: module.uid
+        }));
+        setModuleOptions(options);
+        const resCourses = await fetchCourses();
+        setCourses(resCourses);
 
-    axios.get('/courses').then(res => {
-      setCourses(res.data);
-    }).catch(err => {
-      console.error(err);
-      setError(true);
-    })
-
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      }
+    }
+    fetchItems();
   }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -66,7 +76,6 @@ const CourseForm = (): JSX.Element => {
     const foundCourse = courses.find(course => course.id === id);
     if (foundCourse) {
       const arrayOfModuleIds = foundCourse.modules.map(module => (module.uid));
-      console.log(arrayOfModuleIds)
       const courseToEdit = {
         title: foundCourse.title,
         language: foundCourse.language.name,
@@ -77,26 +86,33 @@ const CourseForm = (): JSX.Element => {
     }
   }
   
-  const handleDelete = (id: string | number) => {
-    axios.delete(`/courses/${id}`);
-    const updatedCourses = courses.filter(course => course.id !== id);
-    setCourses(updatedCourses);
+  const handleDelete = async (id: string | number) => {
+    try {
+      await deleteCourse(id);
+      const updatedCourses = courses.filter(course => course.id !== id);
+      setCourses(updatedCourses);
+    } catch (err) {
+      console.error("Failed to delete course", err)
+    }
   }
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if(isEditing) {
-      console.log(course)
-      axios.patch(`/courses/${course.id}`, course);
-      const updatedCourses = courses.map(c => c.id === course.id ? course : c);
-      setCourses(updatedCourses);
-      setIsEditing(false);
-      setCourse({ title: '', language: 'cpp', modules: [], id: '' });
-    } else {
-      axios.post('/courses', course).then(res => {
-        setCourses(prev => [...prev, res.data]);
-      });
-      setCourse({ title: '', language: 'cpp', modules: [], id: '' }); 
+    try {
+      if(isEditing) {
+        await patchCourse(course, course.id ?? -1);
+        const updatedCourses = courses.map(c => c.id === course.id ? course : c);
+        setCourses(updatedCourses);
+        setIsEditing(false);
+        setCourse({ title: '', language: 'cpp', modules: [], id: '' });
+      } else {
+        const res = await postCourse(course);
+        setCourses(prev => [...prev, res]);
+        setCourse({ title: '', language: 'cpp', modules: [], id: '' }); 
+      }
+    } catch (err) {
+      console.error('Error creating/updating course', err);
+      setError(true);
     }
   };
 
