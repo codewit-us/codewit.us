@@ -131,3 +131,6 @@ dist
 
 # vscode files
 .vscode/
+
+# Google oauth secrets
+client_secret*.json

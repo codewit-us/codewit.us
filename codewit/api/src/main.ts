@@ -5,20 +5,24 @@ import exerciseRouter from './routes/exercise';
 import moduleRouter from './routes/module';
 import resourceRouter from './routes/resource';
 import courseRouter from './routes/course';
-
-const host = process.env.API_HOST ?? 'localhost';
-const port = process.env.API_PORT ? Number(process.env.API_PORT) : 3000;
+import authrouter from './routes/auth';
+import passport from 'passport';
+import { HOST, PORT } from './secrets';
+import './auth/passport';
 
 const app = express();
+
+app.use(passport.initialize());
 app.use(express.json());
 
+app.use('/oauth2', authrouter);
 app.use('/demos', demoRouter);
 app.use('/exercises', exerciseRouter);
 app.use('/modules', moduleRouter);
 app.use('/resources', resourceRouter);
 app.use('/courses', courseRouter);
 
-app.listen(port, host, async () => {
+app.listen(PORT, HOST, async () => {
   await sequelize.sync({ force: false });
-  console.log(`[ ready ] http://${host}:${port}`);
+  console.log(`[ ready ] http://${HOST}:${PORT}`);
 });
