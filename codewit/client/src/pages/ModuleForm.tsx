@@ -22,7 +22,7 @@ const ModuleForm = (): JSX.Element => {
     topic: '',
     resources: []
   });
-  const [existingModules, setExistingModules] = useState<Module[]>([module]);
+  const [existingModules, setExistingModules] = useState<Module[]>();
   const [isEditing, setIsEditing] = useState(false);
   const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);
   const [error, setError] = useState<boolean>(false);
@@ -30,6 +30,8 @@ const ModuleForm = (): JSX.Element => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
+        const resModules = await fetchModules();
+        setExistingModules(resModules);
 
         const resResources = await fetchResources()
         const options = resResources.map((resource: any) => ({
@@ -38,8 +40,6 @@ const ModuleForm = (): JSX.Element => {
         }));
         setResourceOptions(options);
 
-        const resModules = await fetchModules();
-        setExistingModules(resModules);
 
       } catch (err) {
         console.error(err);
@@ -65,7 +65,7 @@ const ModuleForm = (): JSX.Element => {
       setIsEditing(true);
       setModule(editModule);
       // get an array of select resources id
-      const options = editModule.resources.map(resource => (resource.uid))
+      const options = editModule.resources.map(resource => (resource.uid));
       setModule(prev => ({ ...prev, resources: options }));
     }
   }
@@ -92,7 +92,7 @@ const ModuleForm = (): JSX.Element => {
         topic: topic,
         resources: resources
       }
-      const res = await patchModule(editedModule, module.uid ?? -1);
+      const res = await patchModule(editedModule, module.uid as number);
       const updatedModules = existingModules.map(mod => mod.uid === module.uid ? res : mod);
       setExistingModules(updatedModules);
       setModule({ language: 'cpp', topic: '', resources: [] });

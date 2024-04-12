@@ -331,7 +331,7 @@ describe('Testing Resource Form Functionality', () => {
 
 });
 
-describe('Testing Module Form Functionality', () => {
+describe.only('Testing Module Form Functionality', () => {
   
   beforeEach(() => { cy.visit('/create/module') });
 
@@ -381,7 +381,7 @@ describe('Testing Module Form Functionality', () => {
   });
 
   it('create and submit another module', () => {
-    getTopicSelect().click().type('file io{enter}');
+    getTopicSelect().click().type('console io{enter}');
     getSubmitButton().click();
     // see if edit button exists, since modules dont' have a title
     cy.contains('Edit').should('be.visible');
@@ -393,7 +393,7 @@ describe('Testing Module Form Functionality', () => {
   it('delete module', () => {
     cy.get('[id="delete-0"]').click();
     cy.get('[id="edit-0"]').click();
-    cy.contains('Another Resource Title').should('be.visible');
+    cy.contains('New Edited Name Exercise').should('be.visible');
   });
 
 });
