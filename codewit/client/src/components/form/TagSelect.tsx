@@ -26,10 +26,11 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
   useEffect(() => {
     const extractTags = (obj: TopicNode): Tag[] => {
       return Object.keys(obj).flatMap(key => {
+        const currentTag = { value: key, label: key };
         if (typeof obj[key] === 'object' && Object.keys(obj[key]).length) {
-          return extractTags(obj[key]);
+          return [currentTag, ...extractTags(obj[key])];
         }
-        return { value: key, label: key };
+        return currentTag;
       });
     };
 
