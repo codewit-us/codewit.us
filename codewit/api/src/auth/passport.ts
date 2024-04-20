@@ -9,6 +9,7 @@ import {
   GOOGLE_CLIENT_SECRET,
   GOOGLE_REDIRECT_URL,
 } from '../secrets';
+import { User } from '../models';
 
 passport.use(
   new GoogleStrategy(
@@ -24,11 +25,28 @@ passport.use(
       profile: Profile,
       done: VerifyCallback
     ) => {
-      console.log(accessToken);
-      console.log(refreshToken);
-      console.log(profile);
+      const user = await User.findOne({ where: { googleId: profile.id } });
 
-      done(null, undefined);
+      if (!user) {
+        const newUser = await User.create({
+          username: profile.displayName,
+          email: profile.emails?.[0].value,
+          googleId: profile.id,
+        });
+
+        done(null, newUser);
+      } else {
+        done(null, user);
+      }
     }
   )
 );
+
+passport.serializeUser((user, done) => {
+  done(null, user.uid);
+});
+
+passport.deserializeUser(async (id: number, done) => {
+  const user = await User.findByPk(id);
+  done(null, user);
+});

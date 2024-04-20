@@ -6,6 +6,7 @@ import { Language } from './language';
 import { Course } from './course';
 import { Module } from './module';
 import { Resource } from './resource';
+import { User } from './user';
 
 if (
   !process.env.DB_HOST ||
@@ -28,8 +29,8 @@ const sequelize = new Sequelize({
   dialect: 'postgres',
 });
 
-[Demo, Exercise, Tag, Language, Resource, Module, Course].forEach((model) =>
-  model.initialize(sequelize)
+[Demo, Exercise, Tag, Language, Resource, Module, Course, User].forEach(
+  (model) => model.initialize(sequelize)
 );
 
 Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
@@ -97,5 +98,6 @@ export {
   Module,
   CourseModules,
   Resource,
+  User,
   sequelize,
 };
