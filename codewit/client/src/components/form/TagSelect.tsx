@@ -55,7 +55,6 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
           isMulti
           value={selectedTags}
           onChange={handleChange}
-          options={tags}
           className="text-sm bg-blue text-white border-none w-full rounded-lg"
           styles={SelectStyles}      
         />     
