@@ -30,7 +30,7 @@ export function App() {
           <Route path="course" element={<CourseForm />} />
         </Route>
 
-        <Route path="*" element={<NotFound />} />
+        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
     </div>
   );

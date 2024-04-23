@@ -30,6 +30,10 @@ export default defineConfig({
       '/courses': {
         target: 'http://app:3000',
         changeOrigin: true,
+      },
+      '/oauth2': {
+        target: 'http://app:3000',
+        changeOrigin: true,
       }
     }
   },
