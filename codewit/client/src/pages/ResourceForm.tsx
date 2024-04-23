@@ -1,31 +1,44 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 import SubmitBtn from '../components/form/SubmitButton';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
+import Error from '../components/error/Error';
 import ExistingTable from '../components/form/ExistingTable';
-
-interface Resource {
-  url: string;
-  title: string;
-  source: string;
-  likes: number;
-  uid?: number
-}
-
+import { Resource } from '@codewit/interfaces';
+import {
+  usePostResource,
+  usePatchResource,
+  useFetchResources,
+  useDeleteResource
+} from '../hooks/resourcehooks/useResourceHooks';
 
 const ResourceForm = (): JSX.Element => {
+  const { fetchResources } = useFetchResources();
+  const { deleteResource } = useDeleteResource();
+  const { postResource } = usePostResource();
+  const { patchResource } = usePatchResource();
   const [resource, setResource] = useState<Resource>({
     url: '',
     title: '',
     source: '',
     likes: 1,
   });
+
+  const [error, setError] = useState<boolean>(false);
   const [existingResources, setExistingResources] = useState<Resource[]>([]); 
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
-    setExistingResources(storedResources);
+    const fResource = async () => {
+      try {
+        const res = await fetchResources();
+        setExistingResources(res);
+      } catch (err) {
+        console.error("Error fetching resources: ", err);
+        setError(true);
+      }
+    };
+    fResource();
   }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,36 +49,50 @@ const ResourceForm = (): JSX.Element => {
     });
   };
 
-  const handleEdit = useCallback((uid: number) => {
+  const handleEdit = (uid: number) => {
     const editResource = existingResources.find((res) => res.uid === uid);
     if (editResource) {
       setIsEditing(true);
       setResource(editResource);
     }
-  }, [existingResources]); 
+  } 
   
-  const handleDelete = useCallback((uid: number) => {
-    const updatedResources = existingResources.filter((res) => res.uid !== uid);
-    setExistingResources(updatedResources);
-  }, [existingResources]);
-  
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isEditing) {
-      const updatedResources = existingResources.map((res) => res.uid === resource.uid ? resource : res);
-      localStorage.setItem('resources', JSON.stringify(updatedResources));
-      setExistingResources(updatedResources);
-      setResource({ url: '', title: '', source: '', likes: 1, uid: -1 });
-      setIsEditing(false);
-    } else {
-      const newResource = { ...resource, uid: Date.now() };
-      const updatedResources = [...existingResources, newResource];
-      localStorage.setItem('resources', JSON.stringify(updatedResources));
-      setExistingResources(updatedResources);
-      console.log('submitted', newResource);
-      setResource({ url: '', title: '', source: '', likes: 1, uid: -1 });
+  const handleDelete = async (uid: number) => {
+    try {
+      await deleteResource(uid);
+      const updatedResources = existingResources.filter((res) => res.uid !== uid);
+      setExistingResources(updatedResources);    
+    } catch (error) {
+      setError(true);
+      console.error('Error deleting resource: ', error);
     }
-  }, [existingResources, resource, isEditing]);
+  }
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      if (isEditing) {
+        // axios patch request /resources/:id
+        const response = await patchResource(resource, resource.uid ?? -1);
+        const updatedResources = existingResources.map((res) => res.uid === resource.uid ? response : res);
+        setExistingResources(updatedResources);
+        setResource({ url: '', title: '', source: '', likes: 1 });
+        setIsEditing(false);
+      } else {
+        // axios post request /resources
+        const response = await postResource(resource);
+        setExistingResources([...existingResources, response]);
+        setResource({ url: '', title: '', source: '', likes: 1 });
+      }
+    } catch (err) {
+      console.error("Error submitting resource: ", err);
+      setError(true);
+    }
+  }
+
+  if (error) {
+    return <Error />;
+  }
 
   return (
     <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">

@@ -7,6 +7,7 @@ interface Exercise {
 
 interface ExerciseResponse {
   uid: number;
+  topic: string;
   prompt: string;
   updatedAt: string;
   createdAt: string;
@@ -47,6 +48,7 @@ interface DemoResponse {
   likes: number;
   uid: number;
   title: string;
+  topic: string;
   youtube_id: string;
   updatedAt: string;
   createdAt: string;
@@ -55,6 +57,30 @@ interface DemoResponse {
   language: string | {name:string;};
   languageUid: string;
 }
+
+interface Resource {
+  url: string;
+  title: string;
+  source: string;
+  likes: number;
+  uid?: number
+}
+
+interface Course {
+  title: string;
+  language: string;
+  modules: string[];
+  id?: string | number;
+}
+
+interface Module {
+  language: string;
+  topic: string;
+  demos?: DemoResponse[];
+  resources: string[]; 
+  uid?: number;
+}
+
 
 // Interface to Youtube API Response
 
@@ -96,5 +122,8 @@ export type {
   DemoPostResponse,
   DemoResponse,
   YouTubeSearchResult, 
-  Thumbnail 
+  Thumbnail,
+  Resource,
+  Course,
+  Module
 };

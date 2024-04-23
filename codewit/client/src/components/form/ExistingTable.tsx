@@ -27,12 +27,12 @@ const ExistingTable = ({ items, name = "Exercises", onEdit, onDelete }: Existing
                 </div>
               </td>
               <td className="px-6 py-4 text-right">
-                <button onClick={() => onEdit(ex.uid)} className="text-blue-400 hover:text-blue-600">
+                <button id={`edit-${index}`} onClick={() => onEdit(ex.uid ? ex.uid : ex.id)} className="text-blue-400 hover:text-blue-600">
                   Edit
                 </button>
               </td>
               <td className="px-6 py-4 text-right">
-                <button onClick={() => onDelete(ex.uid)} className="text-red-400 hover:text-red-600">
+                <button id={`delete-${index}`} onClick={() => onDelete(ex.uid ? ex.uid : ex.id)} className="text-red-400 hover:text-red-600">
                   Delete
                 </button>
               </td>

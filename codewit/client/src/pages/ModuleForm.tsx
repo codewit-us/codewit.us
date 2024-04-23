@@ -1,88 +1,112 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Select, { MultiValue } from 'react-select';
 import LanguageSelect from "../components/form/LanguageSelect";
 import SubmitBtn from "../components/form/SubmitButton";
 import TopicSelect from "../components/form/TagSelect";
 import axios from 'axios';
 import { SelectStyles } from '../utils/styles';
-import { DemoResponse, SelectedTag } from '@codewit/interfaces';
+import Error from '../components/error/Error';
+import { SelectedTag } from '@codewit/interfaces';
 import ExistingTable from '../components/form/ExistingTable';
-
-interface ModuleState {
-  language: string;
-  topic: string;
-  demos: DemoResponse[];
-  resources: string[]; 
-  uid?: number;
-}
-
+import { Module } from '@codewit/interfaces';
+import { useFetchResources } from '../hooks/resourcehooks/useResourceHooks';
+import { usePostModule, useFetchModules, useDeleteModule, usePatchModule } from '../hooks/modulehooks/useModuleHooks';
 const ModuleForm = (): JSX.Element => {
-  const [module, setModule] = useState<ModuleState>({
+  const { fetchResources } = useFetchResources();
+  const { fetchModules } = useFetchModules();
+  const { deleteModule } = useDeleteModule();
+  const { patchModule } = usePatchModule();
+  const { postModule } = usePostModule();
+  const [module, setModule] = useState<Module>({
     language: 'cpp',
     topic: '',
-    demos: [],
     resources: []
   });
-  const [existingModules, setExistingModules] = useState<ModuleState[]>([module]);
-  const [demos, setDemos] = useState<DemoResponse[]>([]);
+  const [existingModules, setExistingModules] = useState<Module[]>();
+  const [isEditing, setIsEditing] = useState(false);
   const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    axios.get<DemoResponse[]>('/demos')
-      .then(res => {
-        setDemos(res.data);
-      })
-    .catch(err => console.error(err));
-    const storedResources = JSON.parse(localStorage.getItem('resources') || '[]');
-    const existingModules = JSON.parse(localStorage.getItem('modules') || '[]');
-    setExistingModules(existingModules);
-    const options = storedResources.map((res: any) => ({
-      value: res.uid, 
-      label: res.title 
-    }));
-    setResourceOptions(options);
+    const fetchItems = async () => {
+      try {
+        const resModules = await fetchModules();
+        setExistingModules(resModules);
+
+        const resResources = await fetchResources()
+        const options = resResources.map((resource: any) => ({
+          value: resource.uid,
+          label: resource.title
+        }));
+        setResourceOptions(options);
+
+
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      }
+    }
+    fetchItems();
   }, []);
 
-  useEffect(() => {
-    if (module.language && module.topic) {
-      const filteredDemos = demos.filter(demo => typeof demo.language === 'object' && demo.language.name === module.language && demo.tags.some(tag => tag.name === module.topic));
-      setModule(prev => ({
-        ...prev,
-        demos: filteredDemos
-      }));
-    }
-  }, [module.language, module.topic, demos]);  
-
-  const handleChange = useCallback((selectedOptions: MultiValue<SelectedTag>) => {
+  const handleChange = (selectedOptions: MultiValue<SelectedTag>) => {
     const resources = selectedOptions.map(option => option.value);
     setModule(prev => ({ ...prev, resources }));
-  }, []);
+  }
 
-  const handleTagSelect = useCallback((tag: SelectedTag | SelectedTag[]) => {
-    const topic = Array.isArray(tag) ? tag[0].value : tag.value;
+  const handleTopicSelect = (topics: SelectedTag | SelectedTag[]) => {
+    const topic = Array.isArray(topics) ? topics[0].value : topics.value;
     setModule(prev => ({ ...prev, topic }));
-  }, []);
+  };
 
-  const handleEdit = useCallback((uid: number) => {
+  const handleEdit = (uid: number) => {
     const editModule = existingModules.find(module => module.uid === uid);
     if (editModule) {
+      setIsEditing(true);
       setModule(editModule);
+      // get an array of select resources id
+      const options = editModule.resources.map(resource => (resource.uid));
+      setModule(prev => ({ ...prev, resources: options }));
     }
-  }, [existingModules]); 
+  }
   
-  const handleDelete = useCallback((uid: number) => {
-    const updatedModules = existingModules.filter(module => module.uid !== uid);
-    setExistingModules(updatedModules);
-  }, [existingModules]); 
+  const handleDelete = async (uid: number) => {
+    try {
+      await deleteModule(uid);
+      const updatedModules = existingModules.filter(module => module.uid !== uid);
+      setExistingModules(updatedModules);
+    } catch (err) {
+      console.error('Error removing module', err);
+      setError(true);
+    }
+  }; 
   
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const newModule = { ...module, uid: Date.now() };
-    const existingModules = JSON.parse(localStorage.getItem('modules') || '[]');
-    existingModules.push(newModule);
-    localStorage.setItem('modules', JSON.stringify(existingModules));
-    setModule({ language: 'cpp', topic: '', demos: [], resources: [] });
-  }, [module]); 
+    if (isEditing) {
+      const resources = module.resources ? module.resources : module.resources.map(resource => (resource.uid));
+      const topic = module.topic;
+      const language = module.language.name ? module.language.name : module.language;
+      const editedModule = {
+        language: language,
+        topic: topic,
+        resources: resources
+      }
+      const res = await patchModule(editedModule, module.uid as number);
+      const updatedModules = existingModules.map(mod => mod.uid === module.uid ? res : mod);
+      setExistingModules(updatedModules);
+      setModule({ language: 'cpp', topic: '', resources: [] });
+      setIsEditing(false);
+    } else {
+      const response = await postModule(module);
+      setExistingModules([...existingModules, response]);
+    }
+    setModule({ language: 'cpp', topic: '', resources: [] });
+  }; 
+
+  if (error) {
+    return (<Error />)
+  }
 
   return (
     <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
@@ -91,7 +115,7 @@ const ModuleForm = (): JSX.Element => {
           <div className="flex flex-row w-full gap-3 mb-8">
             <TopicSelect 
               selectedTags={[{value: module.topic, label: module.topic}]} 
-              setSelectedTags={handleTagSelect}
+              setSelectedTags={handleTopicSelect}
               isMulti={false}
             />
             <LanguageSelect 
@@ -113,22 +137,22 @@ const ModuleForm = (): JSX.Element => {
             />  
           </div>
           <SubmitBtn 
-            text={'Create'} 
+            text={isEditing ? 'Confirm Edit' : 'Create'} 
             disabled={module.topic === '' || module.language === ''}
           />
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Demos</h3>
-            {module.demos.length > 0 ? (
-              <ul className="list-disc pl-5 text-white">
-                {module.demos.map((demo) => (
-                  <li key={demo.uid}>
-                    {demo.title}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-white">No demos found for the selected language and topic.</p>
-            )}
+            {module.demos &&  (
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-4">Linked Demos</h3>
+                <ul className="list-disc pl-5 text-white">
+                  {module.demos.map((demo) => (
+                    <li key={demo.uid}>
+                      {demo.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) }
           </div>
         </form>
         <ExistingTable 

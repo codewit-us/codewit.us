@@ -26,10 +26,11 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
   useEffect(() => {
     const extractTags = (obj: TopicNode): Tag[] => {
       return Object.keys(obj).flatMap(key => {
+        const currentTag = { value: key, label: key };
         if (typeof obj[key] === 'object' && Object.keys(obj[key]).length) {
-          return extractTags(obj[key]);
+          return [currentTag, ...extractTags(obj[key])];
         }
-        return { value: key, label: key };
+        return currentTag;
       });
     };
 
@@ -44,8 +45,8 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
 
   return (
     <div className="flex flex-col justify-center items-start w-full text-white">
-      <label htmlFor="tag-select" className="block text-sm mb-2 font-medium text-white">
-        {isMulti ? 'Select/Create Tags' : 'Select Tag'}
+      <label htmlFor={isMulti ? 'tag-select' : 'single-tag-select'} className="block text-sm mb-2 font-medium text-white">
+        {isMulti ? 'Select/Create Tags' : 'Select Topic'}
       </label>
       {isMulti
         ?
@@ -54,13 +55,12 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
           isMulti
           value={selectedTags}
           onChange={handleChange}
-          options={tags}
           className="text-sm bg-blue text-white border-none w-full rounded-lg"
           styles={SelectStyles}      
         />     
         :
         <Select
-          id='tag-select'
+          id='single-tag-select'
           value={selectedTags}
           onChange={handleChange}
           options={tags}

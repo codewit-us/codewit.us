@@ -1,41 +1,59 @@
-import { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import Select, { MultiValue } from 'react-select';
 import LanguageSelect from '../components/form/LanguageSelect';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
 import SubmitBtn from '../components/form/SubmitButton';
 import { SelectStyles } from '../utils/styles';
+import Error from '../components/error/Error';
 import { SelectedTag } from '@codewit/interfaces';
 import ExistingTable from '../components/form/ExistingTable';
-
-interface Course {
-  title: string;
-  language: string;
-  modules: string[];
-  uid: string | number;
-}
+import { Course } from '@codewit/interfaces';
+import { 
+  usePostCourse, 
+  usePatchCourse, 
+  useFetchCourses, 
+  useDeleteCourse  
+} from '../hooks/coursehooks/useCourseHook';
+import { useFetchModules } from '../hooks/modulehooks/useModuleHooks';
 
 const CourseForm = (): JSX.Element => {
+  const { fetchModules } = useFetchModules();
+  const { fetchCourses } = useFetchCourses();
+  const { deleteCourse } = useDeleteCourse();
+  const { patchCourse } = usePatchCourse();
+  const { postCourse } = usePostCourse();
+
   const [course, setCourse] = useState<Course>({
     title: '',
     language: 'cpp',
     modules: [],
-    uid: '',
+    id: '',
   });
 
   const [moduleOptions, setModuleOptions] = useState<SelectedTag[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    const storedModules = JSON.parse(localStorage.getItem('modules') || '[]');
-    const storedCourses = JSON.parse(localStorage.getItem('courses') || '[]');
-    setCourses(storedCourses);
-    const options: SelectedTag[] = storedModules.map((module: { uid: string }) => ({
-      value: module.uid,
-      label: module.uid,
-    }));
-    setModuleOptions(options);
+    const fetchItems = async () => {
+      try {
+        const resModules = await fetchModules();
+        const options = resModules.map((module: any) => ({
+          value: module.uid,
+          label: module.uid
+        }));
+        setModuleOptions(options);
+        const resCourses = await fetchCourses();
+        setCourses(resCourses);
+
+      } catch (err) {
+        console.error(err);
+        setError(true);
+      }
+    }
+    fetchItems();
   }, []);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -53,38 +71,54 @@ const CourseForm = (): JSX.Element => {
     }));
   };
 
-  const handleEdit = useCallback((uid: number) => {
+  const handleEdit = (id: string | number) => {
     setIsEditing(true);
-    const foundCourse = courses.find(course => course.uid === uid);
+    const foundCourse = courses.find(course => course.id === id);
     if (foundCourse) {
-      setCourse(foundCourse);
+      const arrayOfModuleIds = foundCourse.modules.map(module => (module.uid));
+      const courseToEdit = {
+        title: foundCourse.title,
+        language: foundCourse.language.name,
+        modules: arrayOfModuleIds,
+        id: foundCourse.id,
+      }
+      setCourse(courseToEdit);
     }
-  }, [courses]);
+  }
   
-  const handleDelete = useCallback((uid: number) => {
-    const updatedCourses = courses.filter(course => course.uid !== uid);
-    setCourses(updatedCourses);
-    localStorage.setItem('courses', JSON.stringify(updatedCourses));
-  }, [courses]);
-  
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if(isEditing) {
-      const updatedCourses = courses.map(c => c.uid === course.uid ? course : c);
+  const handleDelete = async (id: string | number) => {
+    try {
+      await deleteCourse(id);
+      const updatedCourses = courses.filter(course => course.id !== id);
       setCourses(updatedCourses);
-      localStorage.setItem('courses', JSON.stringify(updatedCourses));
-      setIsEditing(false);
-    } else {
-      const newCourse = {
-        ...course,
-        uid: Date.now(),
-      };
-      const newCoursesArray = [...courses, newCourse];
-      setCourses(newCoursesArray);
-      localStorage.setItem('courses', JSON.stringify(newCoursesArray));
-      setCourse({ title: '', language: 'cpp', modules: [], uid: '' }); 
+    } catch (err) {
+      console.error("Failed to delete course", err)
     }
-  }, [courses, course, isEditing]);
+  }
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      if(isEditing) {
+        await patchCourse(course, course.id ?? -1);
+        const updatedCourses = courses.map(c => c.id === course.id ? course : c);
+        setCourses(updatedCourses);
+        setIsEditing(false);
+        setCourse({ title: '', language: 'cpp', modules: [], id: '' });
+      } else {
+        const res = await postCourse(course);
+        setCourses(prev => [...prev, res]);
+        setCourse({ title: '', language: 'cpp', modules: [], id: '' }); 
+      }
+    } catch (err) {
+      console.error('Error creating/updating course', err);
+      setError(true);
+    }
+  };
+
+  if (error) {
+    return <Error />;
+  }
 
   return (
     <div className="flex gap-2 justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
