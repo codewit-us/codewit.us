@@ -7,6 +7,24 @@ Website for learning how to code from unique perspectives
 This project uses _Nx_ to manage the monorepo and npm as the package manager. To use nx commands, install nx CLI globally:
 `npm i -g nx`
 
+### Environment Variables
+
+Navigate to `codewit.us/codewit/` and create a .env file with the following content:
+
+  ```sh
+  # Frontend
+  YT_KEY='YOUR YOUTUBE API KEY'
+  YT_CHANNEL_ID='YOUR CHANNEL ID'
+
+  # Backend
+  GOOGLE_REDIRECT_URL="GOOGLE AUTH REDIRECT URL"
+  GOOGLE_CLIENT_ID="YOUR CLIENT ID"
+  GOOGLE_CLIENT_SECRET="YOUR SECRET"
+  COOKIE_KEY="ANY ALPHANUMERICAL STRING"
+  ```
+
+### Running The Application
+
 From the [`codewit` directory, you can run nx commands](codewit/)
 
 - Running front end: `nx serve client`

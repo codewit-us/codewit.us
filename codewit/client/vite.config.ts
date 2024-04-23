@@ -2,11 +2,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '../../.env' });
 
 export default defineConfig({
   root: __dirname,
   cacheDir: '../node_modules/.vite/client',
-
+  define: {
+    'import.meta.env.VITE_KEY': JSON.stringify(process.env.YT_KEY),
+    'import.meta.env.VITE_CHANNEL_ID': JSON.stringify(process.env.YT_CHANNEL_ID),
+  },
   server: {
     port: 3001,
     host: 'localhost',
@@ -80,3 +86,5 @@ export default defineConfig({
     ],
   },
 });
+
+console.log(process.env.YT_KEY, process.env.YT_CHANNEL_ID);
