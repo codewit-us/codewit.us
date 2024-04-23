@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { ArrowLeftStartOnRectangleIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 
 const NavBar = (): JSX.Element => {
@@ -9,7 +10,6 @@ const NavBar = (): JSX.Element => {
   useEffect(() => {
     axios.get('/oauth2/google/userinfo')
       .then(response => {
-        console.log('User:', response.data);
         setUser(response.data.user);
       })
       .catch(error => {
@@ -63,24 +63,20 @@ const NavBar = (): JSX.Element => {
                 Create
               </Link>
             </li>
+            <li>
+              <Link to="/usermanagement" className="block py-2 px-3 text-highlight-500 rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
+                Manage Users
+              </Link>
+            </li>
             {user ? (
-              <div className="relative">
-                <button className="flex items-center justify-center rounded-md px-4 py-2 bg-white text-black" onClick={() => setIsOpen(!isOpen)}>
-                  {user.email} 
-                  <svg className="w-5 h-5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
-                  </svg>
+              <div className="flex items-center space-x-2">
+                <span className="text-highlight-500">{user.email}</span>
+                <button onClick={handleLogout} className="bg-transparent p-1 rounded hover:bg-gray-200 ">
+                  <ArrowLeftStartOnRectangleIcon className="h-6 w-6 text-gray-600 hover:text-inherit" />
                 </button>
-                {isOpen && (
-                  <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-lg shadow-xl">
-                    <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                      Logout
-                    </button>
-                  </div>
-                )}
               </div>
             ) : (
-              <button className="flex items-center justify-center rounded-md px-4 py-2 bg-white text-black" onClick={handleGoogleLogin}>
+              <button className="flex items-center justify-center rounded-md px-4 py-2 bg-white text-black hover:text-accent-500" onClick={handleGoogleLogin}>
                 Sign in with Google
               </button>
             )}

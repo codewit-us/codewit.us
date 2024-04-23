@@ -23,8 +23,8 @@ services:
       - DB_PORT=5432
       - API_PORT=3000
       - API_HOST=0.0.0.0
-    # env_file:
-    #   - .env
+    env_file:
+      - .env
     restart: unless-stopped
     ports:
       - 3000:3000
