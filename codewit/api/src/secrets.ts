@@ -1,3 +1,7 @@
+import * as dotenv from 'dotenv';
+
+dotenv.config({path: '../../.env'});
+
 const HOST = process.env.API_HOST ?? 'localhost';
 const PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3000;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
