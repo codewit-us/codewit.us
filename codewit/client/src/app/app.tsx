@@ -9,6 +9,7 @@ import ModuleForm from '../pages/ModuleForm';
 import ResourceForm from '../pages/ResourceForm';
 import CourseForm from '../pages/CourseForm';
 import DemoForms from '../pages/DemoForm';
+import UserManagement from '../pages/UserManagement';
 
 import { Route, Routes } from 'react-router-dom';
 
@@ -18,9 +19,8 @@ export function App() {
       <NavBar />
       <Routes>
         <Route path="/" element={ <Home /> } />
-
+        <Route path="/usermanagement" element={ <UserManagement /> } />
         <Route path="/read/:uid" element={ <Read /> }/>
-
         <Route path="/create" element={<Create />}>
           <Route index element={<DemoForms />} />
           <Route path="demo" element={<DemoForms />} />
@@ -30,7 +30,7 @@ export function App() {
           <Route path="course" element={<CourseForm />} />
         </Route>
 
-        {/* <Route path="*" element={<NotFound />} /> */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
   );

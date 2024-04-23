@@ -11,7 +11,7 @@ authRouter.get('/google',
 
 authRouter.get('/google/redirect',
   passport.authenticate('google', {
-    failureRedirect: '/login',
+    failureRedirect: 'http://localhost:3001/',
     session: true
   }),
   (req, res) => {
