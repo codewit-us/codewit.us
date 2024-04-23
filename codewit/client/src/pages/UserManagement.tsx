@@ -33,7 +33,7 @@ const UserManagement = (): JSX.Element => {
           <input
             type="text"
             className="py-1 px-4 border border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Search by email"
+            placeholder="Search by username"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
