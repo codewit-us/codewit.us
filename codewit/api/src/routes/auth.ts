@@ -3,29 +3,36 @@ import passport from 'passport';
 
 const authRouter = Router();
 
-authRouter.get(
-  '/google',
+authRouter.get('/google',
   passport.authenticate('google', {
     scope: ['email', 'profile'],
-  }),
-  (req, res) => {
-    res.send(200);
-  }
+  })
 );
 
-authRouter.get(
-  '/google/redirect',
-  passport.authenticate('google'),
+authRouter.get('/google/redirect',
+  passport.authenticate('google', {
+    failureRedirect: '/login',
+    session: true
+  }),
   (req, res) => {
-    res.redirect('/web/profile');
+    res.redirect(`http://localhost:3001/`);
   }
 );
 
 authRouter.get('/google/logout', (req, res) => {
-  req.logout({}, (err) => {
-    console.log(err);
+  req.logout((err) => {
+    if (err) { console.error(err); }
+    res.redirect('http://localhost:3001/');
   });
-  res.redirect('/web');
 });
+
+authRouter.get('/google/userInfo', (req, res) => {
+  if (req.user) {
+    res.json({ user: req.user });
+  } else {
+    res.status(401).json({ error: 'User not authenticated' });
+  }
+});
+
 
 export default authRouter;
