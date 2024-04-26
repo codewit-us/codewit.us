@@ -30,28 +30,12 @@ app.use(passport.session());
 
 app.use(express.json());
 
-app.set('view engine', 'ejs');
-
-app.get('/web', (req, res) => {
-  res.render('home', { user: req.user });
-});
-
-app.get('/web/login', (req, res) => {
-  if (req.user) return res.redirect('/web/profile');
-
-  res.render('login');
-});
-
-app.get('/web/profile', checkAuth, (req, res) => {
-  res.render('profile', { user: req.user });
-});
-
 app.use('/oauth2', authrouter);
-app.use('/demos', demoRouter);
-app.use('/exercises', exerciseRouter);
-app.use('/modules', moduleRouter);
-app.use('/resources', resourceRouter);
-app.use('/courses', courseRouter);
+app.use('/demos', checkAuth, demoRouter);
+app.use('/exercises', checkAuth, exerciseRouter);
+app.use('/modules', checkAuth, moduleRouter);
+app.use('/resources', checkAuth, resourceRouter);
+app.use('/courses', checkAuth, courseRouter);
 
 app.listen(PORT, HOST, async () => {
   await sequelize.sync({ force: false });
