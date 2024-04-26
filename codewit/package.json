@@ -4,7 +4,9 @@
   "license": "MIT",
   "scripts": {
     "backend-dev": "nx run api:serve:development",
-    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001"
+    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001",
+    "seed-admins": "nx run api:seed-admins-builder && node dist/api/seed-admins.js",
+    "seed-admins-force": "nx run api:seed-admins-builder && node dist/api/seed-admins.js --force"
   },
   "private": true,
   "dependencies": {

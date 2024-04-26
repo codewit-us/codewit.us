@@ -25,17 +25,25 @@ passport.use(
       profile: Profile,
       done: VerifyCallback
     ) => {
-      const user = await User.findOne({ where: { googleId: profile.id } });
+      const email = profile.emails?.[0].value;
+      const user = await User.findOne({ where: { email } });
 
       if (!user) {
         const newUser = await User.create({
           username: profile.displayName,
           email: profile.emails?.[0].value,
           googleId: profile.id,
+          isAdmin: false,
         });
 
         done(null, newUser);
       } else {
+        if (!user.googleId || !user.username)
+          await user.update({
+            googleId: profile.id,
+            username: profile.displayName,
+          });
+
         done(null, user);
       }
     }

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import passport from 'passport';
+import { FRONTEND_URL } from '../secrets';
 
 const authRouter = Router();
 
@@ -17,15 +18,32 @@ authRouter.get(
   '/google/redirect',
   passport.authenticate('google'),
   (req, res) => {
-    res.redirect('/web/profile');
+    res.redirect(FRONTEND_URL);
   }
 );
 
 authRouter.get('/google/logout', (req, res) => {
-  req.logout({}, (err) => {
-    console.log(err);
+  req.logout((err) => {
+    if (err) {
+      console.error(err);
+    }
+
+    res.redirect(FRONTEND_URL);
   });
-  res.redirect('/web');
+});
+
+authRouter.get('/google/userInfo', (req, res) => {
+  if (req.user) {
+    return res.json({
+      user: {
+        username: req.user.username,
+        email: req.user.email,
+        googleId: req.user.googleId,
+      },
+    });
+  }
+
+  res.redirect('/oauth2/google');
 });
 
 export default authRouter;
