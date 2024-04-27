@@ -47,7 +47,9 @@ courseRouter.post('/', async (req, res) => {
     const course = await createCourse(
       validatedBody.data.title,
       validatedBody.data.language,
-      validatedBody.data.modules
+      validatedBody.data.modules,
+      validatedBody.data.instructors,
+      validatedBody.data.roster
     );
 
     res.json(course);
@@ -70,7 +72,9 @@ courseRouter.patch('/:uid', async (req, res) => {
       req.params.uid,
       validatedBody.data.title,
       validatedBody.data.language,
-      validatedBody.data.modules
+      validatedBody.data.modules,
+      validatedBody.data.instructors,
+      validatedBody.data.roster
     );
 
     if (course) {

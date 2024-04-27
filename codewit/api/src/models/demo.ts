@@ -21,6 +21,7 @@ import {
 import { Exercise } from './exercise';
 import { Language } from './language';
 import { Tag } from './tag';
+import { User } from './user';
 
 class Demo extends Model<
   InferAttributes<Demo, { omit: 'exercises' | 'language' | 'tags' }>,
@@ -35,6 +36,7 @@ class Demo extends Model<
   declare exercises?: NonAttribute<Exercise[]>;
   declare language?: NonAttribute<Language>;
   declare tags?: NonAttribute<Tag[]>;
+  declare likedBy?: NonAttribute<User[]>;
 
   declare getExercises: BelongsToManyGetAssociationsMixin<Exercise>;
   declare addExercise: BelongsToManyAddAssociationMixin<Exercise, number>;
@@ -59,10 +61,16 @@ class Demo extends Model<
   declare getLanguage: BelongsToGetAssociationMixin<Language>;
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
 
+  declare addLikedBy: BelongsToManyAddAssociationMixin<User, number>;
+  declare removeLikedBy: BelongsToManyRemoveAssociationMixin<User, number>;
+  declare hasLikedBy: BelongsToManyHasAssociationMixin<User, number>;
+  declare countLikedBy: BelongsToManyCountAssociationsMixin;
+
   declare static associations: {
     exercises: Association<Demo, Exercise>;
     language: Association<Demo, Language>;
     tags: Association<Demo, Tag>;
+    likedBy: Association<Demo, User>;
   };
 
   static initialize(sequelize: Sequelize) {
@@ -84,7 +92,7 @@ class Demo extends Model<
         likes: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          defaultValue: 1,
+          defaultValue: 0,
         },
         youtube_id: {
           type: DataTypes.STRING,

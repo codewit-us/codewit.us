@@ -5,7 +5,7 @@ export async function createResource(
   title: string,
   source: string
 ): Promise<Resource> {
-  const resource = await Resource.create({ url, title, source, likes: 1 });
+  const resource = await Resource.create({ url, title, source });
   return resource;
 }
 
@@ -19,12 +19,45 @@ export async function getResource(uid: number): Promise<Resource | null> {
   return resource;
 }
 
-export async function likeResource(uid: number): Promise<Resource | null> {
-  let resource = await Resource.findByPk(uid);
+export async function likeResource(
+  uid: number,
+  user_uid: number
+): Promise<Resource | null> {
+  const resource = await Resource.findByPk(uid);
 
-  if (resource) {
+  if (!resource) {
+    return null;
+  }
+
+  const isliked = await resource.hasLikedBy(user_uid);
+  if (!isliked) {
+    resource.addLikedBy(user_uid);
     resource.likes += 1;
-    resource = await resource.save();
+
+    await resource.save();
+    await resource.reload();
+  }
+
+  return resource;
+}
+
+export async function removeLikeResource(
+  uid: number,
+  user_uid: number
+): Promise<Resource | null> {
+  const resource = await Resource.findByPk(uid);
+
+  if (!resource) {
+    return null;
+  }
+
+  const isliked = await resource.hasLikedBy(user_uid);
+  if (isliked) {
+    resource.removeLikedBy(user_uid);
+    resource.likes -= 1;
+
+    await resource.save();
+    await resource.reload();
   }
 
   return resource;

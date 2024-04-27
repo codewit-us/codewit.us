@@ -7,6 +7,7 @@ import {
   getDemoById,
   likeDemo,
   removeExercisesFromDemo,
+  removeLikeDemo,
   setExercisesForDemo,
   updateDemo,
 } from '../controllers/demo';
@@ -102,7 +103,23 @@ demoRouter.patch('/:uid', async (req, res) => {
 
 demoRouter.post('/:uid/like', async (req, res) => {
   try {
-    const demo = await likeDemo(Number(req.params.uid));
+    const user_uid = req.user?.uid;
+    const demo = await likeDemo(Number(req.params.uid), user_uid);
+    if (demo) {
+      res.json(demo);
+    } else {
+      res.status(404).json({ message: 'Demo not found' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+demoRouter.delete('/:uid/like', async (req, res) => {
+  try {
+    const user_uid = req.user?.uid;
+    const demo = await removeLikeDemo(Number(req.params.uid), user_uid);
     if (demo) {
       res.json(demo);
     } else {

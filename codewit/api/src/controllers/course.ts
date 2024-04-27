@@ -9,7 +9,9 @@ import { Course, CourseModules, Language, Module, sequelize } from '../models';
 async function createCourse(
   title: string,
   language?: string,
-  modules?: number[]
+  modules?: number[],
+  instructors?: number[],
+  roster?: number[]
 ): Promise<Course> {
   return sequelize.transaction(async (transaction) => {
     // acquire SHARE ROW EXCLUSIVE lock, This lock allows concurrent reads
@@ -54,8 +56,22 @@ async function createCourse(
       );
     }
 
+    if (instructors) {
+      await course.setInstructors(instructors, { transaction });
+    }
+
+    if (roster) {
+      await course.setRoster(roster, { transaction });
+    }
+
     await course.reload({
-      include: [Language, Module],
+      // eager load the instructors
+      include: [
+        Language,
+        Module,
+        { association: Course.associations.instructors },
+        { association: Course.associations.roster },
+      ],
       order: [[Module, CourseModules, 'ordering', 'ASC']],
       transaction,
     });
@@ -68,7 +84,9 @@ async function updateCourse(
   uid: string,
   title?: string,
   language?: string,
-  modules?: number[]
+  modules?: number[],
+  instructors?: number[],
+  roster?: number[]
 ): Promise<Course | null> {
   return sequelize.transaction(async (transaction) => {
     const course = await Course.findByPk(uid, { transaction });
@@ -104,6 +122,14 @@ async function updateCourse(
       );
     }
 
+    if (instructors) {
+      await course.setInstructors(instructors, { transaction });
+    }
+
+    if (roster) {
+      await course.setRoster(roster, { transaction });
+    }
+
     await course.save({ transaction });
     await course.reload({
       include: [Language, Module],
@@ -129,7 +155,12 @@ async function deleteCourse(uid: string): Promise<Course | null> {
 
 async function getCourse(uid: string): Promise<Course | null> {
   const course = await Course.findByPk(uid, {
-    include: [Language, Module],
+    include: [
+      Language,
+      Module,
+      { association: Course.associations.instructors },
+      { association: Course.associations.roster },
+    ],
     order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
 
@@ -138,7 +169,11 @@ async function getCourse(uid: string): Promise<Course | null> {
 
 async function getAllCourses(): Promise<Course[]> {
   const courses = await Course.findAll({
-    include: [Language, Module],
+    include: [
+      Language,
+      Module,
+      { association: Course.associations.instructors },
+    ],
     order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
 
