@@ -10,7 +10,6 @@ import passport from 'passport';
 import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT } from './secrets';
 import './auth/passport';
-import checkAuth from './middleware/auth';
 
 const app = express();
 
@@ -31,11 +30,11 @@ app.use(passport.session());
 app.use(express.json());
 
 app.use('/oauth2', authrouter);
-app.use('/demos', checkAuth, demoRouter);
-app.use('/exercises', checkAuth, exerciseRouter);
-app.use('/modules', checkAuth, moduleRouter);
-app.use('/resources', checkAuth, resourceRouter);
-app.use('/courses', checkAuth, courseRouter);
+app.use('/demos', demoRouter);
+app.use('/exercises', exerciseRouter);
+app.use('/modules', moduleRouter);
+app.use('/resources', resourceRouter);
+app.use('/courses', courseRouter);
 
 app.listen(PORT, HOST, async () => {
   await sequelize.sync({ force: false });
