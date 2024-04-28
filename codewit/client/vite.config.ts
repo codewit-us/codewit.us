@@ -11,7 +11,9 @@ export default defineConfig({
   cacheDir: '../node_modules/.vite/client',
   define: {
     'import.meta.env.VITE_KEY': JSON.stringify(process.env.YT_KEY),
-    'import.meta.env.VITE_CHANNEL_ID': JSON.stringify(process.env.YT_CHANNEL_ID),
+    'import.meta.env.VITE_CHANNEL_ID': JSON.stringify(
+      process.env.YT_CHANNEL_ID
+    ),
   },
   server: {
     port: 3001,
@@ -40,8 +42,8 @@ export default defineConfig({
       '/oauth2': {
         target: 'http://app:3000',
         changeOrigin: true,
-      }
-    }
+      },
+    },
   },
 
   preview: {
@@ -81,10 +83,9 @@ export default defineConfig({
       {
         find: /^monaco-editor$/,
         replacement:
-          __dirname + "../../node_modules/monaco-editor/esm/vs/editor/editor.api",
+          __dirname +
+          '../../node_modules/monaco-editor/esm/vs/editor/editor.api',
       },
     ],
   },
 });
-
-console.log(process.env.YT_KEY, process.env.YT_CHANNEL_ID);
