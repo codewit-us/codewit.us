@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeftStartOnRectangleIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 
 const NavBar = (): JSX.Element => {
@@ -12,9 +12,6 @@ const NavBar = (): JSX.Element => {
       .then(response => {
         setUser(response.data.user);
       })
-      .catch(error => {
-        console.log('Error fetching user:', error);
-      });
   }, []);
 
   const toggleNavbar = (): void => {
@@ -37,51 +34,72 @@ const NavBar = (): JSX.Element => {
   };
 
   return (
-    <nav className="bg-background-500 border-b border-gray-800">
-      <div className="max-w-screen flex flex-wrap items-center justify-between mx-auto p-3">
-        <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="/logo-dark.png" className="h-10" alt="CodeWitUs Logo" />
-        </Link>
-        <button onClick={toggleNavbar} data-collapse-toggle="navbar-default" type="button" className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200" 
-          aria-controls="navbar-default" 
-          aria-expanded={isOpen ? "true" : "false"}
-        >
-          <span className="sr-only">Open main menu</span>
-          <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12h18M3 6h18M3 18h18"/>
-          </svg>
-        </button>
-        <div className={`${isOpen ? "block" : "hidden"} w-full md:block md:w-auto`} id="navbar-default">
-          <ul className="font-medium flex flex-col items-center p-4 mt-4 md:p-0 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 ">
-            <li>
-              <Link to="/" className="block py-2 px-3 text-highlight-500 rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
-                Home
+    <nav className="bg-gray-800 border-b border-background-400">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Link to="/">
+                <img src="/logo-dark.png" className="h-12" alt="CodeWitUs Logo" />
               </Link>
-            </li>
-            <li>
-              <Link to="/create" className="block py-2 px-3 text-highlight-500 rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
-                Create
-              </Link>
-            </li>
-            <li>
-              <Link to="/usermanagement" className="block py-2 px-3 text-highlight-500 rounded hover:bg-accent-500 md:hover:bg-transparent md:border-0 md:hover:text-accent-500 md:p-0">
-                Manage Users
-              </Link>
-            </li>
+            </div>
+            <div className="hidden sm:flex sm:ml-6">
+              <div className="flex items-center h-full">
+                <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Home</Link>
+                <Link to="/create" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
+                <Link to="/usermanagement" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+              </div>
+            </div>
+          </div>
+          <div className="hidden sm:flex sm:items-center sm:ml-6">
             {user ? (
               <div className="flex items-center space-x-2">
-                <span className="text-highlight-500">{user.email}</span>
-                <button onClick={handleLogout} className="bg-transparent p-1 rounded hover:bg-gray-200 ">
-                  <ArrowLeftStartOnRectangleIcon className="h-6 w-6 text-gray-600 hover:text-inherit" />
+                <span className="text-gray-300 font-medium">{user.email}</span>
+                <button onClick={handleLogout} className="p-1 rounded hover:bg-gray-700">
+                  <ArrowLeftStartOnRectangleIcon className="h-6 w-6 text-gray-400 hover:text-white" />
                 </button>
               </div>
             ) : (
-              <button className="flex items-center justify-center rounded-md px-4 py-2 bg-white text-black hover:text-accent-500" onClick={handleGoogleLogin}>
-                Sign in with Google
+              <button 
+                onClick={handleGoogleLogin}
+                className="px-5 py-2.5 flex items-center text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-4 focus:ring-blue-300"
+              >
+                <svg className="mr-2 -ml-1 w-4 h-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
+                Log in with Google
               </button>
             )}
-          </ul>
+          </div>
+          <div className="flex items-center sm:hidden">
+            <button onClick={toggleNavbar} className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+              {isOpen ? <XMarkIcon className="block h-6 w-6" /> : <Bars3Icon className="block h-6 w-6" />}
+            </button>
+          </div>
         </div>
+        {isOpen && (
+          <div className="sm:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              <Link to="/" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Home</Link>
+              <Link to="/create" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
+              <Link to="/usermanagement" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+              {user ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <span className="text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">{user.email}</span>
+                  <button onClick={handleLogout} className="w-full text-center px-3 py-2 rounded-md text-base font-medium bg-blue-500 hover:bg-gray-600">
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleGoogleLogin}
+                  className="w-full flex items-center justify-center px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600"
+                >
+                  <svg className="mr-2 -ml-1 w-4 h-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
+                  Log in with Google
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
