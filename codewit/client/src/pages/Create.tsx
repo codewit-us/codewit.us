@@ -1,35 +1,42 @@
-import { Link, Outlet } from 'react-router-dom';
-import { VideoCameraIcon, BookOpenIcon, LinkIcon, QueueListIcon, CommandLineIcon} from '@heroicons/react/24/outline'
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { VideoCameraIcon, BookOpenIcon, LinkIcon, QueueListIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 
 const Create = (): JSX.Element => {
+  const location = useLocation();
+
+  const linkClass = (path: string) => (
+    `flex items-center gap-2 p-2 rounded-md text-sm font-medium ${
+      location.pathname.includes(path) ? 'bg-blue-700 text-white' : 'text-gray-300 hover:bg-gray-700'
+    }`
+  );
 
   return (
     <div className="md:flex w-full h-container-full">
-      <div className="w-full md:w-40 md:h-full bg-background-500 border-solid border-r-1 border-white md:border-gray-800 md:border-r">
-        <div className="flex font-medium text- flex-col p-4">
-          <Link to="/create/module" className="flex items-center gap-2 text-gray-300 p-2 hover:bg-accent-900 rounded-md">
+      <div className="w-full md:w-52 bg-gray-800 border-r border-gray-700">
+        <div className="flex flex-col p-4 space-y-1">
+          <Link to="/create/module" className={linkClass('/create/module')}>
             <QueueListIcon className="w-5 h-5" />
             Module
           </Link>
-          <Link to="/create/course" className="flex items-center gap-2 text-gray-300 p-2 hover:bg-accent-900 rounded-md">
+          <Link to="/create/course" className={linkClass('/create/course')}>
             <VideoCameraIcon className="w-5 h-5" />
             Course
           </Link>
-          <Link to="/create/demo" className="flex items-center gap-2 text-gray-300 p-2 hover:bg-accent-900 rounded-md">
+          <Link to="/create/demo" className={linkClass('/create/demo')}>
             <CommandLineIcon className="w-5 h-5" />
             Demo
           </Link>
-          <Link to="/create/exercise" className="flex items-center gap-2 text-gray-300 p-2 hover:bg-accent-900 rounded-md">
+          <Link to="/create/exercise" className={linkClass('/create/exercise')}>
             <BookOpenIcon className="w-5 h-5" />
             Exercise
           </Link>
-          <Link to="/create/resource" className="flex items-center gap-2 text-gray-300 p-2 hover:bg-accent-900 rounded-md">
+          <Link to="/create/resource" className={linkClass('/create/resource')}>
             <LinkIcon className="w-5 h-5" />
             Resource
           </Link>
         </div>
       </div>
-      <div className="h-full md:flex-1 bg-zinc-900">
+      <div className="flex-1 bg-zinc-900">
         <Outlet />
       </div>
     </div>

@@ -137,8 +137,8 @@ const CreateDemo = (): JSX.Element => {
   }
 
   return (
-    <div className="flex justify-center p-4 items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className="bg-gray-800 rounded-md bg-opacity-50 w-full max-w-4xl h-full p-6 space-y-6">
+    <div className="justify-center items-start h-full bg-zinc-900 overflow-auto w-full">
+      <form onSubmit={handleSubmit} className=" bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6">
         <h2 className="text-xl font-semibold text-white">Create Demo Exercise</h2>
 
         <div>
