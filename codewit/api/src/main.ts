@@ -11,6 +11,7 @@ import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT } from './secrets';
 import './auth/passport';
 import checkAuth from './middleware/auth';
+import userRouter from './routes/user';
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(passport.session());
 app.use(express.json());
 
 app.use('/oauth2', authrouter);
+app.use('/users', checkAuth, userRouter);
 app.use('/demos', checkAuth, demoRouter);
 app.use('/exercises', checkAuth, exerciseRouter);
 app.use('/modules', checkAuth, moduleRouter);
