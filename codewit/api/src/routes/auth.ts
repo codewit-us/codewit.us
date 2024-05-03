@@ -1,38 +1,52 @@
 import { Router } from 'express';
 import passport from 'passport';
+import { FRONTEND_URL } from '../secrets';
 
 const authRouter = Router();
 
-authRouter.get('/google',
+authRouter.get(
+  '/google',
   passport.authenticate('google', {
     scope: ['email', 'profile'],
-  })
-);
-
-authRouter.get('/google/redirect',
-  passport.authenticate('google', {
-    failureRedirect: 'http://localhost:3001/',
-    session: true
   }),
   (req, res) => {
-    res.redirect(`http://localhost:3001/`);
+    res.send(200);
+  }
+);
+
+authRouter.get(
+  '/google/redirect',
+  passport.authenticate('google', {
+    failureRedirect: FRONTEND_URL,
+    session: true,
+  }),
+  (req, res) => {
+    res.redirect(FRONTEND_URL);
   }
 );
 
 authRouter.get('/google/logout', (req, res) => {
   req.logout((err) => {
-    if (err) { console.error(err); }
-    res.redirect('http://localhost:3001/');
+    if (err) {
+      console.error(err);
+    }
+
+    res.redirect(FRONTEND_URL);
   });
 });
 
 authRouter.get('/google/userInfo', (req, res) => {
   if (req.user) {
-    res.json({ user: req.user });
-  } else {
-    res.status(401).json({ error: 'User not authenticated' });
+    return res.json({
+      user: {
+        username: req.user.username,
+        email: req.user.email,
+        googleId: req.user.googleId,
+      },
+    });
   }
-});
 
+  res.redirect('/oauth2/google');
+});
 
 export default authRouter;

@@ -87,6 +87,24 @@ const CourseModules = sequelize.define(
 Course.belongsToMany(Module, { through: CourseModules });
 Module.belongsToMany(Course, { through: CourseModules });
 
+Course.belongsToMany(User, { through: 'CourseInstructors', as: 'instructors' });
+User.belongsToMany(Course, {
+  through: 'CourseInstructors',
+  as: 'instructorCourses',
+});
+
+Course.belongsToMany(User, { through: 'CourseRoster', as: 'roster' });
+User.belongsToMany(Course, { through: 'CourseRoster', as: 'studentCourses' });
+
+Demo.belongsToMany(User, { through: 'DemoLikes', as: 'likedBy' });
+User.belongsToMany(Demo, { through: 'DemoLikes', as: 'likedDemos' });
+
+Resource.belongsToMany(User, { through: 'ResourceLikes', as: 'likedBy' });
+User.belongsToMany(Resource, {
+  through: 'ResourceLikes',
+  as: 'likedResources',
+});
+
 export {
   Demo,
   Exercise,

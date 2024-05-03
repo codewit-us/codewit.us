@@ -11,6 +11,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare username: string;
   declare email: string;
   declare googleId: string;
+  declare isAdmin: boolean;
 
   static initialize(sequelize: Sequelize) {
     this.init(
@@ -22,7 +23,7 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
         },
         username: {
           type: DataTypes.STRING,
-          allowNull: false,
+          allowNull: true,
         },
         email: {
           type: DataTypes.STRING,
@@ -31,8 +32,12 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
         },
         googleId: {
           type: DataTypes.STRING,
-          allowNull: false,
+          allowNull: true,
           unique: true,
+        },
+        isAdmin: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
         },
       },
       {
