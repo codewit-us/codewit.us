@@ -5,6 +5,7 @@ import {
   getAllResources,
   getResource,
   likeResource,
+  removeLikeResource,
   updateResource,
 } from '../controllers/resource';
 import {
@@ -104,10 +105,29 @@ resourceRouter.delete('/:uid', async (req, res) => {
   }
 });
 
-resourceRouter.patch('/:uid/like', async (req, res) => {
+resourceRouter.post('/:uid/like', async (req, res) => {
   try {
     const uid = parseInt(req.params.uid);
-    const resource = await likeResource(uid);
+    const user_uid = req.user?.uid;
+
+    const resource = await likeResource(uid, user_uid);
+    if (resource) {
+      res.json(resource);
+    } else {
+      res.status(404).json({ message: 'Resource not found' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+resourceRouter.delete('/:uid/like', async (req, res) => {
+  try {
+    const uid = parseInt(req.params.uid);
+    const user_uid = req.user?.uid;
+
+    const resource = await removeLikeResource(uid, user_uid);
     if (resource) {
       res.json(resource);
     } else {

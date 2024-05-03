@@ -10,6 +10,8 @@ import passport from 'passport';
 import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT } from './secrets';
 import './auth/passport';
+import checkAuth from './middleware/auth';
+import userRouter from './routes/user';
 
 const app = express();
 
@@ -19,7 +21,8 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24,
+      // 7 days
+      maxAge: 1000 * 60 * 60 * 24 * 7,
     },
   })
 );
@@ -30,11 +33,12 @@ app.use(passport.session());
 app.use(express.json());
 
 app.use('/oauth2', authrouter);
-app.use('/demos', demoRouter);
-app.use('/exercises', exerciseRouter);
-app.use('/modules', moduleRouter);
-app.use('/resources', resourceRouter);
-app.use('/courses', courseRouter);
+app.use('/users', checkAuth, userRouter);
+app.use('/demos', checkAuth, demoRouter);
+app.use('/exercises', checkAuth, exerciseRouter);
+app.use('/modules', checkAuth, moduleRouter);
+app.use('/resources', checkAuth, resourceRouter);
+app.use('/courses', checkAuth, courseRouter);
 
 app.listen(PORT, HOST, async () => {
   await sequelize.sync({ force: false });

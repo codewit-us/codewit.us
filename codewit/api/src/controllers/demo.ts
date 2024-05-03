@@ -219,14 +219,44 @@ async function deleteDemo(uid: number): Promise<Demo | null> {
   return demo;
 }
 
-async function likeDemo(uid: number): Promise<Demo | null> {
+async function likeDemo(uid: number, user_uid: number): Promise<Demo | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
-  if (demo) {
-    demo.likes++;
-    await demo.save();
+
+  if (!demo) {
+    return null;
   }
 
-  await demo.reload();
+  const isliked = await demo.hasLikedBy(user_uid);
+  if (!isliked) {
+    demo.addLikedBy(user_uid);
+    demo.likes += 1;
+
+    await demo.save();
+    await demo.reload();
+  }
+
+  return demo;
+}
+
+async function removeLikeDemo(
+  uid: number,
+  user_uid: number
+): Promise<Demo | null> {
+  const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
+
+  if (!demo) {
+    return null;
+  }
+
+  const isliked = await demo.hasLikedBy(user_uid);
+  if (isliked) {
+    demo.removeLikedBy(user_uid);
+    demo.likes -= 1;
+
+    await demo.save();
+    await demo.reload();
+  }
+
   return demo;
 }
 
@@ -237,6 +267,7 @@ export {
   updateDemo,
   deleteDemo,
   likeDemo,
+  removeLikeDemo,
   addExercisesToDemo,
   removeExercisesFromDemo,
   setExercisesForDemo,
