@@ -6,6 +6,8 @@ import {
   getUserById,
   updateUser,
 } from '../controllers/user';
+import { createUserSchema, updateUserSchema } from '@codewit/validations';
+import { fromZodError } from 'zod-validation-error';
 
 const userRouter = Router();
 
@@ -36,12 +38,20 @@ userRouter.get('/:uid', async (req, res) => {
 
 userRouter.post('/', async (req, res) => {
   try {
+    const validatedBody = createUserSchema.safeParse(req.body);
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
     const user = await createUser(
-      req.body.username,
-      req.body.email,
-      req.body.googleId,
-      req.body.isAdmin
+      validatedBody.data.username,
+      validatedBody.data.email,
+      validatedBody.data.googleId,
+      validatedBody.data.isAdmin
     );
+
     res.json(user);
   } catch (err) {
     console.error(err);
@@ -51,12 +61,20 @@ userRouter.post('/', async (req, res) => {
 
 userRouter.patch('/:uid', async (req, res) => {
   try {
+    const validatedBody = updateUserSchema.safeParse(req.body);
+    if (validatedBody.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(validatedBody.error).toString() });
+    }
+
     const user = await updateUser(
       Number(req.params.uid),
-      req.body.username,
-      req.body.email,
-      req.body.isAdmin
+      validatedBody.data.username,
+      validatedBody.data.email,
+      validatedBody.data.isAdmin
     );
+
     if (user) {
       res.json(user);
     } else {
