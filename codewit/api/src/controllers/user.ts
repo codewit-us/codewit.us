@@ -21,8 +21,9 @@ export async function getAllUsers(): Promise<User[]> {
   return users;
 }
 
-export async function getUserById(uid: number): Promise<User | null> {
-  const user = await User.findByPk(uid);
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const user = await User.findOne({ where: { email } });
+  console.log(user);
   return user;
 }
 

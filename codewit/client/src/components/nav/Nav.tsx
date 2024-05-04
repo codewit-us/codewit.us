@@ -11,7 +11,10 @@ const NavBar = (): JSX.Element => {
     axios.get('/oauth2/google/userinfo')
       .then(response => {
         setUser(response.data.user);
-      })
+      }).catch(() => {
+        window.location.href = '/oauth2/google';
+        // console.error('Failed to get user info:', error);
+      });
   }, []);
 
   const toggleNavbar = (): void => {
