@@ -3,7 +3,7 @@ import {
   createUser,
   deleteUser,
   getAllUsers,
-  getUserById,
+  getUserByEmail,
   updateUser,
 } from '../controllers/user';
 import { createUserSchema, updateUserSchema } from '@codewit/validations';
@@ -21,10 +21,11 @@ userRouter.get('/', async (req, res) => {
   }
 });
 
-// get user by id
-userRouter.get('/:uid', async (req, res) => {
+// get user by email
+userRouter.get('/:email', async (req, res) => {
   try {
-    const user = await getUserById(Number(req.params.uid));
+    console.log(req.params.email);
+    const user = await getUserByEmail((req.params.email));
     if (user) {
       res.json(user);
     } else {

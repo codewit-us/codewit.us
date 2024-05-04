@@ -43,6 +43,10 @@ export default defineConfig({
         target: 'http://app:3000',
         changeOrigin: true,
       },
+      '/users': {
+        target: 'http://app:3000',
+        changeOrigin: true,
+      },
     },
   },
 

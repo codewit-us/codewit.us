@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { MagnifyingGlassIcon, ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import axios from 'axios';
 
 interface User {
+  uid: number;
+  username: string;
+  googleId: string;
   email: string;
   isAdmin: boolean;
 }
@@ -27,20 +31,21 @@ const Modal: React.FC<ModalProps> = ({ user, onClose, onSave }) => (
 
 const UserManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [users, setUsers] = useState<User[]>([
-    { email: 'user1@example.com', isAdmin: false },
-    { email: 'admin@example.com', isAdmin: true },
-    { email: 'user2@example.com', isAdmin: false }
-  ]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>(users);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
 
-  const handleSearch = () => {
-    const matchedUsers = users.filter(user => user.email.toLowerCase().includes(searchQuery.toLowerCase()));
-    setFilteredUsers(matchedUsers);
-    if (matchedUsers.length === 0) {
-      alert('No user found with that email.');
+  const handleSearch = async () => {
+    try {
+      const response = await axios.get(`users/${searchQuery}`);
+      console.log(response.data);
+      setFilteredUsers([response.data]);
+    } catch (error) {
+      if(error.response.status === 404) {
+        setFilteredUsers([]);
+      } else {
+        console.error('Error searching for users:', error);
+      }
     }
   };
 
@@ -49,14 +54,23 @@ const UserManagement: React.FC = () => {
     setShowModal(true);
   };
 
-  const saveAdminStatus = () => {
-    if (currentUser) {
-      const updatedUsers = users.map(user =>
-        user.email === currentUser.email ? { ...user, isAdmin: !user.isAdmin } : user
-      );
-      setUsers(updatedUsers);
-      setFilteredUsers(updatedUsers.filter(user => user.email.toLowerCase().includes(searchQuery.toLowerCase())));
-      setShowModal(false);
+  const saveAdminStatus = async () => {
+    try {
+      if (currentUser) {
+        const response = await axios.patch(`/users/${currentUser.uid}`, {
+          isAdmin: !currentUser.isAdmin 
+        });
+        const updatedUser = response.data;        
+        setFilteredUsers(prevUsers =>
+          prevUsers.map(user =>
+            user.uid === updatedUser.uid ? updatedUser : user
+          )
+        );
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error('Error updating user admin status:', error);
+      alert('An error occurred while updating user admin status.');
     }
   };
 
@@ -66,7 +80,7 @@ const UserManagement: React.FC = () => {
         <div className="flex">
           <input
             type="text"
-            className="py-2 px-5 border border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
+            className="w-full md:w-64 py-2 px-5 border border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
             placeholder="Search by email"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
