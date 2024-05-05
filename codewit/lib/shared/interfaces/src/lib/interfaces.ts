@@ -70,6 +70,8 @@ interface Course {
   title: string;
   language: string;
   modules: string[];
+  instructors: number[];
+  roster: number[];
   id?: string | number;
 }
 
@@ -81,6 +83,13 @@ interface Module {
   uid?: number;
 }
 
+interface User {
+  uid: number;
+  username: string;
+  googleId: string;
+  email: string;
+  isAdmin: boolean;
+}
 
 // Interface to Youtube API Response
 
@@ -125,5 +134,6 @@ export type {
   Thumbnail,
   Resource,
   Course,
-  Module
+  Module,
+  User
 };
