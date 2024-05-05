@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 import { MagnifyingGlassIcon, ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { User } from '@codewit/interfaces'
+import { useSearchUser, useSetAdmin } from '../hooks/usehooks/useUserHooks';
 import axios from 'axios';
-
-interface User {
-  uid: number;
-  username: string;
-  googleId: string;
-  email: string;
-  isAdmin: boolean;
-}
 
 interface ModalProps {
   user: User;
@@ -35,11 +29,13 @@ const UserManagement: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
 
+  const { searchUser } = useSearchUser();
+  const { setAdmin } = useSetAdmin();
+  
   const handleSearch = async () => {
     try {
-      const response = await axios.get(`users/${searchQuery}`);
-      console.log(response.data);
-      setFilteredUsers([response.data]);
+      const response = await searchUser(searchQuery);
+      setFilteredUsers([response]);
     } catch (error) {
       if(error.response.status === 404) {
         setFilteredUsers([]);
@@ -57,10 +53,8 @@ const UserManagement: React.FC = () => {
   const saveAdminStatus = async () => {
     try {
       if (currentUser) {
-        const response = await axios.patch(`/users/${currentUser.uid}`, {
-          isAdmin: !currentUser.isAdmin 
-        });
-        const updatedUser = response.data;        
+        const response = await setAdmin(currentUser.uid, !currentUser.isAdmin);
+        const updatedUser = response;        
         setFilteredUsers(prevUsers =>
           prevUsers.map(user =>
             user.uid === updatedUser.uid ? updatedUser : user
@@ -119,7 +113,7 @@ const UserManagement: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
-                    className={`inline-flex items-center w-40 px-3 py-1 border border-transparent rounded-md shadow-sm text-sm leading-4 font-medium text-white ${user.isAdmin ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                    className={`inline-flex items-center w-40 px-3 py-1 border-transparent rounded-md shadow-sm text-sm leading-4 font-medium text-white ${user.isAdmin ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
                     onClick={() => toggleAdminStatus(user)}
                   >
                     {user.isAdmin ? <ShieldExclamationIcon className="h-5 w-5 mr-2" /> : <ShieldCheckIcon className="h-5 w-5 mr-2" />}

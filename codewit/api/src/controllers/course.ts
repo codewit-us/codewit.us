@@ -173,10 +173,10 @@ async function getAllCourses(): Promise<Course[]> {
       Language,
       Module,
       { association: Course.associations.instructors },
+      { association: Course.associations.roster },
     ],
     order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
-
   return courses;
 }
 

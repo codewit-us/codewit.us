@@ -23,7 +23,6 @@ export async function getAllUsers(): Promise<User[]> {
 
 export async function getUserByEmail(email: string): Promise<User | null> {
   const user = await User.findOne({ where: { email } });
-  console.log(user);
   return user;
 }
 
@@ -45,10 +44,9 @@ export async function updateUser(
   if (email) {
     user.email = email;
   }
-  if (isAdmin) {
+  if (isAdmin !== undefined) {
     user.isAdmin = isAdmin;
   }
-
   await user.save();
   await user.reload();
 

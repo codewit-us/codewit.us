@@ -68,14 +68,12 @@ userRouter.patch('/:uid', async (req, res) => {
         .status(400)
         .json({ message: fromZodError(validatedBody.error).toString() });
     }
-
     const user = await updateUser(
       Number(req.params.uid),
       validatedBody.data.username,
       validatedBody.data.email,
       validatedBody.data.isAdmin
     );
-
     if (user) {
       res.json(user);
     } else {
