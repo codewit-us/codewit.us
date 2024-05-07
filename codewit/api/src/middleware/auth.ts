@@ -8,4 +8,12 @@ const checkAuth = (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export default checkAuth;
+const checkAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user.isAdmin !== true) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  } else {
+    next();
+  }
+};
+
+export { checkAuth, checkAdmin };

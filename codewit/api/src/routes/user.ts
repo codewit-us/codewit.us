@@ -8,6 +8,7 @@ import {
 } from '../controllers/user';
 import { createUserSchema, updateUserSchema } from '@codewit/validations';
 import { fromZodError } from 'zod-validation-error';
+import { checkAdmin } from '../middleware/auth';
 
 const userRouter = Router();
 
@@ -25,7 +26,7 @@ userRouter.get('/', async (req, res) => {
 userRouter.get('/:email', async (req, res) => {
   try {
     console.log(req.params.email);
-    const user = await getUserByEmail((req.params.email));
+    const user = await getUserByEmail(req.params.email);
     if (user) {
       res.json(user);
     } else {
@@ -37,7 +38,7 @@ userRouter.get('/:email', async (req, res) => {
   }
 });
 
-userRouter.post('/', async (req, res) => {
+userRouter.post('/', checkAdmin, async (req, res) => {
   try {
     const validatedBody = createUserSchema.safeParse(req.body);
     if (validatedBody.success === false) {
@@ -60,7 +61,7 @@ userRouter.post('/', async (req, res) => {
   }
 });
 
-userRouter.patch('/:uid', async (req, res) => {
+userRouter.patch('/:uid', checkAdmin, async (req, res) => {
   try {
     const validatedBody = updateUserSchema.safeParse(req.body);
     if (validatedBody.success === false) {
@@ -85,7 +86,7 @@ userRouter.patch('/:uid', async (req, res) => {
   }
 });
 
-userRouter.delete('/:uid', async (req, res) => {
+userRouter.delete('/:uid', checkAdmin, async (req, res) => {
   try {
     const deleted = await deleteUser(Number(req.params.uid));
     if (deleted) {

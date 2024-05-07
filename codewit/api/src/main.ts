@@ -10,7 +10,7 @@ import passport from 'passport';
 import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT } from './secrets';
 import './auth/passport';
-import checkAuth from './middleware/auth';
+import { checkAuth } from './middleware/auth';
 import userRouter from './routes/user';
 
 const app = express();

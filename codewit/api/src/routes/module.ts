@@ -8,6 +8,7 @@ import {
 } from '../controllers/module';
 import { createModuleSchema, updateModuleSchema } from '@codewit/validations';
 import { fromZodError } from 'zod-validation-error';
+import { checkAdmin } from '../middleware/auth';
 
 const moduleRouter = Router();
 
@@ -35,7 +36,7 @@ moduleRouter.get('/:uid', async (req, res) => {
   }
 });
 
-moduleRouter.post('/', async (req, res) => {
+moduleRouter.post('/', checkAdmin, async (req, res) => {
   try {
     const validatedBody = createModuleSchema.safeParse(req.body);
     if (validatedBody.success === false) {
@@ -57,7 +58,7 @@ moduleRouter.post('/', async (req, res) => {
   }
 });
 
-moduleRouter.patch('/:uid', async (req, res) => {
+moduleRouter.patch('/:uid', checkAdmin, async (req, res) => {
   try {
     const validatedBody = updateModuleSchema.safeParse(req.body);
     if (validatedBody.success === false) {
@@ -84,7 +85,7 @@ moduleRouter.patch('/:uid', async (req, res) => {
   }
 });
 
-moduleRouter.delete('/:uid', async (req, res) => {
+moduleRouter.delete('/:uid', checkAdmin, async (req, res) => {
   try {
     const module = await deleteModule(Number(req.params.uid));
     if (module) {

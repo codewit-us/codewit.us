@@ -8,6 +8,7 @@ import {
 } from '../controllers/course';
 import { fromZodError } from 'zod-validation-error';
 import { createCourseSchema, updateCourseSchema } from '@codewit/validations';
+import { checkAdmin } from '../middleware/auth';
 
 const courseRouter = Router();
 
@@ -35,7 +36,7 @@ courseRouter.get('/:uid', async (req, res) => {
   }
 });
 
-courseRouter.post('/', async (req, res) => {
+courseRouter.post('/', checkAdmin, async (req, res) => {
   try {
     const validatedBody = createCourseSchema.safeParse(req.body);
     if (validatedBody.success === false) {
@@ -59,7 +60,7 @@ courseRouter.post('/', async (req, res) => {
   }
 });
 
-courseRouter.patch('/:uid', async (req, res) => {
+courseRouter.patch('/:uid', checkAdmin, async (req, res) => {
   try {
     const validatedBody = updateCourseSchema.safeParse(req.body);
     if (validatedBody.success === false) {
@@ -88,7 +89,7 @@ courseRouter.patch('/:uid', async (req, res) => {
   }
 });
 
-courseRouter.delete('/:uid', async (req, res) => {
+courseRouter.delete('/:uid', checkAdmin, async (req, res) => {
   try {
     const course = await deleteCourse(req.params.uid);
     if (course) {

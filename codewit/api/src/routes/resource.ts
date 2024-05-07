@@ -13,6 +13,7 @@ import {
   updateResourceSchema,
 } from '@codewit/validations';
 import { fromZodError } from 'zod-validation-error';
+import { checkAdmin } from '../middleware/auth';
 
 const resourceRouter = Router();
 
@@ -41,7 +42,7 @@ resourceRouter.get('/:uid', async (req, res) => {
   }
 });
 
-resourceRouter.post('/', async (req, res) => {
+resourceRouter.post('/', checkAdmin, async (req, res) => {
   try {
     const validatedBody = createResourceSchema.safeParse(req.body);
     if (validatedBody.success === false) {
@@ -62,7 +63,7 @@ resourceRouter.post('/', async (req, res) => {
   }
 });
 
-resourceRouter.patch('/:uid', async (req, res) => {
+resourceRouter.patch('/:uid', checkAdmin, async (req, res) => {
   try {
     const uid = parseInt(req.params.uid);
     const validatedBody = updateResourceSchema.safeParse(req.body);
@@ -90,7 +91,7 @@ resourceRouter.patch('/:uid', async (req, res) => {
   }
 });
 
-resourceRouter.delete('/:uid', async (req, res) => {
+resourceRouter.delete('/:uid', checkAdmin, async (req, res) => {
   try {
     const uid = parseInt(req.params.uid);
     const resource = await deleteResource(uid);
