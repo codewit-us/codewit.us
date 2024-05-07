@@ -10,7 +10,7 @@ import {
   usePostExercise,
   usePatchExercises,
   useFetchExercises,
-  useDeleteExercise
+  useDeleteExercise,
 } from "../hooks/exercisehooks/useExerciseHooks";
 
 interface FormData {
@@ -19,7 +19,7 @@ interface FormData {
   editingUid: number;
   selectedLanguage: string;
   topic: string;
-  selectedTags: {label: string, value: string}[];
+  selectedTags: { label: string, value: string }[];
 }
 
 const ExerciseForms = (): JSX.Element => {
@@ -39,75 +39,74 @@ const ExerciseForms = (): JSX.Element => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const fExercises = async () => {
+    const loadExercises = async () => {
       try {
-        const data  = await fetchExercises();
+        const data = await fetchExercises();
         setExercises(data as unknown as ExerciseResponse[]);
       } catch (error) {
         console.error("Error fetching exercises:", error);
         setError(true);
       }
     };
-    fExercises();
+    loadExercises();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const {
-      editingUid,
-      isEditing,
-    } = formData;
+    const { editingUid, isEditing } = formData;
 
     const exerciseData = {
       prompt: formData.exercise.prompt.trim(),
       topic: formData.topic,
-      tags: formData.selectedTags.map((tag: { value: string }) => tag.value),
+      tags: formData.selectedTags.map((tag) => tag.value),
       language: formData.selectedLanguage,
     };
 
     try {
       let response: ExerciseResponse;
-      if (isEditing && editingUid) {
+      if (isEditing && editingUid !== -1) {
         response = await patchExercises(exerciseData, editingUid);
       } else {
         response = await postExercise(exerciseData);
       }
+
       setExercises((prev) =>
         isEditing
           ? prev.map((ex) => (ex.uid === editingUid ? response : ex))
           : [...prev, response]
       );
-      setFormData((prev) => ({
-        ...prev,
+
+      // Reset form after successful submission
+      setFormData({
         exercise: { prompt: "" },
-        selectedTags: [],
-        topic: '',  
-        selectedLanguage: "cpp",
         isEditing: false,
         editingUid: -1,
-      }));
+        topic: '',
+        selectedLanguage: "cpp",
+        selectedTags: [],
+      });
     } catch (error) {
       setError(true);
       console.error("Error saving the exercise:", error);
     }
-  }
+  };
 
   const handleEditorChange = (value: string | undefined) => {
     setFormData((prev) => ({ ...prev, exercise: { prompt: value || "" } }));
   };
 
-  const handleEdit =  (exerciseUID: number) => {
+  const handleEdit = (exerciseUID: number) => {
     const exerciseToEdit = exercises.find((ex) => ex.uid === exerciseUID);
     if (!exerciseToEdit) {
       console.error("Exercise with UID not found:", exerciseUID);
       return;
     }
+
     setFormData({
-      ...formData,
       exercise: { prompt: exerciseToEdit.prompt },
       isEditing: true,
+      editingUid: exerciseUID,
       topic: exerciseToEdit.topic,
-      editingUid: exerciseUID as number,
       selectedTags: exerciseToEdit.tags.map((tag) => ({
         label: typeof tag === "string" ? tag : tag.name,
         value: typeof tag === "string" ? tag : tag.name,
@@ -116,31 +115,31 @@ const ExerciseForms = (): JSX.Element => {
         typeof exerciseToEdit.language === "string"
           ? exerciseToEdit.language
           : exerciseToEdit.language.name,
-      });
-  }
+    });
+  };
 
   const handleDelete = async (exerciseId: number) => {
     try {
       await deleteExercise(exerciseId);
-      setExercises(exercises.filter((ex) => ex.uid !== exerciseId));
+      setExercises((prev) => prev.filter((ex) => ex.uid !== exerciseId));
     } catch (error) {
       console.error("Error deleting exercise:", error);
       setError(true);
     }
-  }
+  };
 
   const handleTagSelect = (tags: SelectedTag[]) => {
-    setFormData(prev => ({ ...prev, selectedTags: tags }));
-  }
+    setFormData((prev) => ({ ...prev, selectedTags: tags }));
+  };
 
-  const handleTopicSelect = (topics: {label: string, value: string}[] | {label: string, value: string}) => {
+  const handleTopicSelect = (topics: { label: string, value: string }[] | { label: string, value: string }) => {
     const topic = Array.isArray(topics) ? topics[0].value : topics.value;
-    setFormData(prev => ({ ...prev, topic: topic }));
+    setFormData((prev) => ({ ...prev, topic }));
   };
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
-  }
+  };
 
   if (error) {
     return <Error />;
@@ -171,25 +170,21 @@ const ExerciseForms = (): JSX.Element => {
             initialLanguage={formData.selectedLanguage}
           />
         </div>
-        <TagSelect 
-            selectedTags={[{value: formData.topic, label: formData.topic}]} 
-            setSelectedTags={handleTopicSelect}
-            isMulti={false}
+        <TagSelect
+          selectedTags={[{ value: formData.topic, label: formData.topic }]}
+          setSelectedTags={handleTopicSelect}
+          isMulti={false}
         />
         <SubmitBtn
           disabled={
             formData.exercise.prompt === "" ||
             formData.selectedTags.length === 0 ||
-            !formData.selectedLanguage
+            formData.topic === ''
           }
           text={formData.isEditing ? "Confirm Edit" : "Create"}
         />
       </form>
-      <ExistingTable
-        items={exercises}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <ExistingTable items={exercises} onEdit={handleEdit} onDelete={handleDelete} />
     </div>
   );
 };

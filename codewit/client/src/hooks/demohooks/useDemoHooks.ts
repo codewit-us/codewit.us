@@ -4,25 +4,15 @@ import { DemoResponse } from '@codewit/interfaces';
 
 // Fetch multiple demos
 const useFetchDemos = () => {
-  const [demos, setDemos] = useState<DemoResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const fetchDemos = async () => {
-      try {
-        const response = await axios.get('/demos');
-        setDemos(response.data);
-      } catch (error) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDemos();
-  }, []);
-
-  return { demos, loading, error, setDemos };
+  const fetchDemos = async () => {
+    try {
+      const response = await axios.get('/demos');
+      return response.data;
+    } catch (error) {
+      throw Error();
+    }
+  };
+  return { fetchDemos };
 };
 
 // Fetch a single demo
@@ -79,23 +69,18 @@ const usePostDemo = () => {
 };
 
 // Delete a demo
-const useDeleteDemo = (onSuccess: (demoUid: number) => void) => {
-  const [isDeleting, setIsDeleting] = useState<{ [key: number]: boolean }>({});
-  const [error, setError] = useState(false);
+const useDeleteDemo = () => {
 
   const deleteDemo = async (demoUid: number) => {
-    setIsDeleting(prev => ({ ...prev, [demoUid]: true }));
     try {
-      await axios.delete(`/demos/${demoUid}`);
-      onSuccess(demoUid);
+      const response = await axios.delete(`/demos/${demoUid}`);
+      return response.data;
     } catch (error) {
-      setError(true);
-    } finally {
-      setIsDeleting(prev => ({ ...prev, [demoUid]: false }));
+      throw Error();
     }
   };
 
-  return { deleteDemo, isDeleting, error };
+  return { deleteDemo };
 };
 
 // Delete a demo exercise
