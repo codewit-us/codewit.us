@@ -12,7 +12,7 @@ import { checkAdmin } from '../middleware/auth';
 
 const userRouter = Router();
 
-userRouter.get('/', async (req, res) => {
+userRouter.get('/', checkAdmin, async (req, res) => {
   try {
     const users = await getAllUsers();
     res.json(users);
@@ -23,7 +23,7 @@ userRouter.get('/', async (req, res) => {
 });
 
 // get user by email
-userRouter.get('/:email', async (req, res) => {
+userRouter.get('/:email', checkAdmin, async (req, res) => {
   try {
     console.log(req.params.email);
     const user = await getUserByEmail(req.params.email);
