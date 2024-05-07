@@ -12,12 +12,22 @@ const admins = [];
 
 async function seedAdmins() {
   for (const email of admins) {
-    await User.findOrCreate({
+    const user = await User.findOne({
       where: {
         email,
-        isAdmin: true,
       },
     });
+
+    if (!user) {
+      await User.create({
+        email,
+        isAdmin: true,
+      });
+    }
+
+    if (user && !user.isAdmin) {
+      await user.update({ isAdmin: true });
+    }
   }
 }
 
