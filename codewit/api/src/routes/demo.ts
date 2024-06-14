@@ -19,6 +19,7 @@ import {
   updateDemoSchema,
 } from '@codewit/validations';
 import { fromZodError } from 'zod-validation-error';
+import { checkAdmin } from '../middleware/auth';
 
 const demoRouter = Router();
 
@@ -46,7 +47,7 @@ demoRouter.get('/:uid', async (req, res) => {
   }
 });
 
-demoRouter.post('/', async (req, res) => {
+demoRouter.post('/', checkAdmin, async (req, res) => {
   try {
     const validatedBody = createDemoSchema.safeParse(req.body);
 
@@ -71,7 +72,7 @@ demoRouter.post('/', async (req, res) => {
   }
 });
 
-demoRouter.patch('/:uid', async (req, res) => {
+demoRouter.patch('/:uid', checkAdmin, async (req, res) => {
   try {
     const validatedBody = updateDemoSchema.safeParse(req.body);
 
@@ -131,7 +132,7 @@ demoRouter.delete('/:uid/like', async (req, res) => {
   }
 });
 
-demoRouter.patch('/:uid/exercises', async (req, res) => {
+demoRouter.patch('/:uid/exercises', checkAdmin, async (req, res) => {
   try {
     const validatedBody = addExercisesToDemoSchema.safeParse(req.body);
 
@@ -157,7 +158,7 @@ demoRouter.patch('/:uid/exercises', async (req, res) => {
   }
 });
 
-demoRouter.delete('/:uid/exercises', async (req, res) => {
+demoRouter.delete('/:uid/exercises', checkAdmin, async (req, res) => {
   try {
     const validatedBody = removeExercisesFromDemoSchema.safeParse(req.body);
 
@@ -183,7 +184,7 @@ demoRouter.delete('/:uid/exercises', async (req, res) => {
   }
 });
 
-demoRouter.put('/:uid/exercises', async (req, res) => {
+demoRouter.put('/:uid/exercises', checkAdmin, async (req, res) => {
   try {
     const validatedBody = setExercisesForDemoSchema.safeParse(req.body);
 
@@ -209,7 +210,7 @@ demoRouter.put('/:uid/exercises', async (req, res) => {
   }
 });
 
-demoRouter.delete('/:uid', async (req, res) => {
+demoRouter.delete('/:uid', checkAdmin, async (req, res) => {
   try {
     const demo = await deleteDemo(Number(req.params.uid));
     if (demo) {

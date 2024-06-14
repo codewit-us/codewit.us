@@ -42,6 +42,7 @@ authRouter.get('/google/userInfo', (req, res) => {
         username: req.user.username,
         email: req.user.email,
         googleId: req.user.googleId,
+        isAdmin: req.user.isAdmin,
       },
     });
   }

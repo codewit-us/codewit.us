@@ -1,32 +1,40 @@
 import { User, sequelize } from '../models';
+import { Command } from 'commander';
 
-/*
-Add admin emails to this array to seed the database with admin users.
-example:
-const admins = [
-  'kbuffardi@mail.csuchico.edu',
-  'kbuffardi@csuchico.edu'
-];
-*/
-const admins = [];
+const program = new Command();
+
+program
+  .version('1.0.0')
+  .option('-f, --force', 'Force sync the database')
+  .option('-a, --admin <emails...>', 'Add admin emails')
+  .parse(process.argv);
+
+const options = program.opts();
+const admins = options.admin || [];
 
 async function seedAdmins() {
   for (const email of admins) {
-    await User.findOrCreate({
+    const user = await User.findOne({
       where: {
         email,
-        isAdmin: true,
       },
     });
+
+    if (!user) {
+      await User.create({
+        email,
+        isAdmin: true,
+      });
+    }
+
+    if (user && !user.isAdmin) {
+      await user.update({ isAdmin: true });
+    }
   }
 }
 
 (async () => {
-  // read args to see if we should force sync
-  const args = process.argv;
-  const force = args.includes('--force');
-
-  if (force) {
+  if (options.force) {
     await sequelize.sync({ force: true });
     console.log('Force syncing database');
   }
@@ -34,10 +42,10 @@ async function seedAdmins() {
   await seedAdmins();
   console.log('Admins seeded');
 
-  const admins = await User.findAll({ where: { isAdmin: true } });
+  const adminUsers = await User.findAll({ where: { isAdmin: true } });
 
   console.log(
     'Admins:\n',
-    admins.map((admin) => admin)
+    adminUsers.map((admin) => admin.email)
   );
 })();

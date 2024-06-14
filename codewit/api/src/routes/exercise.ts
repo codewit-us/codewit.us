@@ -12,6 +12,7 @@ import {
   updateExerciseSchema,
 } from '@codewit/validations';
 import { fromZodError } from 'zod-validation-error';
+import { checkAdmin } from '../middleware/auth';
 
 const exerciseRouter = Router();
 
@@ -39,7 +40,7 @@ exerciseRouter.get('/:uid', async (req, res) => {
   }
 });
 
-exerciseRouter.post('/', async (req, res) => {
+exerciseRouter.post('/', checkAdmin, async (req, res) => {
   try {
     const validatedBody = createExerciseSchema.safeParse(req.body);
 
@@ -62,7 +63,7 @@ exerciseRouter.post('/', async (req, res) => {
   }
 });
 
-exerciseRouter.patch('/:uid', async (req, res) => {
+exerciseRouter.patch('/:uid', checkAdmin, async (req, res) => {
   try {
     const validatedBody = updateExerciseSchema.safeParse(req.body);
 
@@ -91,7 +92,7 @@ exerciseRouter.patch('/:uid', async (req, res) => {
   }
 });
 
-exerciseRouter.delete('/:uid', async (req, res) => {
+exerciseRouter.delete('/:uid', checkAdmin, async (req, res) => {
   try {
     const exercise = await deleteExercise(Number(req.params.uid));
     if (exercise) {

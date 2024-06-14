@@ -1,35 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 
-const NavBar = (): JSX.Element => {
+const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => void; }): JSX.Element => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    axios.get('/oauth2/google/userinfo')
-      .then(response => {
-        setUser(response.data.user);
-      }).catch(() => {
-        window.location.href = '/oauth2/google';
-        // console.error('Failed to get user info:', error);
-      });
-  }, []);
 
   const toggleNavbar = (): void => {
     setIsOpen(!isOpen);
-  };
-
-  const handleLogout = () => {
-    axios.get('/oauth2/google/logout')
-      .then(() => {
-        setUser(null);
-        window.location.href = '/';
-      })
-      .catch(error => {
-        console.error('Logout failed:', error);
-      });
   };
 
   const handleGoogleLogin = () => {
@@ -55,9 +33,9 @@ const NavBar = (): JSX.Element => {
             </div>
           </div>
           <div className="hidden sm:flex sm:items-center sm:ml-6">
-            {user ? (
+            {email ? (
               <div className="flex items-center space-x-2">
-                <span className="text-gray-300 font-medium">{user.email}</span>
+                <span className="text-gray-300 font-medium">{email}</span>
                 <button onClick={handleLogout} className="p-1 rounded hover:bg-gray-700">
                   <ArrowLeftStartOnRectangleIcon className="h-6 w-6 text-gray-400 hover:text-white" />
                 </button>
@@ -84,9 +62,9 @@ const NavBar = (): JSX.Element => {
               <Link to="/" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Home</Link>
               <Link to="/create" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
               <Link to="/usermanagement" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
-              {user ? (
+              {email ? (
                 <div className="flex flex-col items-center space-y-2">
-                  <span className="text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">{user.email}</span>
+                  <span className="text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">{email}</span>
                   <button onClick={handleLogout} className="w-full text-center px-3 py-2 rounded-md text-base font-medium bg-blue-500 hover:bg-gray-600">
                     Log out
                   </button>

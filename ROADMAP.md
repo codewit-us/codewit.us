@@ -51,7 +51,7 @@ The `codewit/client` directory contains the react app that drives the front-end.
 
 - **Location**: `codewit/client/src/pages/create.tsx`. The Create Page is designed to display both Forms using React Router's `Links` & `Outlets`, enabling the display for `<DemoForm />`, `<ExerciseForm />`, `<ModuleForm />`,`<CourseForm />`,`<ResourceForm />`.
 - **Functionality**:
-  - **Navigation Between Forms**: Provides users the ability to navigate between the Create Demo, Exercise, Module, Course, and Resource Forms using a dashboard located on the left-hand side of the page.
+  - **Navigation Between Forms**: Provides users the ability to navigate between the Create Demo, Exercise, Module, Course, and Resource Forms using a dashboard located on the left-hand side of the page. Page is hidden if the user is not an admin and also not signed in.
   - **Creating/Editing/Deleting Forms**: Allows users to create new instances of forms, edit existing ones, and delete them as needed.
 - **Components**:
   - **DemoForm (`<DemoForm />`)**: This component is responsible for rendering the form used for creating and editing demo information. It encapsulates all the necessary fields and functionalities, including input fields for demo details and submission controls.
@@ -60,6 +60,12 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - **ModuleForm (`<ModuleForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting modules. It encapsulates all the necessary fields and functionalities, including input fields for module details and submission controls.
   - **ResourceForm (`<ResourceForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting resources. It encapsulates all the necessary fields and functionalities, including input fields for resource details and submission controls.
     - All pages are located under the same directory as the Create Page and  use components located under `../components/form/` to render various inputs/fields
+
+## User Management page
+- **Location**: `codewit/client/src/pages/usermanagement.tsx`. 
+- **Functionality**:
+  - The User Management page is supposed to allow **admin** users to promote other users to admins as well
+  - URL is also hidden if the user is not an admin or is not signed in.
 
 ## Back-end
 
