@@ -30,22 +30,6 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-app.use(
-  session({
-    secret: COOKIE_KEY,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      // 7 days
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    },
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.use(express.json());
 
 app.use('/oauth2', authrouter);
@@ -55,17 +39,8 @@ app.use('/exercises', checkAuth, exerciseRouter);
 app.use('/modules', checkAuth, moduleRouter);
 app.use('/resources', checkAuth, resourceRouter);
 app.use('/courses', checkAuth, courseRouter);
-app.use('/oauth2', authrouter);
-app.use('/users', checkAuth, userRouter);
-app.use('/demos', checkAuth, demoRouter);
-app.use('/exercises', checkAuth, exerciseRouter);
-app.use('/modules', checkAuth, moduleRouter);
-app.use('/resources', checkAuth, resourceRouter);
-app.use('/courses', checkAuth, courseRouter);
 
 app.listen(PORT, HOST, async () => {
-app.listen(PORT, HOST, async () => {
   await sequelize.sync({ force: false });
-  console.log(`[ ready ] http://${HOST}:${PORT}`);
   console.log(`[ ready ] http://${HOST}:${PORT}`);
 });
