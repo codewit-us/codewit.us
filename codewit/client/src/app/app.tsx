@@ -23,6 +23,7 @@ export function App() {
     axios.get('/oauth2/google/userinfo')
       .then((response) => {
         setUser(response.data.user);
+        localStorage.setItem('userId', response.data.user.googleId);
       }).catch(() => {
         setUser(null);
       }).finally(() => {

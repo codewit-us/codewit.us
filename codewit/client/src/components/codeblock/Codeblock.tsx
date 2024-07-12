@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
 import { ArrowPathIcon, CheckIcon } from '@heroicons/react/24/solid';
-const CodeEditor = (): JSX.Element => {
+const CodeEditor = ({onSubmit}: {onSubmit: () => string}): JSX.Element => {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
@@ -43,7 +43,10 @@ const CodeEditor = (): JSX.Element => {
             <ArrowPathIcon className="w-6 h-6" />
             Reset
           </button>
-          <button className="inline-flex justify-center align-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-bold w-2/3 py-2 px-4 rounded">
+          <button 
+            className="inline-flex justify-center align-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-bold w-2/3 py-2 px-4 rounded"
+            onClick={() => onSubmit(editorInstanceRef.current?.getValue() || '')}
+          >
             <CheckIcon className="w-6 h-6" />
             Submit
         </button>
