@@ -20,6 +20,8 @@ const Read = (): JSX.Element => {
   const { uid } = useParams<{ uid: string }>();
   const { demo, loading, error } = useFetchSingleDemo(uid!);
 
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMdScreen(window.innerWidth >= 768);
@@ -36,6 +38,30 @@ const Read = (): JSX.Element => {
     } catch (error) {
       console.error('Error liking the video:', error);
     }
+  }
+
+  const handleSubmission = async (code: string) => {
+    const userId = localStorage.getItem('userId');
+    const submission = {
+      timestamp: new Date().toISOString(),
+      userId: userId,
+      exerciseId: demo?.exercises[currentExerciseIndex].uid,
+      code: code,
+    };
+
+    const isSuccess = true; 
+
+    if (isSuccess) {
+      setCurrentExerciseIndex((prevIndex) => {
+        if (demo && prevIndex < demo.exercises.length - 1) {
+          return prevIndex + 1;
+        } else {
+          return prevIndex;
+        }
+      });
+    }
+
+    console.log('Attempt:', submission);
   }
 
   if (error) {
@@ -98,7 +124,9 @@ const Read = (): JSX.Element => {
       {isMdScreen ? resizableContent : nonResizableContent}
       <div className="flex-1 h-full w-full md:overflow-auto p-4 flex flex-col gap-2">
         {demo && <Exercises exercises={demo.exercises} />}
-        <CodeBlock />
+        <CodeBlock 
+          onSubmit={handleSubmission}
+        />
         <Checklist />
       </div>
     </div>
