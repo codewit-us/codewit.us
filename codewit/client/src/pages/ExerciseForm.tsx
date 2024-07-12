@@ -12,6 +12,8 @@ import {
   useFetchExercises,
   useDeleteExercise,
 } from "../hooks/exercisehooks/useExerciseHooks";
+import { Editor } from "@monaco-editor/react";
+import { exit } from "process";
 
 interface FormData {
   exercise: { prompt: string };
@@ -20,6 +22,7 @@ interface FormData {
   selectedLanguage: string;
   topic: string;
   selectedTags: { label: string, value: string }[];
+  testingScript: string;
 }
 
 const ExerciseForms = (): JSX.Element => {
@@ -34,6 +37,7 @@ const ExerciseForms = (): JSX.Element => {
     topic: '',
     selectedLanguage: "cpp",
     selectedTags: [],
+    testingScript: "",
   });
   const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
   const [error, setError] = useState(false);
@@ -60,6 +64,7 @@ const ExerciseForms = (): JSX.Element => {
       topic: formData.topic,
       tags: formData.selectedTags.map((tag) => tag.value),
       language: formData.selectedLanguage,
+      testingScript: formData.testingScript,
     };
 
     try {
@@ -84,6 +89,7 @@ const ExerciseForms = (): JSX.Element => {
         topic: '',
         selectedLanguage: "cpp",
         selectedTags: [],
+        testingScript: "",
       });
     } catch (error) {
       setError(true);
@@ -93,6 +99,10 @@ const ExerciseForms = (): JSX.Element => {
 
   const handleEditorChange = (value: string | undefined) => {
     setFormData((prev) => ({ ...prev, exercise: { prompt: value || "" } }));
+  };
+
+  const handleScriptChange = (value: string | undefined) => {
+    setFormData((prev) => ({ ...prev, testingScript: value || "" }));
   };
 
   const handleEdit = (exerciseUID: number) => {
@@ -115,6 +125,7 @@ const ExerciseForms = (): JSX.Element => {
         typeof exerciseToEdit.language === "string"
           ? exerciseToEdit.language
           : exerciseToEdit.language.name,
+      testingScript: exerciseToEdit.testingScript || "",
     });
   };
 
@@ -159,6 +170,15 @@ const ExerciseForms = (): JSX.Element => {
             data-testid="prompt"
           />
         </div>
+        <div className="mb-2 overflow-auto">
+          <Editor
+            height="200px"
+            language={formData.selectedLanguage}
+            value={formData.testingScript}
+            onChange={handleScriptChange}
+            theme="vs-dark"
+          />
+        </div>
         <div className="flex flex-row w-full gap-3 mb-6">
           <TagSelect
             selectedTags={formData.selectedTags}
@@ -179,7 +199,8 @@ const ExerciseForms = (): JSX.Element => {
           disabled={
             formData.exercise.prompt === "" ||
             formData.selectedTags.length === 0 ||
-            formData.topic === ''
+            formData.topic === '' ||
+            formData.testingScript === ""
           }
           text={formData.isEditing ? "Confirm Edit" : "Create"}
         />
