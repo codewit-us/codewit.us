@@ -1,4 +1,3 @@
-// App.tsx
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -14,9 +13,11 @@ import CourseForm from '../pages/CourseForm';
 import DemoForms from '../pages/DemoForm';
 import UserManagement from '../pages/UserManagement';
 import Error from '../components/error/Error';
+import LoadingPage from '../components/loading/LoadingPage';
 
 export function App() {
   const [user, setUser] = useState<{ email: string; googleId: string; isAdmin: boolean; name: string } | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     axios.get('/oauth2/google/userinfo')
@@ -24,6 +25,8 @@ export function App() {
         setUser(response.data.user);
       }).catch(() => {
         setUser(null);
+      }).finally(() => {
+        setLoading(false);
       });
   }, []);
 
@@ -37,6 +40,10 @@ export function App() {
         console.error('Logout failed:', error);
       });
   };
+
+  if (loading) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="w-full h-screen bg-background-500">
