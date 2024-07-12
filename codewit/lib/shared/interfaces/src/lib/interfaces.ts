@@ -13,6 +13,7 @@ interface ExerciseResponse {
   createdAt: string;
   language: string | {name:string;};
   tags: Tag[];
+  testing_script: string;
 }
 
 interface Demo {
