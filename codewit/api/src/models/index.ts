@@ -7,6 +7,7 @@ import { Course } from './course';
 import { Module } from './module';
 import { Resource } from './resource';
 import { User } from './user';
+import { Attempt } from './attempt';
 
 if (
   !process.env.DB_HOST ||
@@ -117,5 +118,6 @@ export {
   CourseModules,
   Resource,
   User,
+  Attempt,
   sequelize,
 };
