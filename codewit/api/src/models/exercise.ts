@@ -26,6 +26,7 @@ class Exercise extends Model<
   declare uid: number;
   declare prompt: string;
   declare topic: string;
+  declare referenceTest: string;
 
   declare language?: NonAttribute<Language>;
   declare tags?: NonAttribute<Tag[]>;
@@ -58,6 +59,10 @@ class Exercise extends Model<
           allowNull: false,
         },
         topic: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        referenceTest: {
           type: DataTypes.STRING,
           allowNull: false,
         },
