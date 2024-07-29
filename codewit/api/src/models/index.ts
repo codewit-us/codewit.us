@@ -30,9 +30,17 @@ const sequelize = new Sequelize({
   dialect: 'postgres',
 });
 
-[Demo, Exercise, Tag, Language, Resource, Module, Course, User].forEach(
-  (model) => model.initialize(sequelize)
-);
+[
+  Demo,
+  Exercise,
+  Tag,
+  Language,
+  Resource,
+  Module,
+  Course,
+  User,
+  Attempt,
+].forEach((model) => model.initialize(sequelize));
 
 Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
 Exercise.belongsToMany(Demo, { through: 'DemoExercises' });
@@ -105,6 +113,9 @@ User.belongsToMany(Resource, {
   through: 'ResourceLikes',
   as: 'likedResources',
 });
+
+Attempt.belongsTo(Exercise);
+Attempt.belongsTo(User);
 
 export {
   Demo,
