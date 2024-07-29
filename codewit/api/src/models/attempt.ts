@@ -14,7 +14,11 @@ import {
   InferCreationAttributes,
   DataTypes,
   Sequelize,
+  NonAttribute,
+  HasOneSetAssociationMixin,
 } from 'sequelize';
+import { Exercise } from './exercise';
+import { User } from './user';
 
 class Attempt extends Model<
   InferAttributes<Attempt>,
@@ -22,10 +26,13 @@ class Attempt extends Model<
 > {
   declare uid: number;
   declare timestamp: Date;
-  declare exerciseId: number;
-  declare userId: number;
+  declare exercise: NonAttribute<Exercise>;
+  declare user: NonAttribute<User>;
   declare submissionNumber: number;
   declare code: string;
+
+  declare setUser: HasOneSetAssociationMixin<User, number>;
+  declare setExercise: HasOneSetAssociationMixin<Exercise, number>;
 
   static initialize(sequelize: Sequelize) {
     this.init(
@@ -39,14 +46,6 @@ class Attempt extends Model<
           type: DataTypes.DATE,
           allowNull: false,
           defaultValue: DataTypes.NOW,
-        },
-        exerciseId: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-        },
-        userId: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
         },
         submissionNumber: {
           type: DataTypes.INTEGER,
