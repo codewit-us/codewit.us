@@ -1,43 +1,52 @@
-import { Attempt, Exercise, User } from '../models';
+import { Attempt, Exercise, sequelize, User } from '../models';
 
 async function createAttempt(
   exerciseId: number,
   userId: number,
   code: string
 ): Promise<Attempt | null> {
-  // get count of previous submissions for the exercise by the user
-  const exercise = await Exercise.findByPk(exerciseId);
-  const user = await User.findByPk(userId);
+  return sequelize.transaction(async (transaction) => {
+    await sequelize.query('LOCK TABLE "attempts" IN SHARE ROW EXCLUSIVE MODE', {
+      transaction,
+    });
 
-  if (!exercise || !user) {
-    return null;
-  }
+    const exercise = await Exercise.findByPk(exerciseId, { transaction });
+    const user = await User.findByPk(userId, { transaction });
 
-  // get submission count for the user
-  const submissionCount = await Attempt.count({
-    include: [
+    if (!exercise || !user) {
+      return null;
+    }
+
+    // get submission count for the user
+    const submissionCount = await Attempt.count({
+      include: [
+        {
+          model: Exercise,
+          where: { uid: exerciseId },
+        },
+        {
+          model: User,
+          where: { uid: userId },
+        },
+      ],
+      transaction,
+    });
+
+    const attempt = await Attempt.create(
       {
-        model: Exercise,
-        where: { id: exerciseId },
+        code,
+        submissionNumber: submissionCount + 1,
       },
-      {
-        model: User,
-        where: { id: userId },
-      },
-    ],
+      { transaction }
+    );
+
+    await attempt.setUser(user, { transaction });
+    await attempt.setExercise(exercise, { transaction });
+
+    await attempt.reload({ include: [Exercise, User], transaction });
+
+    return attempt;
   });
-
-  const attempt = await Attempt.create({
-    code,
-    submissionNumber: submissionCount + 1,
-  });
-
-  await attempt.setUser(user);
-  await attempt.setExercise(exercise);
-
-  await attempt.reload({ include: [Exercise, User] });
-
-  return attempt;
 }
 
 export { createAttempt };

@@ -6,12 +6,13 @@ import moduleRouter from './routes/module';
 import resourceRouter from './routes/resource';
 import courseRouter from './routes/course';
 import authrouter from './routes/auth';
+import userRouter from './routes/user';
+import attemptRouter from './routes/attempt';
 import passport from 'passport';
 import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
-import userRouter from './routes/user';
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/exercises', checkAuth, exerciseRouter);
 app.use('/modules', checkAuth, moduleRouter);
 app.use('/resources', checkAuth, resourceRouter);
 app.use('/courses', checkAuth, courseRouter);
+app.use('/attempts', checkAuth, attemptRouter);
 
 app.listen(PORT, HOST, async () => {
   await sequelize.sync({ force: false });
