@@ -8,6 +8,7 @@ const createExerciseSchema = z.object({
     .refine((t) => validateTopic(t), { message: 'Invalid topic' }),
   language: z.string().optional(),
   tags: z.string().array().optional(),
+  referenceTest: z.string(),
 });
 
 const updateExerciseSchema = z.object({
@@ -18,6 +19,7 @@ const updateExerciseSchema = z.object({
     .optional(),
   language: z.string().optional(),
   tags: z.string().array().optional(),
+  referenceTest: z.string().optional(),
 });
 
 export type ZCreateExerciseSchema = z.infer<typeof createExerciseSchema>;

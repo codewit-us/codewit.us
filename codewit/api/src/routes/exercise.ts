@@ -53,6 +53,7 @@ exerciseRouter.post('/', checkAdmin, async (req, res) => {
     const exercise = await createExercise(
       validatedBody.data.prompt,
       validatedBody.data.topic,
+      validatedBody.data.referenceTest,
       validatedBody.data.tags,
       validatedBody.data.language
     );
@@ -76,6 +77,7 @@ exerciseRouter.patch('/:uid', checkAdmin, async (req, res) => {
     const exercise = await updateExercise(
       Number(req.params.uid),
       validatedBody.data.prompt,
+      validatedBody.data.referenceTest,
       validatedBody.data.tags,
       validatedBody.data.language,
       validatedBody.data.topic
