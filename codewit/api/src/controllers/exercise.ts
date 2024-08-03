@@ -17,12 +17,13 @@ async function getExerciseById(uid: number): Promise<Exercise | null> {
 async function createExercise(
   prompt: string,
   topic: string,
+  referenceTest: string,
   tags?: string[],
   language?: string
 ): Promise<Exercise> {
   return await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.create(
-      { prompt, topic },
+      { prompt, topic, referenceTest },
       { include: [Tag, Language], transaction }
     );
 
@@ -62,6 +63,7 @@ async function createExercise(
 async function updateExercise(
   uid: number,
   prompt?: string,
+  referenceTest?: string,
   tags?: string[],
   language?: string,
   topic?: string
@@ -100,6 +102,10 @@ async function updateExercise(
 
       if (topic) {
         exercise.topic = topic;
+      }
+
+      if (referenceTest) {
+        exercise.referenceTest = referenceTest;
       }
 
       await exercise.save({ transaction });
