@@ -9,6 +9,21 @@
 		{
 			"name": "Get Demos",
 			"request": {
+				"auth": {
+					"type": "apikey",
+					"apikey": [
+						{
+							"key": "value",
+							"value": "connect.sid=s%3AG0qs5ds7bKlXzU9n6_bgBpUiZ2IbfGFZ.zTlxyia6rnEOqexC%2Bk8qWrRTXqrkmDwOoA%2BhBwm5k3s",
+							"type": "string"
+						},
+						{
+							"key": "key",
+							"value": "Cookie",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
@@ -48,7 +63,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Test Demo 14\",\r\n    \"youtube_id\": \"12345\",\r\n    \"language\": \"cpp\",\r\n    \"tags\": [\"cpp\",\"abc\",\"def\"],\r\n    \"topic\": \"math operation\"\r\n}",
+					"raw": "{\r\n    \"title\": \"Test Demo 10\",\r\n    \"youtube_id\": \"12345\",\r\n    \"language\": \"cpp\",\r\n    \"tags\": [\"abc\", \"def\",\"cpp\"],\r\n    \"topic\": \"math operation\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -70,7 +85,7 @@
 		{
 			"name": "Like a Demo",
 			"request": {
-				"method": "POST",
+				"method": "DELETE",
 				"header": [],
 				"url": {
 					"raw": "{{url}}/demos/1/like",
@@ -120,7 +135,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"exercises\": [1]\r\n}",
+					"raw": "{\r\n    \"exercises\": [4,5,8,9]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -146,6 +161,15 @@
 			"request": {
 				"method": "DELETE",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exercises\": [1,2]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "{{url}}/demos/1/exercises",
 					"host": [
@@ -167,7 +191,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"exercises\": [1,3]\r\n}",
+					"raw": "{\r\n    \"exercises\": [1,3,4]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -175,13 +199,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{url}}/demos/3/exercises",
+					"raw": "{{url}}/demos/1/exercises",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"demos",
-						"3",
+						"1",
 						"exercises"
 					]
 				}
@@ -248,7 +272,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"prompt\": \"New exercise 1\",\r\n    \"language\": \"cpp\",\r\n    \"topic\": \"math operation\",\r\n    \"tags\": [\"cpp\", \"cpp-l0\", \"cpp-l1\"]\r\n}",
+					"raw": "{\r\n    \"prompt\": \"New exercise 10\",\r\n    \"language\": \"cpp\",\r\n    \"topic\": \"math operation\",\r\n    \"tags\": [\"a\",\"b\",\"cpp\"],\r\n    \"referenceTest\": \"i am a test\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -320,7 +344,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"language\": \"Python\",\r\n    \"topic\": \"math operation\",\r\n    \"resources\": []\r\n}",
+					"raw": "{\r\n    \"language\": \"cpp\",\r\n    \"topic\": \"math operation\",\r\n    \"resources\": [1,3,5]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -382,7 +406,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"language\": \"cpp\",\r\n    \"resources\": [1,2]\r\n}",
+					"raw": "{\r\n    \"language\": \"java\",\r\n    \"resources\": [1,5]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -427,7 +451,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"url\": \"coursera.com\",\r\n    \"title\": \"algos\",\r\n    \"source\": \"coursera\"\r\n}",
+					"raw": "{\r\n    \"url\": \"coursera.com\",\r\n    \"title\": \"algos 10\",\r\n    \"source\": \"coursera\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -485,6 +509,25 @@
 					],
 					"path": [
 						"resources"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Like a Resource",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/resources/1/like",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"resources",
+						"1",
+						"like"
 					]
 				}
 			},
@@ -550,13 +593,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/courses/giant-bobcats-pull",
+					"raw": "{{url}}/courses/running-black-kite",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"courses",
-						"giant-bobcats-pull"
+						"running-black-kite"
 					]
 				}
 			},
@@ -581,13 +624,13 @@
 			"response": []
 		},
 		{
-			"name": "Post Course",
+			"name": "Create Course",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"cpp\",\r\n    \"language\": \"cpp\",\r\n    \"modules\": [1, 2]\r\n}",
+					"raw": "{\r\n    \"title\": \"java\",\r\n    \"language\": \"java\",\r\n    \"modules\": [4],\r\n    \"instructors\":[1],\r\n    \"roster\":[2]\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -624,6 +667,139 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Log In",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:3000/oauth2/google/userInfo",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"oauth2",
+						"google",
+						"userInfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/users/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User By ID",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"Naruto\",\r\n    \"email\": \"uzumaki9010@gmail.com\",\r\n    \"isAdmin\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/users/2",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"users",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Attempt",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"exerciseId\": 4,\r\n    \"code\": \"print('Hello World!!')\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/attempts",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"attempts"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "connect.sid=s%3A5k6cYq7yMKpuTsB88Kl8zCmV_-zps5HZ.gACxPrZJC1Y1aaqID4Je9Jkp95DwWeaBU6oQ6nRZte4",
+				"type": "string"
+			},
+			{
+				"key": "in",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "Cookie",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
 		}
 	]
 }
