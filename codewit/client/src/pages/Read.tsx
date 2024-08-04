@@ -49,19 +49,21 @@ const Read = (): JSX.Element => {
       code: code,
     };
 
-    const isSuccess = true; 
-
-    if (isSuccess) {
-      setCurrentExerciseIndex((prevIndex) => {
-        if (demo && prevIndex < demo.exercises.length - 1) {
-          return prevIndex + 1;
-        } else {
-          return prevIndex;
-        }
-      });
+    try {
+      await axios.post('/attempts', submission);
+      const isSuccess = true; 
+      if (isSuccess) {
+        setCurrentExerciseIndex((prevIndex) => {
+          if (demo && prevIndex < demo.exercises.length - 1) {
+            return prevIndex + 1;
+          } else {
+            return prevIndex;
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Error submitting code:', e);
     }
-
-    console.log('Attempt:', submission);
   }
 
   if (error) {
@@ -123,7 +125,7 @@ const Read = (): JSX.Element => {
     <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-zinc-900">
       {isMdScreen ? resizableContent : nonResizableContent}
       <div className="flex-1 h-full w-full md:overflow-auto p-4 flex flex-col gap-2">
-        {demo && <Exercises exercises={demo.exercises} />}
+        {demo && <Exercises exercises={demo.exercises} idx={currentExerciseIndex}/>}
         <CodeBlock 
           onSubmit={handleSubmission}
         />
