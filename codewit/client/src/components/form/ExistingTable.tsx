@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 type ExistingTableProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   items: any[];
@@ -22,9 +24,15 @@ const ExistingTable = ({ items, name = "Exercises", onEdit, onDelete }: Existing
           {items && items.map((ex, index) => (
             <tr key={index} className="border-b border-gray-700">
               <td className="px-6 py-4">
-                <div className="max-w-md md:max-w-2xl whitespace-nowrap overflow-hidden overflow-ellipsis">
-                  {ex.prompt ? ex.prompt : ex.title ? ex.title: ex.uid}
-                </div>
+              <div className="max-w-md md:max-w-2xl whitespace-nowrap overflow-hidden overflow-ellipsis">
+                {name === "Demos" ? (
+                  <Link to={`/read/${ex.uid}`} className="text-blue-400 hover:text-blue-600">
+                    {ex.prompt ? ex.prompt : ex.title ? ex.title : ex.uid}
+                  </Link>
+                ) : (
+                  ex.prompt ? ex.prompt : ex.title ? ex.title : ex.uid
+                )}
+              </div>
               </td>
               <td className="px-6 py-4 text-right">
                 <button id={`edit-${index}`} onClick={() => onEdit(ex.uid ? ex.uid : ex.id)} className="text-blue-400 hover:text-blue-600">
