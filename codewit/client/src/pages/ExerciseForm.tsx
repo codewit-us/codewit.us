@@ -13,7 +13,6 @@ import {
   useDeleteExercise,
 } from "../hooks/exercisehooks/useExerciseHooks";
 import { Editor } from "@monaco-editor/react";
-import { exit } from "process";
 
 interface FormData {
   exercise: { prompt: string };
@@ -22,7 +21,7 @@ interface FormData {
   selectedLanguage: string;
   topic: string;
   selectedTags: { label: string, value: string }[];
-  testingScript: string;
+  referenceTest: string;
 }
 
 const ExerciseForms = (): JSX.Element => {
@@ -37,7 +36,7 @@ const ExerciseForms = (): JSX.Element => {
     topic: '',
     selectedLanguage: "cpp",
     selectedTags: [],
-    testingScript: "",
+    referenceTest: "",
   });
   const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
   const [error, setError] = useState(false);
@@ -64,7 +63,7 @@ const ExerciseForms = (): JSX.Element => {
       topic: formData.topic,
       tags: formData.selectedTags.map((tag) => tag.value),
       language: formData.selectedLanguage,
-      testingScript: formData.testingScript,
+      referenceTest: formData.referenceTest,
     };
 
     try {
@@ -89,7 +88,7 @@ const ExerciseForms = (): JSX.Element => {
         topic: '',
         selectedLanguage: "cpp",
         selectedTags: [],
-        testingScript: "",
+        referenceTest: "",
       });
     } catch (error) {
       setError(true);
@@ -102,7 +101,7 @@ const ExerciseForms = (): JSX.Element => {
   };
 
   const handleScriptChange = (value: string | undefined) => {
-    setFormData((prev) => ({ ...prev, testingScript: value || "" }));
+    setFormData((prev) => ({ ...prev, referenceTest: value || "" }));
   };
 
   const handleEdit = (exerciseUID: number) => {
@@ -125,7 +124,7 @@ const ExerciseForms = (): JSX.Element => {
         typeof exerciseToEdit.language === "string"
           ? exerciseToEdit.language
           : exerciseToEdit.language.name,
-      testingScript: exerciseToEdit.testingScript || "",
+      referenceTest: exerciseToEdit.referenceTest || "",
     });
   };
 
@@ -158,7 +157,7 @@ const ExerciseForms = (): JSX.Element => {
 
   return (
     <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className="bg-gray-800 bg-opacity-50 w-full max-w-4xl h-full p-6 space-y-6">
+      <form onSubmit={handleSubmit} className=" bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6">
         <h2 className="text-xl font-semibold text-white mb-2">
           {formData.isEditing ? "Edit Exercise" : "Create New Exercise"}
         </h2>
@@ -171,10 +170,13 @@ const ExerciseForms = (): JSX.Element => {
           />
         </div>
         <div className="mb-2 overflow-auto">
+          <h2 className="text-xl font-semibold text-white mb-2">
+            Reference Test
+          </h2>
           <Editor
             height="200px"
             language={formData.selectedLanguage}
-            value={formData.testingScript}
+            value={formData.referenceTest}
             onChange={handleScriptChange}
             theme="vs-dark"
           />
@@ -200,7 +202,7 @@ const ExerciseForms = (): JSX.Element => {
             formData.exercise.prompt === "" ||
             formData.selectedTags.length === 0 ||
             formData.topic === '' ||
-            formData.testingScript === ""
+            formData.referenceTest === ""
           }
           text={formData.isEditing ? "Confirm Edit" : "Create"}
         />
