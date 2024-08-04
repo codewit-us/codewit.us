@@ -47,6 +47,10 @@ export default defineConfig({
         target: 'http://app:3000',
         changeOrigin: true,
       },
+      '/attempts': {
+        target: 'http://app:3000',
+        changeOrigin: true,
+      },
     },
   },
 
