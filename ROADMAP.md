@@ -26,14 +26,15 @@ The `codewit/client` directory contains the react app that drives the front-end.
 
 ## Home Page
 
-- Located at `codewit/client/src/pages/home.tsx`, the Home Page showcases demos in a responsive grid layout, directly accessible from the application's root URL as configured in `app.tsx`. This central page uses the `<Demos />` component, housed within `../components/demos/demos.tsx`, to render each demo's preview.
-- **Functionality**:
-  - **View Demo Details**: Clicking on a demo directs users to the detailed Read Page for that demo, facilitated by the `<Read />` component at `./read.tsx`.
-  - **Edit Demo**: An edit button on each demo enables direct navigation to the Create Page with preloaded demo data for editing, indicated by an `isEditing` flag.
-  - **Delete Demo**: Users can remove demos directly from the Home Page through a dedicated delete button, immediately updating the displayed list of demos.
-- **Components**:
-  - **Demos Component** (`<Demos />`): Responsible for displaying individual demos in a grid, each equipped with action buttons for editing, deleting, and viewing.
-    - Component Located under `../components/demos/`
+- Located at `codewit/client/src/pages/home.tsx`, the Home Page is currently WIP as progress is made.
+
+## Nav
+
+- Located at `codewit/client/src/componenets/nav.tsx`. It is reponsible for holding the login/logout button, but also navigation to various portions of the site.
+
+## App
+
+- Located at `codewit/client/src/app/app.tsx`. It is responsible for handling login / logout logic, which is passed down to the Navbar.
 
 ## Read Page
 
@@ -60,6 +61,7 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - **ModuleForm (`<ModuleForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting modules. It encapsulates all the necessary fields and functionalities, including input fields for module details and submission controls.
   - **ResourceForm (`<ResourceForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting resources. It encapsulates all the necessary fields and functionalities, including input fields for resource details and submission controls.
     - All pages are located under the same directory as the Create Page and  use components located under `../components/form/` to render various inputs/fields
+    - API calls for these forms are located under `codewit/client/src/hooks`
 
 ## User Management page
 - **Location**: `codewit/client/src/pages/usermanagement.tsx`. 
