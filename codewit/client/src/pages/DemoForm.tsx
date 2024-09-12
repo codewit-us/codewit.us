@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Error from '../components/error/Error';
 import { DemoResponse, DemoFormData } from '@codewit/interfaces';
+import VideoSelect from '../components/form/VideoSelect';
 import { useNavigate } from 'react-router-dom';
 import ExerciseSelect from '../components/form/ExerciseSelect';
 import TagSelect from '../components/form/TagSelect';
@@ -122,6 +123,7 @@ const CreateDemo = (): JSX.Element => {
           <InputLabel htmlFor="title">Title</InputLabel>
           <TextInput id="title" name="title" value={formData.title} placeholder="Enter title" onChange={handleInputChange} required />
         </div>
+        <VideoSelect onSelectVideo={handleVideoSelect} selectedVideoId={formData.youtube_id} />
         <ExerciseSelect onSelectExercises={updateExercises} initialExercises={formData.exercises} />
         <div className="flex flex-row w-full gap-3">
           <TagSelect selectedTags={formData.tags.map(tag => ({ label: tag, value: tag }))} setSelectedTags={handleTagSelect} isMulti={true} />
