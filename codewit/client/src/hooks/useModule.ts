@@ -1,65 +1,66 @@
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Module } from '@codewit/interfaces';
 
-// POST a module
-const usePostModule = () => {
-  const postModule = async (moduleData: Module): Promise<any> => {
+// General hook to handle fetching data with axios
+const useAxiosFetch = (initialUrl: string, initialData: Module[] = []) => {
+  const [data, setData] = useState<Module[]>(initialData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(initialUrl);
+        setData(response.data);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [initialUrl]);
+
+  return { data, setData, loading, error };
+};
+
+// Hook to fetch all modules
+export const useFetchModules = () => useAxiosFetch('/modules');
+
+// General hook to handle CRUD operations
+const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
+  const [error, setError] = useState(false);
+  const [response, setResponse] = useState(null);
+
+  const operation = async (url: string, payload?: any) => {
     try {
-      const response = await axios.post('/modules', moduleData);
-      return response.data;
+      const res = await axios({ method, url, data: payload });
+      setResponse(res.data);
+      return res.data;
     } catch (error) {
-      throw Error();
+      setError(true);
+      throw new Error(`Failed to ${method} data: ${error}`);
     }
   };
 
-  return { postModule };
+  return { operation, response, error };
 };
 
-// PATCH a module
-const usePatchModule = () => {
-  const patchModule = async (moduleData: Module, uid: number) => {
-    try {
-      const response = await axios.patch(`/modules/${uid}`, moduleData);
-      return response.data;
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { patchModule };
+// Hook to post a new module
+export const usePostModule = () => {
+  const { operation } = useAxiosCRUD('post');
+  return (moduleData: Module) => operation('/modules', moduleData);
 };
 
-// GET modules
-const useFetchModules = () => {
-  const fetchModules = async () => {
-    try {
-      const response = await axios.get('/modules');
-      return response.data as Module[];
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { fetchModules };
+// Hook to patch an existing module
+export const usePatchModule = () => {
+  const { operation } = useAxiosCRUD('patch');
+  return (moduleData: Module, uid: number) => operation(`/modules/${uid}`, moduleData);
 };
 
-// DELETE a module
-const useDeleteModule = () => {
-  const deleteModule = async (moduleID: number) => {
-    try {
-      const response = await axios.delete(`/modules/${moduleID}`);
-      return response.data;
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { deleteModule };
-};
-
-export { 
-  usePostModule, 
-  usePatchModule, 
-  useFetchModules, 
-  useDeleteModule 
+// Hook to delete a module
+export const useDeleteModule = () => {
+  const { operation } = useAxiosCRUD('delete');
+  return (uid: number) => operation(`/modules/${uid}`);
 };

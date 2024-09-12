@@ -54,7 +54,7 @@ const CreateDemo = (): JSX.Element => {
 
       if (response && response.uid) {
         await patchDemoExercise({ exercises: formData.exercises }, response.uid);
-        navigate('/');
+        window.location.reload();
       }
     } catch (error) {
       console.error('Error processing the form:', error);
