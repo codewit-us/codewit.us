@@ -12,7 +12,7 @@ import { Module } from '@codewit/interfaces';
 import { useFetchResources } from '../hooks/useResource';
 import { usePostModule, useFetchModules, useDeleteModule, usePatchModule } from '../hooks/useModule';
 const ModuleForm = (): JSX.Element => {
-  const { fetchResources } = useFetchResources();
+  const { data: existingResources, error: fetchError, loading: fetchLoading, setData: setExistingResources } = useFetchResources();
   const { fetchModules } = useFetchModules();
   const { deleteModule } = useDeleteModule();
   const { patchModule } = usePatchModule();
@@ -32,15 +32,11 @@ const ModuleForm = (): JSX.Element => {
       try {
         const resModules = await fetchModules();
         setExistingModules(resModules);
-
-        const resResources = await fetchResources()
-        const options = resResources.map((resource: any) => ({
+        const options = existingResources.map((resource: any) => ({
           value: resource.uid,
           label: resource.title
         }));
         setResourceOptions(options);
-
-
       } catch (err) {
         console.error(err);
         setError(true);
