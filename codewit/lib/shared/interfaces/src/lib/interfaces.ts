@@ -59,6 +59,16 @@ interface DemoResponse {
   languageUid: string;
 }
 
+interface DemoFormData {
+  uid: number | undefined;
+  youtube_id: string;
+  title: string;
+  topic: string;
+  tags: string[];
+  language: string;
+  exercises: string[];
+}
+
 interface Resource {
   url: string;
   title: string;
@@ -131,6 +141,7 @@ export type {
   SelectedTag,
   DemoPostResponse,
   DemoResponse,
+  DemoFormData,
   YouTubeSearchResult, 
   Thumbnail,
   Resource,

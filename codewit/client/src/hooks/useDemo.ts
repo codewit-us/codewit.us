@@ -1,125 +1,88 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { DemoResponse } from '@codewit/interfaces';
 
-// Fetch multiple demos
-const useFetchDemos = () => {
-  const fetchDemos = async () => {
-    try {
-      const response = await axios.get('/demos');
-      return response.data;
-    } catch (error) {
-      throw Error();
-    }
-  };
-  return { fetchDemos };
-};
+const baseUrl = '/demos';
 
-// Fetch a single demo
-const useFetchSingleDemo = (uid: string) => {
-  const [demo, setDemo] = useState<DemoResponse | null>(null);
+// General hook to handle fetching data with axios
+const useAxiosFetch = (initialUrl: string, initialData = null, dependencies: any[] = []) => {
+  const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (uid) {
-      const fetchDemo = async () => {
-        try {
-          const response = await axios.get(`/demos/${uid}`);
-          setDemo(response.data);
-        } catch (error) {
-          setError(true);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchDemo();
-    }
-  }, [uid]);
+    setLoading(true);
+    setError(false);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(initialUrl);
+        setData(response.data);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [...dependencies]); // Ensure dependencies are spread correctly to trigger the effect appropriately
 
-  return { demo, loading, error };
+  return { data, setData, loading, error };
 };
 
-// Patch a demo
-const usePatchDemo = () => {
-  const patchDemo = async (demoData: any, uid: number) => {
+// Hook to fetch multiple demos
+export const useFetchDemos = () => {
+  return useAxiosFetch(baseUrl, []);
+};
+
+// Hook to fetch a single demo
+export const useFetchSingleDemo = (uid: string) => {
+  return useAxiosFetch(`${baseUrl}/${uid}`);
+};
+
+// General hook to handle CRUD operations
+const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
+  const [error, setError] = useState(false);
+  const [response, setResponse] = useState(null);
+
+  const operation = async (url: string, payload?: any) => {
     try {
-      const response = await axios.patch(`/demos/${uid}`, demoData);
-      return response.data;
+      const res = await axios({ method, url, data: payload });
+      setResponse(res.data);
+      return res.data;
     } catch (error) {
-      throw Error();
+      setError(true);
+      throw new Error(`Failed to ${method} data: ${error}`);
     }
   };
 
-  return { patchDemo };
+  return { operation, response, error };
 };
 
-// Post a new demo
-const usePostDemo = () => {
-  const postDemo = async (demoData: any) => {
-    try {
-      const response = await axios.post('/demos', demoData);
-      return response.data;
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { postDemo };
+// Hook for patching a demo
+export const usePatchDemo = () => {
+  const { operation } = useAxiosCRUD('patch');
+  return (demoData: any, uid: number) => operation(`${baseUrl}/${uid}`, demoData);
 };
 
-// Delete a demo
-const useDeleteDemo = () => {
-
-  const deleteDemo = async (demoUid: number) => {
-    try {
-      const response = await axios.delete(`/demos/${demoUid}`);
-      return response.data;
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { deleteDemo };
+// Hook for posting a new demo
+export const usePostDemo = () => {
+  const { operation } = useAxiosCRUD('post');
+  return (demoData: any) => operation(baseUrl, demoData);
 };
 
-// Delete a demo exercise
-const useDeleteDemoExercise = () => {
-
-  const deleteDemoExercise = async (exercises: any, uid: number): Promise<any> => {
-    try {      
-      const response = await axios.delete(`/demos/${uid}/exercises`, {data: exercises});
-      return response.data; 
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { deleteDemoExercise }; 
-};
- 
-// Patch a demo exercise
-const usePatchDemoExercise = () => {
-
-  const patchDemoExercise = async (exercises: any, uid: number): Promise<any> => {
-    try {
-      const response = await axios.patch(`/demos/${uid}/exercises`, exercises);
-      return response.data; 
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { patchDemoExercise }; 
+// Hook for deleting a demo
+export const useDeleteDemo = () => {
+  const { operation } = useAxiosCRUD('delete');
+  return (uid: number) => operation(`${baseUrl}/${uid}`);
 };
 
+// Hook for patching a demo exercise
+export const usePatchDemoExercise = () => {
+  const { operation } = useAxiosCRUD('patch');
+  return (exercises: any, uid: number) => operation(`${baseUrl}/${uid}/exercises`, exercises);
+};
 
-export {
-  useFetchDemos,
-  useFetchSingleDemo,
-  usePatchDemo,
-  usePatchDemoExercise,
-  usePostDemo,
-  useDeleteDemo,
-  useDeleteDemoExercise
+// Hook for deleting a demo exercise
+export const useDeleteDemoExercise = () => {
+  const { operation } = useAxiosCRUD('delete');
+  return (uid: number, exercises: any) => operation(`${baseUrl}/${uid}/exercises`, { data: exercises });
 };
