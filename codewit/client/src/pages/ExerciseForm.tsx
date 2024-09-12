@@ -11,7 +11,7 @@ import {
   usePatchExercises,
   useFetchExercises,
   useDeleteExercise,
-} from "../hooks/exercisehooks/useExerciseHooks";
+} from "../hooks/useExercise";
 import { Editor } from "@monaco-editor/react";
 
 interface FormData {

@@ -1,6 +1,5 @@
-import { Route, Routes, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth'; 
 import NavBar from '../components/nav/Nav';
 import Home from '../pages/Home';
 import Read from '../pages/Read';
@@ -16,31 +15,7 @@ import Error from '../components/error/Error';
 import LoadingPage from '../components/loading/LoadingPage';
 
 export function App() {
-  const [user, setUser] = useState<{ email: string; googleId: string; isAdmin: boolean; name: string } | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    axios.get('/oauth2/google/userinfo')
-      .then((response) => {
-        setUser(response.data.user);
-        localStorage.setItem('userId', response.data.user.googleId);
-      }).catch(() => {
-        setUser(null);
-      }).finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  const handleLogout = () => {
-    axios.get('/oauth2/google/logout')
-      .then(() => {
-        setUser(null);
-        window.location.href = '/';
-      })
-      .catch((error) => {
-        console.error('Logout failed:', error);
-      });
-  };
+  const { user, loading, handleLogout } = useAuth();
 
   if (loading) {
     return <LoadingPage />;
@@ -52,14 +27,11 @@ export function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/read/:uid" element={<Read />} />
-
-        <Route
-          path="/usermanagement"
-          element={user && user.isAdmin ? <UserManagement /> : <Navigate to="/error" state={{ message: 'Oops! Page does not exist. We will return you to the main page.', statusCode: 401 }} />}
+        <Route path="/usermanagement"
+          element={user && user.isAdmin ? <UserManagement /> : <Navigate to="/error" state={{ message: 'Unauthorized access.', statusCode: 401 }} />}
         />
-        <Route
-          path="/create"
-          element={user && user.isAdmin ? <Create /> : <Navigate to="/error" state={{ message: 'Oops! Page does not exist. We will return you to the main page.', statusCode: 401 }} />}
+        <Route path="/create"
+          element={user && user.isAdmin ? <Create /> : <Navigate to="/error" state={{ message: 'Unauthorized access.', statusCode: 401 }} />}
         >
           <Route index element={<DemoForms />} />
           <Route path="demo" element={<DemoForms />} />
@@ -68,7 +40,6 @@ export function App() {
           <Route path="resource" element={<ResourceForm />} />
           <Route path="course" element={<CourseForm />} />
         </Route>
-
         <Route path="/error" element={<Error />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
