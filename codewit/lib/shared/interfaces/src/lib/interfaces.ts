@@ -1,6 +1,7 @@
 // Interface For Video Object
 
 interface Exercise {
+  uid: any;
   demo_uid: number;
   prompt: string;
 }

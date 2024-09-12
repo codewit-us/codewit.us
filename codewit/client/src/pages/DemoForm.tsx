@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import VideoSelect from '../components/form/VideoSelect';
 import Error from '../components/error/Error';
 import { DemoResponse, DemoFormData } from '@codewit/interfaces';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +9,7 @@ import SubmitBtn from '../components/form/SubmitButton';
 import InputLabel from '../components/form/InputLabel';
 import TextInput from '../components/form/TextInput';
 import ExistingTable from '../components/form/ExistingTable';
+import Loading from '../components/loading/LoadingPage';
 import {
   usePatchDemo,
   usePatchDemoExercise,
@@ -111,16 +111,17 @@ const CreateDemo = (): JSX.Element => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loading />
   if (fetchError) return <Error />;
 
   return (
     <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
       <form onSubmit={handleSubmit} className="bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6">
         <h2 className="text-xl font-semibold text-white">{isEditing ? 'Edit Demo Exercise' : 'Create Demo Exercise'}</h2>
-        <InputLabel htmlFor="title">Title</InputLabel>
-        <TextInput id="title" name="title" value={formData.title} placeholder="Enter title" onChange={handleInputChange} required />
-        <VideoSelect onSelectVideo={handleVideoSelect} selectedVideoId={formData.youtube_id} />
+        <div>
+          <InputLabel htmlFor="title">Title</InputLabel>
+          <TextInput id="title" name="title" value={formData.title} placeholder="Enter title" onChange={handleInputChange} required />
+        </div>
         <ExerciseSelect onSelectExercises={updateExercises} initialExercises={formData.exercises} />
         <div className="flex flex-row w-full gap-3">
           <TagSelect selectedTags={formData.tags.map(tag => ({ label: tag, value: tag }))} setSelectedTags={handleTagSelect} isMulti={true} />
