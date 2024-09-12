@@ -9,8 +9,8 @@ import Error from '../components/error/Error';
 import { SelectedTag } from '@codewit/interfaces';
 import ExistingTable from '../components/form/ExistingTable';
 import { Module } from '@codewit/interfaces';
-import { useFetchResources } from '../hooks/resourcehooks/useResourceHooks';
-import { usePostModule, useFetchModules, useDeleteModule, usePatchModule } from '../hooks/modulehooks/useModuleHooks';
+import { useFetchResources } from '../hooks/useResource';
+import { usePostModule, useFetchModules, useDeleteModule, usePatchModule } from '../hooks/useModule';
 const ModuleForm = (): JSX.Element => {
   const { fetchResources } = useFetchResources();
   const { fetchModules } = useFetchModules();

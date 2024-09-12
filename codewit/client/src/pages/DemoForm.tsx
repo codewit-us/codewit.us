@@ -16,7 +16,7 @@ import {
   usePostDemo,
   useFetchDemos,
   useDeleteDemo
-} from '../hooks/demohooks/useDemoHooks';
+} from '../hooks/useDemo';
 
 const CreateDemo = (): JSX.Element => {
   const { postDemo } = usePostDemo();

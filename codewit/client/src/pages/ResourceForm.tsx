@@ -10,7 +10,7 @@ import {
   usePatchResource,
   useFetchResources,
   useDeleteResource
-} from '../hooks/resourcehooks/useResourceHooks';
+} from '../hooks/useResource';
 
 const ResourceForm = (): JSX.Element => {
   const { fetchResources } = useFetchResources();

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MagnifyingGlassIcon, ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { User } from '@codewit/interfaces'
-import { useSearchUser, useSetAdmin } from '../hooks/usehooks/useUserHooks';
+import { useSearchUser, useSetAdmin } from '../hooks/useUsers';
 import axios from 'axios';
 
 interface ModalProps {

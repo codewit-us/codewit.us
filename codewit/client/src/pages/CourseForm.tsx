@@ -14,9 +14,9 @@ import {
   usePatchCourse, 
   useFetchCourses, 
   useDeleteCourse  
-} from '../hooks/coursehooks/useCourseHook';
-import { useFetchModules } from '../hooks/modulehooks/useModuleHooks';
-import { useFetchUsers } from '../hooks/usehooks/useUserHooks';
+} from '../hooks/useCourse';
+import { useFetchModules } from '../hooks/useModule';
+import { useFetchUsers } from '../hooks/useUsers';
 
 const CourseForm = (): JSX.Element => {
   const { fetchModules } = useFetchModules();
