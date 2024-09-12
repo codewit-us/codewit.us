@@ -4,7 +4,7 @@ import axios from 'axios';
 const baseUrl = '/demos';
 
 // General hook to handle fetching data with axios
-const useAxiosFetch = (initialUrl: string, initialData = null, dependencies: any[] = []) => {
+const useAxiosFetch = (initialUrl: string, initialData = []) => {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -23,7 +23,7 @@ const useAxiosFetch = (initialUrl: string, initialData = null, dependencies: any
       }
     };
     fetchData();
-  }, [...dependencies]); // Ensure dependencies are spread correctly to trigger the effect appropriately
+  }, [initialUrl]); 
 
   return { data, setData, loading, error };
 };
