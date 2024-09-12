@@ -1,65 +1,66 @@
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ExerciseResponse } from '@codewit/interfaces';
+import { ExerciseResponse, Exercise } from '@codewit/interfaces';
 
-// POST an exercise
-const usePostExercise = () => {
-  const postExercise = async (exercise: any): Promise<any> => {
+// Hook to handle fetching data with axios
+const useAxiosFetch = (initialUrl: string, initialData: ExerciseResponse[] = []) => {
+  const [data, setData] = useState<ExerciseResponse[]>(initialData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(initialUrl);
+        setData(response.data);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [initialUrl]);
+
+  return { data, setData, loading, error };
+};
+
+// Hook to fetch all exercises
+export const useFetchExercises = () => useAxiosFetch('/exercises');
+
+// General hook for handling CRUD operations
+const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
+  const [error, setError] = useState(false);
+  const [response, setResponse] = useState(null);
+
+  const operation = async (url: string, payload?: any) => {
     try {
-      const response = await axios.post('/exercises', exercise);
-      return response.data;
+      const res = await axios({ method, url, data: payload });
+      setResponse(res.data);
+      return res.data;
     } catch (error) {
-      throw Error();
+      setError(true);
+      throw new Error(`Failed to ${method} data: ${error}`);
     }
   };
 
-  return { postExercise };
+  return { operation, response, error };
 };
 
-// PATCH an exercise
-const usePatchExercises = () => {
-  const patchExercises = async (exerciseData: any, uid: number) => {
-    try {
-      const response = await axios.patch(`/exercises/${uid}`, exerciseData);
-      return response.data;
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { patchExercises };
+// Hook to post a new exercise
+export const usePostExercise = () => {
+  const { operation } = useAxiosCRUD('post');
+  return (exerciseData: Exercise) => operation('/exercises', exerciseData);
 };
 
-// GET exercises
-const useFetchExercises = () => {
-  const fetchExercises = async () => {
-    try {
-      const response = await axios.get('/exercises');
-      return response.data as ExerciseResponse[];
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { fetchExercises };
+// Hook to patch an exercise
+export const usePatchExercise = () => {
+  const { operation } = useAxiosCRUD('patch');
+  return (exerciseData: Exercise, uid: number) => operation(`/exercises/${uid}`, exerciseData);
 };
 
-// DELETE an exercise
-const useDeleteExercise = () => {
-  const deleteExercise = async (exerciseID: number) => {
-    try {
-      const response = await axios.delete(`/exercises/${exerciseID}`);
-      return response.data;
-    } catch (error) {
-      throw Error();
-    }
-  };
-
-  return { deleteExercise };
-};
-
-export {
-  usePostExercise,
-  usePatchExercises,
-  useFetchExercises,
-  useDeleteExercise
+// Hook to delete an exercise
+export const useDeleteExercise = () => {
+  const { operation } = useAxiosCRUD('delete');
+  return (uid: number) => operation(`/exercises/${uid}`);
 };

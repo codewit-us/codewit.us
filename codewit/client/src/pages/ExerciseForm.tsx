@@ -1,35 +1,27 @@
 import React, { useState, useEffect } from "react";
 import Error from "../components/error/Error";
 import MDEditor from "@uiw/react-markdown-editor";
-import { ExerciseResponse, SelectedTag } from "@codewit/interfaces";
+import { ExerciseResponse, SelectedTag, ExerciseFormData } from "@codewit/interfaces";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
 import SubmitBtn from "../components/form/SubmitButton";
 import ExistingTable from "../components/form/ExistingTable";
+import Loading from '../components/loading/LoadingPage';
 import {
   usePostExercise,
-  usePatchExercises,
+  usePatchExercise,
   useFetchExercises,
   useDeleteExercise,
 } from "../hooks/useExercise";
 import { Editor } from "@monaco-editor/react";
 
-interface FormData {
-  exercise: { prompt: string };
-  isEditing: boolean;
-  editingUid: number;
-  selectedLanguage: string;
-  topic: string;
-  selectedTags: { label: string, value: string }[];
-  referenceTest: string;
-}
-
 const ExerciseForms = (): JSX.Element => {
-  const { fetchExercises } = useFetchExercises();
-  const { postExercise } = usePostExercise();
-  const { patchExercises } = usePatchExercises();
-  const { deleteExercise } = useDeleteExercise();
-  const [formData, setFormData] = useState<FormData>({
+  const { data: exercises, setData: setExercises, loading: loadingEx, error: fetchError } = useFetchExercises();
+  const postExercise = usePostExercise();
+  const patchExercise = usePatchExercise();
+  const deleteExercise = useDeleteExercise();
+
+  const [formData, setFormData] = useState<ExerciseFormData>({
     exercise: { prompt: "" },
     isEditing: false,
     editingUid: -1,
@@ -38,21 +30,13 @@ const ExerciseForms = (): JSX.Element => {
     selectedTags: [],
     referenceTest: "",
   });
-  const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const loadExercises = async () => {
-      try {
-        const data = await fetchExercises();
-        setExercises(data as unknown as ExerciseResponse[]);
-      } catch (error) {
-        console.error("Error fetching exercises:", error);
-        setError(true);
-      }
-    };
-    loadExercises();
-  }, []);
+    if (fetchError) {
+      setError(true);
+    }
+  }, [fetchError]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -69,7 +53,7 @@ const ExerciseForms = (): JSX.Element => {
     try {
       let response: ExerciseResponse;
       if (isEditing && editingUid !== -1) {
-        response = await patchExercises(exerciseData, editingUid);
+        response = await patchExercise(exerciseData, editingUid);
       } else {
         response = await postExercise(exerciseData);
       }
@@ -153,6 +137,10 @@ const ExerciseForms = (): JSX.Element => {
 
   if (error) {
     return <Error />;
+  }
+
+  if (loadingEx) {
+    return <Loading />;
   }
 
   return (

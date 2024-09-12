@@ -1,12 +1,15 @@
 // Interface For Video Object
 
 interface Exercise {
-  uid: any;
-  demo_uid: number;
   prompt: string;
+  topic: string;
+  tags: string[];
+  language: string;
+  referenceTest: string;
 }
 
 interface ExerciseResponse {
+  referenceTest: string;
   uid: number;
   topic: string;
   prompt: string;
@@ -15,6 +18,16 @@ interface ExerciseResponse {
   language: string | {name:string;};
   tags: Tag[];
   testing_script: string;
+}
+
+interface ExerciseFormData{
+  exercise: { prompt: string };
+  isEditing: boolean;
+  editingUid: number;
+  selectedLanguage: string;
+  topic: string;
+  selectedTags: { label: string, value: string }[];
+  referenceTest: string;
 }
 
 interface Demo {
@@ -137,6 +150,7 @@ interface Thumbnail {
 export type { 
   Exercise, 
   ExerciseResponse,
+  ExerciseFormData,
   Demo,
   Tag,
   SelectedTag,
