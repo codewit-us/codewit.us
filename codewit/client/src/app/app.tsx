@@ -27,11 +27,13 @@ export function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/read/:uid" element={<Read />} />
-        <Route path="/usermanagement"
-          element={user && user.isAdmin ? <UserManagement /> : <Navigate to="/error" state={{ message: 'Unauthorized access.', statusCode: 401 }} />}
+        <Route
+          path="/usermanagement"
+          element={user && user.isAdmin ? <UserManagement /> : <Navigate to="/error" state={{ message: 'Oops! Page does not exist. We will return you to the main page.', statusCode: 401 }} />}
         />
-        <Route path="/create"
-          element={user && user.isAdmin ? <Create /> : <Navigate to="/error" state={{ message: 'Unauthorized access.', statusCode: 401 }} />}
+        <Route
+          path="/create"
+          element={user && user.isAdmin ? <Create /> : <Navigate to="/error" state={{ message: 'Oops! Page does not exist. We will return you to the main page.', statusCode: 401 }} />}
         >
           <Route index element={<DemoForms />} />
           <Route path="demo" element={<DemoForms />} />
