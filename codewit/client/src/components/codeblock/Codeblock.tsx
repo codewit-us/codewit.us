@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
 import { ArrowPathIcon, CheckIcon } from '@heroicons/react/24/solid';
-const CodeEditor = ({onSubmit}: {onSubmit: () => string}): JSX.Element => {
+const CodeEditor = ({onSubmit}: { onSubmit: (code: string) => Promise<void>;}): JSX.Element => {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const editorInstanceRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
 
