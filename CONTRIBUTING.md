@@ -38,7 +38,7 @@ This project follows the "Branch and Pull" model of collaboration. Collaborators
 
 All pull requests should include at least one code review and another independent verification.
 
-The code review should copy-and-paste the following markdown template and complete it in a thorough review, as adapted from ["Software Engineering at Google" (Winters, Manshreck, & Wright)](https://abseil.io/resources/swe-book/html/toc.html)
+The code review should follow the following guide to performing a thorough review, as adapted from ["Software Engineering at Google" (Winters, Manshreck, & Wright)](https://abseil.io/resources/swe-book/html/toc.html)
 
 ```
 - [ ] Code correctness - the code behaves in accordance with all of the issue's specifications
@@ -52,7 +52,7 @@ The code review should copy-and-paste the following markdown template and comple
     - [ ] Test thoroughness - automated tests thoroughly verify the code
 ```
 
-When the requirement has been met to the reviewer's satisfaction, an `x` should be placed within the checkbox to note that it is accepted. When requirements have not been met, the reviewer should provide **constructive** feedback and/or questions that help the author to address the concerns. 
+These criteria can be cited in the review, but do not necessarily need to be copy/pasted. When requirements have not been met, the reviewer should provide **constructive** feedback and/or questions that help the author to address the concerns. 
 
 After the reviewer is satisfied with all the requirements, they should tag (using `@username`) another collaborator to independently verify that the code works in their own environment. The verifier should pull the feature branch locally, run tests, and manually verify that the behavior matches the issue specifications. Similarly, the verifier should provide **constructive* feedback and/or questions if they are uncertain that it meets all of the requirements. Once they are satisfied, they should reply with `✔️ LGTM` to signify "Looks good to me!"
 
