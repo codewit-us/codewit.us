@@ -23,7 +23,11 @@ export function App() {
 
   return (
     <div className="w-full h-screen bg-background-500">
-      <NavBar email={user ? user.email : ''} handleLogout={handleLogout} />
+      <NavBar 
+        email={user ? user.email : ''} 
+        admin={user ? user.isAdmin : false}
+        handleLogout={handleLogout} 
+      />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/read/:uid" element={<Read />} />

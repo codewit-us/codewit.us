@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
 import axios from "axios";
 
-const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => void; }): JSX.Element => {
+const NavBar = ({ email, admin, handleLogout }: { email: string, admin: boolean, handleLogout: () => void; }): JSX.Element => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const toggleNavbar = (): void => {
@@ -27,8 +27,11 @@ const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => vo
             <div className="hidden sm:flex sm:ml-6">
               <div className="flex items-center h-full">
                 <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Home</Link>
-                <Link to="/create" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
-                <Link to="/usermanagement" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+                { admin && <>
+                    <Link to="/create" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
+                    <Link to="/usermanagement" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+                  </>
+                }
               </div>
             </div>
           </div>
@@ -60,8 +63,11 @@ const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => vo
           <div className="sm:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <Link to="/" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Home</Link>
-              <Link to="/create" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
-              <Link to="/usermanagement" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+              {admin && <>
+                  <Link to="/create" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
+                  <Link to="/usermanagement" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>  
+                </>
+              }
               {email ? (
                 <div className="flex flex-col items-center space-y-2">
                   <span className="text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">{email}</span>
