@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/solid";
-import axios from "axios";
 
-const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => void; }): JSX.Element => {
+const NavBar = ({ email, admin, handleLogout }: { email: string, admin: boolean, handleLogout: () => void; }): JSX.Element => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const toggleNavbar = (): void => {
     setIsOpen(!isOpen);
-  };
-
-  const handleGoogleLogin = () => {
-    window.location.href = '/oauth2/google';
   };
 
   return (
@@ -27,8 +22,12 @@ const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => vo
             <div className="hidden sm:flex sm:ml-6">
               <div className="flex items-center h-full">
                 <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Home</Link>
-                <Link to="/create" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
-                <Link to="/usermanagement" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+                {admin && (
+                  <>
+                    <Link to="/create" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
+                    <Link to="/usermanagement" className="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -41,13 +40,13 @@ const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => vo
                 </button>
               </div>
             ) : (
-              <button 
-                onClick={handleGoogleLogin}
-                className="px-5 py-2.5 flex items-center text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-4 focus:ring-blue-300"
-              >
-                <svg className="mr-2 -ml-1 w-4 h-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
-                Log in with Google
-              </button>
+              <form action="http://localhost:3001/oauth2/google" method="post">
+                <input
+                  type="submit"
+                  value="Log in with Google"
+                  className="px-5 py-2.5 flex items-center text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-4 focus:ring-blue-300"
+                />
+              </form>
             )}
           </div>
           <div className="flex items-center sm:hidden">
@@ -60,8 +59,12 @@ const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => vo
           <div className="sm:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1">
               <Link to="/" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Home</Link>
-              <Link to="/create" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
-              <Link to="/usermanagement" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+              {admin && (
+                <>
+                  <Link to="/create" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Create</Link>
+                  <Link to="/usermanagement" className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Manage Users</Link>
+                </>
+              )}
               {email ? (
                 <div className="flex flex-col items-center space-y-2">
                   <span className="text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">{email}</span>
@@ -70,13 +73,13 @@ const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => vo
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={handleGoogleLogin}
-                  className="w-full flex items-center justify-center px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600"
-                >
-                  <svg className="mr-2 -ml-1 w-4 h-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
-                  Log in with Google
-                </button>
+                <form action="http://localhost:3001/oauth2/google" method="post" className="w-full">
+                  <input
+                    type="submit"
+                    value="Log in with Google"
+                    className="w-full flex items-center justify-center px-3 py-2 rounded-md text-base font-medium text-white bg-blue-500 hover:bg-blue-600"
+                  />
+                </form>
               )}
             </div>
           </div>
@@ -84,6 +87,6 @@ const NavBar = ({ email, handleLogout }: { email: string, handleLogout: () => vo
       </div>
     </nav>
   );
-}
+};
 
 export default NavBar;

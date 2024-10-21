@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { MagnifyingGlassIcon, ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
-import { User } from '@codewit/interfaces'
-import { useSearchUser, useSetAdmin } from '../hooks/usehooks/useUserHooks';
-import axios from 'axios';
+import { User } from '@codewit/interfaces';
+import { useSearchUser, useSetAdmin } from '../hooks/useUsers';
 
 interface ModalProps {
   user: User;
@@ -29,15 +28,15 @@ const UserManagement: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
 
-  const { searchUser } = useSearchUser();
-  const { setAdmin } = useSetAdmin();
-  
+  const searchUser = useSearchUser();
+  const setAdmin = useSetAdmin();
+
   const handleSearch = async () => {
     try {
       const response = await searchUser(searchQuery);
       setFilteredUsers([response]);
-    } catch (error) {
-      if(error.response.status === 404) {
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
         setFilteredUsers([]);
       } else {
         console.error('Error searching for users:', error);
@@ -53,12 +52,9 @@ const UserManagement: React.FC = () => {
   const saveAdminStatus = async () => {
     try {
       if (currentUser) {
-        const response = await setAdmin(currentUser.uid, !currentUser.isAdmin);
-        const updatedUser = response;        
+        const updatedUser = await setAdmin(currentUser.uid, !currentUser.isAdmin);
         setFilteredUsers(prevUsers =>
-          prevUsers.map(user =>
-            user.uid === updatedUser.uid ? updatedUser : user
-          )
+          prevUsers.map(user => user.uid === updatedUser.uid ? updatedUser : user)
         );
         setShowModal(false);
       }
