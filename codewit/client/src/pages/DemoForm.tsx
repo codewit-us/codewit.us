@@ -94,9 +94,9 @@ const CreateDemo = (): JSX.Element => {
         title: demoToEdit.title,
         youtube_id: demoToEdit.youtube_id,
         topic: demoToEdit.topic,
-        tags: demoToEdit.tags.map((tag: { name: string; }) => tag.name),
+        tags: demoToEdit.tags,
         language: demoToEdit.language.name,
-        exercises: demoToEdit.exercises.map((ex: { uid: number; }) => ex.uid)
+        exercises: demoToEdit.exercises
       });
     }
   };
@@ -114,6 +114,8 @@ const CreateDemo = (): JSX.Element => {
 
   if (loading) return <Loading />
   if (fetchError) return <Error />;
+
+  console.log(formData.youtube_id)
 
   return (
     <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">

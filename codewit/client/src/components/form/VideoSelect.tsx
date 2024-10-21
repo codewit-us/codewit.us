@@ -52,7 +52,7 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
       ) : (
         <Select
           id="youtube_id"
-          value={selectedOption}
+          value={selectedOption ? selectedOption: videos.find(video => video.value === selectedVideoId)}
           onChange={handleChange}
           options={videos}
           className="text-sm bg-blue text-white border-none w-full rounded-lg"

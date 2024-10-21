@@ -13,7 +13,7 @@ const LanguageSelect = ({handleChange, initialLanguage}: LanguageSelectProps): J
         onChange={handleChange}
         className="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 text-white rounded-lg focus:ring-blue-500 focus:border-blue-500" 
         required
-        value={initialLanguage.length > 0 ? initialLanguage : "cpp"}
+        value={initialLanguage ? initialLanguage : "cpp"}
       >
         <option value="cpp">C++</option>
         <option value="java">Java</option>

@@ -8,19 +8,25 @@ import {
   sequelize,
 } from '../models';
 
-async function getAllDemos(): Promise<Demo[]> {
-  return await Demo.findAll({
+async function getAllDemos(): Promise<any[]> {
+  const demos = await Demo.findAll({
     include: [Exercise, Tag, Language],
     order: [[Tag, DemoTags, 'ordering', 'ASC']],
   });
+  
+  return demos.map(transformDemoResponse);
 }
 
-async function getDemoById(uid: number): Promise<Demo | null> {
-  return await Demo.findByPk(uid, {
+
+async function getDemoById(uid: number): Promise<any | null> {
+  const demo = await Demo.findByPk(uid, {
     include: [Exercise, Tag, Language],
     order: [[Tag, DemoTags, 'ordering', 'ASC']],
   });
+
+  return demo ? transformDemoResponse(demo) : null;
 }
+
 
 async function createDemo(
   title: string,
@@ -79,6 +85,18 @@ async function createDemo(
 
     return demo;
   });
+}
+
+function transformDemoResponse(demo: any) {
+  return {
+    uid: demo.uid,
+    title: demo.title,
+    youtube_id: demo.youtube_id,
+    topic: demo.topic,
+    tags: demo.tags.map((tag: { name: string }) => tag.name),
+    language: demo.language.name,
+    exercises: demo.exercises.map((exercise: { uid: number }) => exercise.uid),
+  };
 }
 
 async function updateDemo(
