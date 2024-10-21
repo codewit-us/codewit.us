@@ -73,7 +73,7 @@ const NavBar = ({ email, admin, handleLogout }: { email: string, admin: boolean,
                   </button>
                 </div>
               ) : (
-                <form action="http://localhost:8000/oauth2/google" method="post" className="w-full">
+                <form action="http://localhost:3001/oauth2/google" method="post" className="w-full">
                   <input
                     type="submit"
                     value="Log in with Google"
