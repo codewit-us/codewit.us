@@ -1,11 +1,15 @@
 // Interface For Video Object
 
 interface Exercise {
-  demo_uid: number;
   prompt: string;
+  topic: string;
+  tags: string[];
+  language: string;
+  referenceTest: string;
 }
 
 interface ExerciseResponse {
+  referenceTest: string;
   uid: number;
   topic: string;
   prompt: string;
@@ -14,6 +18,16 @@ interface ExerciseResponse {
   language: string | {name:string;};
   tags: Tag[];
   testing_script: string;
+}
+
+interface ExerciseFormData{
+  exercise: { prompt: string };
+  isEditing: boolean;
+  editingUid: number;
+  selectedLanguage: string;
+  topic: string;
+  selectedTags: { label: string, value: string }[];
+  referenceTest: string;
 }
 
 interface Demo {
@@ -57,6 +71,16 @@ interface DemoResponse {
   tags: Tag[] | string [];
   language: string | {name:string;};
   languageUid: string;
+}
+
+interface DemoFormData {
+  uid: number | undefined;
+  youtube_id: string;
+  title: string;
+  topic: string;
+  tags: string[];
+  language: string;
+  exercises: string[];
 }
 
 interface Resource {
@@ -126,11 +150,13 @@ interface Thumbnail {
 export type { 
   Exercise, 
   ExerciseResponse,
+  ExerciseFormData,
   Demo,
   Tag,
   SelectedTag,
   DemoPostResponse,
   DemoResponse,
+  DemoFormData,
   YouTubeSearchResult, 
   Thumbnail,
   Resource,
