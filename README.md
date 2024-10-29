@@ -9,7 +9,7 @@ This project uses _Nx_ to manage the monorepo and npm as the package manager. To
 
 ### Environment Variables
 
-Navigate to `codewit.us/codewit/` and create a .env file with the following content:
+Navigate to `codewit.us/codewit/` and create a .env file with the following content (replace with your real values):
 
 ```sh
 # Frontend
@@ -21,6 +21,13 @@ GOOGLE_REDIRECT_URL="GOOGLE AUTH REDIRECT URL"
 GOOGLE_CLIENT_ID="YOUR CLIENT ID"
 GOOGLE_CLIENT_SECRET="YOUR SECRET"
 COOKIE_KEY="ANY ALPHANUMERICAL STRING"
+
+# Database
+DB_HOST=DB_HOST
+DB_USER=DB_USER
+DB_PASSWORD=DB_PASS
+DB_NAME=DB_NAME
+DB_PORT=PORT_NUM
 ```
 
 ### Running The Application
