@@ -88,8 +88,16 @@ function seed_emails {
 
 # seed database with data
 function seed_data {
-  echo "Seeding database with general data."
-  # TODO: seed general data into db
+  # if -b flag is used, we only need the first email
+  if [ ${#EMAILS[@]} -lt 1 ]; then
+    echo "Data seeding requires at least one email for roster setup."
+    exit 1
+  fi
+
+  validate_emails
+
+  echo "Seeding database with general data and email: ${EMAILS[0]}"
+  # TODO: seed general data into db using the provided single email
 }
 
 # display help information
@@ -97,18 +105,18 @@ function display_help {
   echo "Usage: $0 [options]"
   echo ""
   echo "Options:"
-  echo "  -e \"emails\"   Seed the database with the provided emails."
-  echo "  -d             Seed the database with general data."
-  echo "  -b \"emails\"   Seed the database with both emails and general data."
-  echo "  -h             Display this help message."
+  echo "  -e \"email(s)\"   Seed the database with the provided emails."
+  echo "  -d \"email\"      Seed the database with general data. Requires exactly one email."
+  echo "  -b \"email(s)\"   Seed the database with both emails and general data, using the first email for data."
+  echo "  -h              Display this help message."
   echo ""
   echo "Examples:"
   echo "  $0 -e email1@example.com email2@example.com"
   echo "      Seed only the database with emails."
-  echo "  $0 -d"
-  echo "      Seed only the database with general data."
+  echo "  $0 -d email@example.com"
+  echo "      Seed only the database with general data, using the provided email."
   echo "  $0 -b email1@example.com email2@example.com"
-  echo "      Seed the database with both emails and general data."
+  echo "      Seed the database with both emails and general data, using the first email for data."
   exit 0
 }
 
@@ -143,7 +151,7 @@ function main {
         exit 1
         ;;
       :)
-        echo "WARNING: Invalid used of -$OPTARG. Use -h for help."
+        echo "WARNING: Invalid usage of -$OPTARG. Use -h for help."
         exit 1
         ;;
     esac
@@ -153,7 +161,7 @@ function main {
   shift $((OPTIND - 1))
 
   # capture remaining arguments as additional emails if -e or -b is specified
-  if [ "$SEED_EMAILS" = true ]; then
+  if [ "$SEED_EMAILS" = true ] || [ "$SEED_DATA" = true ]; then
     EMAILS+=("$@")
   fi
 
@@ -171,6 +179,8 @@ function main {
     fi
     
     if [ "$SEED_DATA" = true ]; then
+      # Use only the first email if -b flag is active
+      EMAILS=("${EMAILS[0]}")
       seed_data
     fi
   fi
