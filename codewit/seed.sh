@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # get emails from params
-DB_CONTAINER_NAME="codewitus_db"
+DB_CONTAINER_NAME="postgres:16-bookworm"
+FE_CONTAINER_NAME="codewit-frontend"
+BE_CONTAINER_NAME="codewit-app"
+
 EMAILS=()
 EMAIL_REGEX='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
@@ -28,34 +31,49 @@ function check_env_vars {
 
   # prompt the user if any variables are missing
   if $MISSING_VARS; then
-    echo "One or more required environment variables are missing."
-    read -p "Would you like to use the default values for all missing variables? (y/n): " choice
+    echo " ❌: One or more required environment variables are missing."
+    read -p " ❓: Would you like to use the default values for all missing variables? (y/n): " choice
     if [ "$choice" = "y" ]; then
       for i in "${!REQUIRED_VARS[@]}"; do
         VAR_NAME=${REQUIRED_VARS[$i]}
         DEFAULT_VALUE=${DEFAULT_VALUES[$i]}
         if ! grep -q "^$VAR_NAME=" .env; then
           echo -e "\n$VAR_NAME=$DEFAULT_VALUE" >> .env
-          echo "$VAR_NAME set to $DEFAULT_VALUE in .env"
+          echo " ✅: $VAR_NAME set to $DEFAULT_VALUE in .env"
         fi
       done
     else
-      echo "Please set the missing environment variables manually."
+      echo " ❌: Please set the missing environment variables manually."
       exit 1
     fi
   else
-    echo "All required environment variables are already set in .env."
+    echo " ✅: All required environment variables are already set in .env."
   fi
 }
 
-# check if docker database container is running
-function check_db {
-  echo -e "\nChecking if database container ($DB_CONTAINER_NAME) is running..."
-  if ! docker ps | grep "$DB_CONTAINER_NAME" > /dev/null 2>&1; then
-    echo "Database container ($DB_CONTAINER_NAME) is not running."
+# check if all required Docker containers are running
+function check_application {
+  echo -e "\nChecking if required containers are running..."
+
+  # Array of required container names
+  CONTAINERS=("$DB_CONTAINER_NAME" "$FE_CONTAINER_NAME" "$BE_CONTAINER_NAME")
+
+  # Variable to track whether all containers are running
+  ALL_RUNNING=true
+
+  for container in "${CONTAINERS[@]}"; do
+    if ! docker ps | grep "$container" > /dev/null 2>&1; then
+      echo " ❌: Container $container is NOT running."
+      ALL_RUNNING=false
+    else
+      echo " ✅: Container $container is running."
+    fi
+  done
+
+  # If any container is not running, prompt the user
+  if [ "$ALL_RUNNING" = false ]; then
+    echo -e "\nERROR: One or more containers are not running. Have you tried running 'docker-compose up'?"
     exit 1
-  else
-    echo "Database container ($DB_CONTAINER_NAME) is running."
   fi
 }
 
@@ -64,24 +82,27 @@ function validate_emails {
   echo -e "\nValidating email(s)..."
   for email in "${EMAILS[@]}"; do
     if [[ ! $email =~ $EMAIL_REGEX ]]; then
-      echo "Invalid email format: $email"
+      echo " ❌: Invalid email format: $email"
       exit 1
     fi
   done
-  echo -e "All emails are valid.\n"
+  echo -e " ✅: All emails are valid.\n"
 }
 
 # seed database with emails
 function seed_emails {
   if [ ${#EMAILS[@]} -eq 0 ]; then
-    echo "No email(s) provided to seed the database."
+    echo -e "\nERROR: No email(s) provided to seed the database."
     exit 1
   fi
 
   validate_emails
   
-  echo "Seeding database with email(s): ${EMAILS[*]}"
-  
+  echo -e "Seeding admin with email(s):"
+  for email in "${EMAILS[@]}"; do
+    echo -e " 🌱: $email"
+  done  
+
   # run the npm command with .env for the seed-admins script
   npm run seed-admins -- --admin "${EMAILS[*]}"
 }
@@ -90,14 +111,15 @@ function seed_emails {
 function seed_data {
   # if -b flag is used, we only need the first email
   if [ ${#EMAILS[@]} -lt 1 ]; then
-    echo "Data seeding requires at least one email for roster setup."
+    echo -e "\nERROR: Data seeding requires at least one email for roster setup."
     exit 1
   fi
 
   validate_emails
 
-  echo "Seeding database with general data and email: ${EMAILS[0]}"
+  echo -e "Seeding database with general data and email: \n 🌱: ${EMAILS[0]}"
   # TODO: seed general data into db using the provided single email
+  npm run seed-data -- --email "${EMAILS[0]}"
 }
 
 # display help information
@@ -170,8 +192,8 @@ function main {
 
   # check if we need to seed emails, data, or both
   if [ "$SEED_EMAILS" = true ] || [ "$SEED_DATA" = true ]; then
-    # check if the database container is running only once
-    check_db
+    # check if the application containers are running
+    check_application
     
     # run the appropriate seeding functions
     if [ "$SEED_EMAILS" = true ]; then
@@ -179,7 +201,6 @@ function main {
     fi
     
     if [ "$SEED_DATA" = true ]; then
-      # Use only the first email if -b flag is active
       EMAILS=("${EMAILS[0]}")
       seed_data
     fi
