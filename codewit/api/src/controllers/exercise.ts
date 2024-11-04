@@ -1,4 +1,6 @@
 import { Exercise, ExerciseTags, Language, Tag, sequelize } from '../models';
+import { ExerciseResponse } from '../typings/response.types';
+import { formatExerciseResponse } from '../utils/responseFormatter';
 
 async function getAllExercises(): Promise<Exercise[]> {
   return await Exercise.findAll({
@@ -20,7 +22,7 @@ async function createExercise(
   referenceTest: string,
   tags?: string[],
   language?: string
-): Promise<Exercise> {
+): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.create(
       { prompt, topic, referenceTest },
@@ -56,7 +58,7 @@ async function createExercise(
       transaction,
     });
 
-    return exercise;
+    return formatExerciseResponse(exercise);
   });
 }
 
@@ -67,7 +69,7 @@ async function updateExercise(
   tags?: string[],
   language?: string,
   topic?: string
-): Promise<Exercise | null> {
+): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.findByPk(uid, {
       include: [Tag, Language],
@@ -116,7 +118,7 @@ async function updateExercise(
       });
     }
 
-    return exercise;
+    return formatExerciseResponse(exercise);
   });
 }
 

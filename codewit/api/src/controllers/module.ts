@@ -1,10 +1,12 @@
 import { Demo, Language, Module, Resource, sequelize } from '../models';
+import { ModuleResponse } from '../typings/response.types';
+import { formatModuleResponse } from '../utils/responseFormatter';
 
 async function createModule(
   topic: string,
   language: string,
   resources: number[]
-): Promise<Module> {
+): Promise<ModuleResponse> {
   return sequelize.transaction(async (transaction) => {
     const [languageInstance] = await Language.findOrCreate({
       where: { name: language },
@@ -31,7 +33,7 @@ async function createModule(
     await module.setResources(resources, { transaction });
     await module.reload({ include: [Language, Demo, Resource], transaction });
 
-    return module;
+    return formatModuleResponse(module);
   });
 }
 
@@ -48,7 +50,7 @@ async function updateModule(
   topic?: string,
   language?: string,
   resources?: number[]
-): Promise<Module | null> {
+): Promise<ModuleResponse> {
   return sequelize.transaction(async (transaction) => {
     const module = await Module.findByPk(uid, {
       include: [Language, Demo, Resource],
@@ -95,7 +97,7 @@ async function updateModule(
       transaction,
     });
 
-    return module;
+    return formatModuleResponse(module);
   });
 }
 

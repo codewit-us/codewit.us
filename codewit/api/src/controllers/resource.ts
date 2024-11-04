@@ -1,12 +1,14 @@
 import { Resource } from '../models';
+import { ResourceResponse } from '../typings/response.types';
+import { formatResourceResponse } from '../utils/responseFormatter';
 
 export async function createResource(
   url: string,
   title: string,
   source: string
-): Promise<Resource> {
+): Promise<ResourceResponse> {
   const resource = await Resource.create({ url, title, source });
-  return resource;
+  return formatResourceResponse(resource.get());
 }
 
 export async function getAllResources(): Promise<Resource[]> {
@@ -78,7 +80,7 @@ export async function updateResource(
   url?: string,
   title?: string,
   source?: string
-): Promise<Resource | null> {
+): Promise<ResourceResponse> {
   const resource = await Resource.findByPk(uid);
   if (!resource) {
     return null;
@@ -97,5 +99,5 @@ export async function updateResource(
   await resource.save();
   await resource.reload();
 
-  return resource;
+  return formatResourceResponse(resource.get());
 }

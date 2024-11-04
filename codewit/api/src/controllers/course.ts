@@ -5,6 +5,8 @@ import {
   animals,
 } from 'unique-names-generator';
 import { Course, CourseModules, Language, Module, sequelize } from '../models';
+import { CourseResponse } from '../typings/response.types';
+import { formatCourseResponse } from '../utils/responseFormatter';
 
 async function createCourse(
   title: string,
@@ -12,7 +14,7 @@ async function createCourse(
   modules?: number[],
   instructors?: number[],
   roster?: number[]
-): Promise<Course> {
+): Promise<CourseResponse> {
   return sequelize.transaction(async (transaction) => {
     // acquire SHARE ROW EXCLUSIVE lock, This lock allows concurrent reads
     // and locks the table against concurrent writes to avoid race conditions
@@ -76,7 +78,7 @@ async function createCourse(
       transaction,
     });
 
-    return course;
+    return formatCourseResponse(course);
   });
 }
 
@@ -87,7 +89,7 @@ async function updateCourse(
   modules?: number[],
   instructors?: number[],
   roster?: number[]
-): Promise<Course | null> {
+): Promise<CourseResponse> {
   return sequelize.transaction(async (transaction) => {
     const course = await Course.findByPk(uid, { transaction });
 
@@ -137,7 +139,7 @@ async function updateCourse(
       transaction,
     });
 
-    return course;
+    return formatCourseResponse(course);
   });
 }
 

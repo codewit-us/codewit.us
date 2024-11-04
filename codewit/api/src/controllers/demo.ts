@@ -7,6 +7,8 @@ import {
   DemoTags,
   sequelize,
 } from '../models';
+import { DemoResponse } from '../typings/response.types';
+import { formatDemoResponse } from '../utils/responseFormatter';
 
 async function getAllDemos(): Promise<Demo[]> {
   return await Demo.findAll({
@@ -28,7 +30,7 @@ async function createDemo(
   topic: string,
   tags?: string[],
   language?: string
-): Promise<Demo> {
+): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.create(
       { title, youtube_id, topic },
@@ -77,7 +79,7 @@ async function createDemo(
       transaction,
     });
 
-    return demo;
+    return formatDemoResponse(demo);
   });
 }
 
@@ -88,7 +90,7 @@ async function updateDemo(
   tags?: string[],
   language?: string,
   topic?: string
-): Promise<Demo | null> {
+): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.findByPk(uid, {
       include: [Exercise, Tag, Language],
@@ -167,7 +169,7 @@ async function updateDemo(
       }
     }
 
-    return demo;
+    return formatDemoResponse(demo);
   });
 }
 
