@@ -82,24 +82,66 @@ const ResourceForm = (): JSX.Element => {
   }
 
   return (
-    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className="bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6">
-        <h2 className="text-xl font-semibold text-white">{isEditing ? 'Edit Resource' : 'Create Resource'}</h2>
-        <div>
-          <InputLabel htmlFor="title">Title</InputLabel>
-          <TextInput id="title" value={resource.title} name="title" placeholder="Enter Title" onChange={handleChange} required />
-        </div>
-        <div>
-          <InputLabel htmlFor="url">URL</InputLabel>
-          <TextInput id="url" value={resource.url} name="url" placeholder="Enter URL" onChange={handleChange} required />
-        </div>
-        <div>
-          <InputLabel htmlFor="source">Source</InputLabel>
-          <TextInput id="source" value={resource.source} name="source" placeholder="Enter Source" onChange={handleChange} required />
-        </div>
-        <SubmitBtn disabled={!resource.url || !resource.title || !resource.source} text={isEditing ? 'Update' : 'Create'} />
-      </form>
-      <ExistingTable items={existingResources} name="Resources" onEdit={handleEdit} onDelete={handleDelete} />
+    <div className="flex h-screen bg-zinc-900 p-6 gap-6 overflow-hidden">
+      {/* Form Section */}
+      <div className="w-1/3 min-w-[450px]">
+        <form onSubmit={handleSubmit} className="bg-gray-800/90 rounded-xl shadow-lg p-6 h-full">
+          <h2 className="text-xl font-bold text-white mb-6">
+            {isEditing ? 'Edit Resource' : 'Create Resource'}
+          </h2>
+          
+          <div className="space-y-6">
+            <div>
+              <InputLabel htmlFor="title">Title</InputLabel>
+              <TextInput 
+                id="title" 
+                value={resource.title} 
+                name="title" 
+                placeholder="Enter Title" 
+                onChange={handleChange} 
+                required 
+              />
+            </div>
+
+            <div>
+              <InputLabel htmlFor="url">URL</InputLabel>
+              <TextInput 
+                id="url" 
+                value={resource.url} 
+                name="url" 
+                placeholder="Enter URL" 
+                onChange={handleChange} 
+                required 
+              />
+            </div>
+
+            <div>
+              <InputLabel htmlFor="source">Source</InputLabel>
+              <TextInput 
+                id="source" 
+                value={resource.source} 
+                name="source" 
+                placeholder="Enter Source" 
+                onChange={handleChange} 
+                required 
+              />
+            </div>
+
+            <SubmitBtn 
+              disabled={!resource.url || !resource.title || !resource.source} 
+              text={isEditing ? 'Update' : 'Create'} 
+            />
+          </div>
+        </form>
+      </div>
+
+      {/* Existing Resources Table */}
+      <ExistingTable 
+        items={existingResources} 
+        name="Resources" 
+        onEdit={handleEdit} 
+        onDelete={handleDelete} 
+      />
     </div>
   );
 };

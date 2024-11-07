@@ -46,7 +46,7 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
 
   return (
     <div className="mb-5">
-      <label htmlFor="youtube_id" className="block mb-2 text-sm font-medium text-white">Select YouTube Video</label>
+      <label htmlFor="youtube_id" className="block mb-2 text-sm font-medium text-gray-400">Select YouTube Video</label>
       {error ? (
         <div className="text-red-500">{error}</div>
       ) : (
