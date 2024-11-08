@@ -116,9 +116,9 @@ const CreateDemo = (): JSX.Element => {
   if (fetchError) return <Error />;
 
   return (
-    <div className="flex h-screen bg-zinc-900 p-6 gap-6 overflow-hidden">
+    <div className="flex h-full bg-zinc-900 p-6 gap-6">
       <div className="w-1/3 min-w-[450px]">
-        <form onSubmit={handleSubmit} className="bg-gray-800/90 rounded-xl shadow-lg p-6 h-full">
+        <form onSubmit={handleSubmit} className="bg-gray-800/90 overflow-auto rounded-xl shadow-lg p-6 h-full">
           <h2 className="text-xl font-bold text-white mb-6">
             {isEditing ? 'Edit Demo Exercise' : 'Create Demo Exercise'}
           </h2>
