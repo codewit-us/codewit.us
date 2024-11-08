@@ -58,7 +58,7 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
 
   return (
     <div className="flex flex-col justify-center items-start w-full">
-      <label htmlFor="exercise-select" className="block mb-2 text-sm font-medium text-white">Select Exercises</label>
+      <label htmlFor="exercise-select" className="block mb-2 text-sm font-medium text-gray-400">Select Exercises</label>
       <Select
         id="exercise-select"
         isMulti
