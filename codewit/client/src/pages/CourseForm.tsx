@@ -133,58 +133,84 @@ const CourseForm = (): JSX.Element => {
   }
 
   return (
-    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className="bg-gray-800 bg-opacity-50 w-full max-w-4xl h-full p-6 space-y-6">
-        <h2 className="text-xl font-semibold text-white">{isEditing ? "Edit Course" : "Create Course"}</h2>
-        <div>
-          <InputLabel htmlFor="title">Title</InputLabel>
-          <TextInput id="title" name="title" value={course.title} placeholder="Enter title" onChange={handleChange} required />
-        </div>
-        <LanguageSelect
-          handleChange={handleChange}
-          initialLanguage={course.language}
-        />
-        <div>
-          <InputLabel htmlFor="modules">Modules</InputLabel>
-          <Select
-            id="modules"
-            isMulti
-            options={moduleOptions}
-            className="text-sm bg-blue text-white border-none w-full rounded-lg"
-            styles={SelectStyles}
-            onChange={(selectedOption: MultiValue<SelectedTag>) => handleSelectChange(selectedOption, 'modules')}
-            value={moduleOptions.filter((option) => course.modules.includes(option.value))}
-          />
-        </div>
-        <div>
-          <InputLabel htmlFor="instructors">Instructors</InputLabel>
-          <Select 
-            id="instructors"
-            isMulti
-            options={userOptions}
-            className="text-sm bg-blue text-white border-none w-full rounded-lg"
-            styles={SelectStyles}
-            onChange={(selectedOption: MultiValue<SelectedTag>) => handleSelectChange(selectedOption, 'instructors')}
-            value={userOptions.filter((option) => course.instructors.includes(parseInt(option.value)))}
-          />
-        </div>
-        <div>
-          <InputLabel htmlFor="roster">Roster</InputLabel>
-          <Select 
-            id="roster"
-            isMulti
-            options={userOptions}
-            className="text-sm bg-blue text-white border-none w-full rounded-lg"
-            styles={SelectStyles}
-            onChange={(selectedOption: MultiValue<SelectedTag>) => handleSelectChange(selectedOption, 'roster')}
-            value={userOptions.filter((option) => course.roster.includes(parseInt(option.value)))}
-          />
-        </div>
-        <SubmitBtn
-          text={isEditing ? 'Confirm Edit' : 'Create'}
-          disabled={course.title === '' || course.modules.length === 0}
-        />
-      </form>
+    <div className="flex h-screen bg-zinc-900 p-6 gap-6 overflow-hidden">
+      <div className="w-1/3 min-w-[450px]">
+        <form onSubmit={handleSubmit} className="bg-gray-800/90 rounded-xl shadow-lg p-6 h-full">
+          <h2 className="text-xl font-bold text-white mb-6">
+            {isEditing ? "Edit Course" : "Create Course"}
+          </h2>
+          
+          <div className="space-y-6">
+            <div>
+              <InputLabel htmlFor="title">Title</InputLabel>
+              <TextInput 
+                id="title" 
+                name="title" 
+                value={course.title} 
+                placeholder="Enter title" 
+                onChange={handleChange} 
+                required 
+              />
+            </div>
+
+            <LanguageSelect
+              handleChange={handleChange}
+              initialLanguage={course.language}
+            />
+
+            <div>
+              <InputLabel htmlFor="modules">Modules</InputLabel>
+              <Select
+                id="modules"
+                isMulti
+                options={moduleOptions}
+                className="text-sm bg-blue text-white border-none w-full rounded-lg"
+                styles={SelectStyles}
+                onChange={(selectedOption: MultiValue<SelectedTag>) => 
+                  handleSelectChange(selectedOption, 'modules')}
+                value={moduleOptions.filter((option) => 
+                  course.modules.includes(option.value))}
+              />
+            </div>
+
+            <div>
+              <InputLabel htmlFor="instructors">Instructors</InputLabel>
+              <Select 
+                id="instructors"
+                isMulti
+                options={userOptions}
+                className="text-sm bg-blue text-white border-none w-full rounded-lg"
+                styles={SelectStyles}
+                onChange={(selectedOption: MultiValue<SelectedTag>) => 
+                  handleSelectChange(selectedOption, 'instructors')}
+                value={userOptions.filter((option) => 
+                  course.instructors.includes(parseInt(option.value)))}
+              />
+            </div>
+
+            <div>
+              <InputLabel htmlFor="roster">Roster</InputLabel>
+              <Select 
+                id="roster"
+                isMulti
+                options={userOptions}
+                className="text-sm bg-blue text-white border-none w-full rounded-lg"
+                styles={SelectStyles}
+                onChange={(selectedOption: MultiValue<SelectedTag>) => 
+                  handleSelectChange(selectedOption, 'roster')}
+                value={userOptions.filter((option) => 
+                  course.roster.includes(parseInt(option.value)))}
+              />
+            </div>
+
+            <SubmitBtn
+              text={isEditing ? 'Confirm Edit' : 'Create'}
+              disabled={course.title === '' || course.modules.length === 0}
+            />
+          </div>
+        </form>
+      </div>
+
       <ExistingTable
         items={courses}
         name="Courses"
