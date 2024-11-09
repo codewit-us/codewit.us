@@ -25,6 +25,38 @@ const useAxiosFetch = (initialUrl: string, initialData: Course[] = []) => {
   return { data, setData, loading, error };
 };
 
+// Fetch Student Courses
+export const useFetchStudentCourses = () => {
+  const [data, setData] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchStudentCourses = async () => {
+      const userId = localStorage.getItem('userId');
+
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(`/courses/student/${userId}`);
+        setData(response.data);
+      } catch (err) {
+        setError(true);
+        console.error('Failed to fetch student courses:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentCourses();
+  }, []);
+
+  return { data, loading, error };
+};
+
 // Hook to fetch all courses
 export const useFetchCourses = () => useAxiosFetch('/courses');
 
