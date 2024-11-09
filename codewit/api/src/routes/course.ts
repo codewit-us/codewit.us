@@ -3,6 +3,7 @@ import {
   createCourse,
   deleteCourse,
   getAllCourses,
+  getStudentCourses,
   getCourse,
   updateCourse,
 } from '../controllers/course';
@@ -30,6 +31,16 @@ courseRouter.get('/:uid', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Course not found' });
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+courseRouter.get('/student/:id', async (req, res) => {
+  try {
+    const courses = await getStudentCourses(req.params.id);
+    res.json(courses);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

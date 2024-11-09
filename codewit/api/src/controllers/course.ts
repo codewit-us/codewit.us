@@ -180,4 +180,18 @@ async function getAllCourses(): Promise<Course[]> {
   return courses;
 }
 
-export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses };
+async function getStudentCourses(studentId: string): Promise<Course[]> {
+  const courses = await Course.findAll({
+    include: [
+      Language,
+      Module,
+      { association: Course.associations.instructors },
+      { association: Course.associations.roster, where: { googleId: studentId } },
+    ],
+    order: [[Module, CourseModules, 'ordering', 'ASC']],
+  });
+
+  return courses;
+}
+
+export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses, getStudentCourses };
