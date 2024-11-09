@@ -73,16 +73,20 @@ The `codewit/client` directory contains the react app that drives the front-end.
 
 The `codewit/api` directory contains the express back-end.
 
-- **Postman Collection** at `codewit/api/codewit.postman_collection.json`
-
 ### main.ts
 
-- main.ts contains the router for our backend apis that uses express's router. It is located at `codewit/api/src/main.ts`
+- `main.ts` contains the router for our backend APIs that uses Express's router. It is located at `codewit/api/src/main.ts`.
 
   **Current routes**
 
-  - /demos - for the creating, reading, updating, and deleting the demos
-  - /exercises - for the creating, reading, updating, and deleting the exercises
+  - `/demos` - for creating, reading, updating, and deleting demos.
+  - `/exercises` - for creating, reading, updating, and deleting exercises.
+  - `/courses` - for creating, reading, updating, and deleting courses.
+  - `/attempts` - for creating and managing exercise attempts.
+  - `/auth` - for authentication-related routes, including Google OAuth.
+  - `/modules` - for creating, reading, updating, and deleting modules.
+  - `/resources` - for managing resources.
+  - `/users` - for user-related endpoints.
 
 ### models
 
@@ -90,34 +94,106 @@ The `codewit/api` directory contains the express back-end.
 
   **Current models**
 
-  - demo.ts - for the demo model
-  - exercise.ts - for the exercise model
-  - language.ts - for the language model
-  - tag.ts - for the tag model
+  - `attempt.ts` - tracks users' attempts at solving exercises, including:
+    - Timestamp of the attempt.
+    - Associated exercise ID.
+    - User ID.
+    - Submission number.
+    - Submitted code.
+  - `course.ts` - represents courses available for users.
+  - `demo.ts` - represents demos in the database.
+  - `exercise.ts` - represents exercises in the database.
+  - `index.ts` - initializes Sequelize and defines relationships between models.
+  - `language.ts` - represents languages available for demos, exercises, and courses.
+  - `module.ts` - represents modules that organize demos or resources.
+  - `resource.ts` - represents additional resources associated with modules or users.
+  - `tag.ts` - represents tags used for categorizing demos or exercises.
+  - `user.ts` - represents users in the database, including admin and Google OAuth fields.
 
 ### controllers
 
-- The `codewit/api/src/controllers` directory contains the controllers for the routes. These have methods for creating, reading, updating, and deleting the rows of corresponding tables in the database and are called by the routes.
+- The `codewit/api/src/controllers` directory contains the controllers for the routes. These have methods for creating, reading, updating, and deleting rows of corresponding tables in the database and are called by the routes.
 
   **Current controllers**
 
-  - demo.ts - for the demo controller
-  - exercise.ts - for the exercise controller
+  - `attempt.ts` - handles submission of user attempts for exercises.
+  - `course.ts` - manages course-related functionality, including instructors and student rosters.
+  - `demo.ts` - for managing demos.
+  - `exercise.ts` - for managing exercises.
+  - `module.ts` - handles CRUD operations for modules.
+  - `resource.ts` - handles resource CRUD operations and user associations.
+  - `user.ts` - handles user-related logic, including fetching and updating user data.
 
 ### routes
 
-- The `codewit/api/src/routes` directory contains the routes for the controllers. These have the express routes that call the controller methods.
+- The `codewit/api/src/routes` directory defines the API endpoints, connecting them to their respective controllers.
 
   **Current routes**
 
-  - demo.ts - for the demo routes
-  - exercise.ts - for the exercise routes
+  - `attempt.ts` - routes for submitting and managing exercise attempts.
+  - `auth.ts` - routes for authentication, including Google OAuth.
+  - `course.ts` - routes for managing courses.
+  - `demo.ts` - routes for CRUD operations on demos.
+  - `exercise.ts` - routes for CRUD operations on exercises.
+  - `module.ts` - routes for managing modules.
+  - `resource.ts` - routes for CRUD operations on resources.
+  - `user.ts` - routes for managing user data.
+
+### scripts
+
+- The `codewit/api/src/scripts` directory contains utility scripts for database and admin management.
+
+  **Current scripts**
+
+  - `seed-admins.ts` - a script to seed the database with admin users.
+    - Command-line options:
+      - `--force` - resyncs the database schema.
+      - `--admin <emails>` - accepts a list of admin emails to seed.
+    - Example usage:
+      ```bash
+      node seed-admins.js --admin admin1@example.com admin2@example.com
+      ```
+
+### middleware
+
+- The `codewit/api/src/middleware` directory contains middleware for handling authentication and admin checks.
+
+  **Current middleware**
+
+  - `auth.ts`:
+    - `checkAuth` - redirects unauthenticated users to Google OAuth.
+    - `checkAdmin` - ensures the user has admin privileges.
+
+### auth/passport.ts
+
+- Implements Google OAuth2 using the `passport-google-oauth20` strategy.
+- Automatically creates or updates users with Google profile data.
+- Serializes and deserializes user sessions based on their `uid`.
 
 ### lib/shared/validations
 
-- The `codewit/lib/shared/validations/src/lib` directory contains the validation schemas for the models. These are used to validate the data sent in the http request body whenever we try to create/update rows in the db. We also export interfaces that can be used by the frontend for autocompletion and type checking.
+- The `codewit/lib/shared/validations/src/lib` directory contains validation schemas for the models. These are used to validate the data sent in the HTTP request body when creating or updating rows in the database. Interfaces are also exported for frontend use.
 
   **Current validation schemas**
 
-  - demo.ts - for the demo validation schema
-  - exercise.ts - for the exercise validation schema
+  - `demo.ts` - for the demo validation schema.
+  - `exercise.ts` - for the exercise validation schema.
+  - `course.ts` - for the course validation schema.
+  - `attempt.ts` - for the attempt validation schema.
+  - `module.ts` - for the module validation schema.
+  - `resource.ts` - for the resource validation schema.
+  - `user.ts` - for the user validation schema.
+
+### secrets.ts
+
+- The `codewit/api/src/secrets.ts` file manages sensitive environment variables used in the backend.
+
+  **Current secrets**
+
+  - `HOST` - API host (default: `localhost`).
+  - `PORT` - API port (default: `3000`).
+  - `GOOGLE_CLIENT_ID` - Google client ID for OAuth.
+  - `GOOGLE_CLIENT_SECRET` - Google client secret for OAuth.
+  - `GOOGLE_REDIRECT_URL` - callback URL for Google OAuth.
+  - `COOKIE_KEY` - key for securing cookies.
+  - `FRONTEND_URL` - URL of the frontend application.
