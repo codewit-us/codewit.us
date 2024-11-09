@@ -60,6 +60,7 @@ demoRouter.post('/', checkAdmin, async (req, res) => {
     const demo = await createDemo(
       validatedBody.data.title,
       validatedBody.data.youtube_id,
+      validatedBody.data.youtube_thumbnail,
       validatedBody.data.topic,
       validatedBody.data.tags,
       validatedBody.data.language
@@ -86,6 +87,7 @@ demoRouter.patch('/:uid', checkAdmin, async (req, res) => {
       Number(req.params.uid),
       validatedBody.data.title,
       validatedBody.data.youtube_id,
+      validatedBody.data.youtube_thumbnail,
       validatedBody.data.tags,
       validatedBody.data.language,
       validatedBody.data.topic

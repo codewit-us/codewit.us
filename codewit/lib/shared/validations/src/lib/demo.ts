@@ -4,6 +4,7 @@ import { validateTopic } from './topic';
 const createDemoSchema = z.object({
   title: z.string(),
   youtube_id: z.string(),
+  youtube_thumbnail: z.string(),
   topic: z
     .string()
     .refine((t) => validateTopic(t), { message: 'Invalid topic' }),
@@ -14,6 +15,7 @@ const createDemoSchema = z.object({
 const updateDemoSchema = z.object({
   title: z.string().optional(),
   youtube_id: z.string().optional(),
+  youtube_thumbnail: z.string().optional(),
   topic: z
     .string()
     .refine((t) => validateTopic(t), { message: 'Invalid topic' })
