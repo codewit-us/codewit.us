@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Course } from '@codewit/interfaces';
+import { useAuth } from './useAuth';
 
 // General hook to handle fetching data with axios
 const useAxiosFetch = (initialUrl: string, initialData: Course[] = []) => {
@@ -27,21 +28,22 @@ const useAxiosFetch = (initialUrl: string, initialData: Course[] = []) => {
 
 // Fetch Student Courses
 export const useFetchStudentCourses = () => {
+  const { user, loading: authLoading } = useAuth(); 
   const [data, setData] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const fetchStudentCourses = async () => {
-      const userId = localStorage.getItem('userId');
+    if (authLoading) return;
 
-      if (!userId) {
-        setLoading(false);
+    const fetchStudentCourses = async () => {
+      if (!user || !user.googleId) {
+        setLoading(false); 
         return;
       }
 
       try {
-        const response = await axios.get(`/courses/student/${userId}`);
+        const response = await axios.get(`/courses/student/${user.googleId}`);
         setData(response.data);
       } catch (err) {
         setError(true);
@@ -52,7 +54,7 @@ export const useFetchStudentCourses = () => {
     };
 
     fetchStudentCourses();
-  }, []);
+  }, [user, authLoading]);
 
   return { data, loading, error };
 };
