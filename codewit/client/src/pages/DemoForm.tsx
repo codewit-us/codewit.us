@@ -31,6 +31,7 @@ const CreateDemo = (): JSX.Element => {
   const [formData, setFormData] = useState<DemoFormData>({
     uid: undefined,
     youtube_id: '',
+    youtube_thumbnail: '',
     title: '',
     topic: '',
     tags: [],
@@ -69,8 +70,8 @@ const CreateDemo = (): JSX.Element => {
     }));
   };
 
-  const handleVideoSelect = (videoId: string) => {
-    setFormData((prev: DemoFormData) => ({ ...prev, youtube_id: videoId }));
+  const handleVideoSelect = (videoId: string, videoThumbnail: string) => {
+    setFormData((prev: DemoFormData) => ({ ...prev, youtube_id: videoId, youtube_thumbnail: videoThumbnail }));
   };
 
   const handleTagSelect = (tags: { label: string, value: string }[]) => {
@@ -93,6 +94,7 @@ const CreateDemo = (): JSX.Element => {
         uid: demoToEdit.uid,
         title: demoToEdit.title,
         youtube_id: demoToEdit.youtube_id,
+        youtube_thumbnail: demoToEdit.youtube_thumbnail,
         topic: demoToEdit.topic,
         tags: demoToEdit.tags.map((tag: { name: string; }) => tag.name),
         language: demoToEdit.language.name,

@@ -5,7 +5,7 @@ import { SelectStyles } from '../../utils/styles.js';
 import { YouTubeSearchResult } from '@codewit/interfaces'; 
 
 interface VideoSelectProps {
-  onSelectVideo: (videoId: string) => void;
+  onSelectVideo: (videoId: string, videoThumbnail: string) => void;
   selectedVideoId: string;
 }
 
@@ -18,30 +18,30 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
     const apiKey = import.meta.env.VITE_KEY;
     const channelId = import.meta.env.VITE_CHANNEL_ID;
     const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&type=video&maxResults=50`;
-    axios.get(url)
-      .then(response => {
-        if (response.data.error) {
-          throw new Error(response.data.error.message);
-        }
-        setVideos(response.data.items.map((item: YouTubeSearchResult) => ({
-          value: item.id.videoId,
-          label: item.snippet.title
-        })));
-        setError(null);
-      })
-      .catch(error => {
-        setError('Failed to fetch videos. Please try again later.');
-        console.error('Failed to fetch videos:', error);
-      });
+
+    try {
+      const response = await axios.get(url);
+      if (response.data.error) throw new Error(response.data.error.message);
+
+      setVideos(response.data.items.map((item: YouTubeSearchResult) => ({
+        value: item.id.videoId,
+        label: item.snippet.title,
+        thumbnail: item.snippet.thumbnails.high.url, // Include high thumbnail
+      })));
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch videos. Please try again later.');
+      console.error('Failed to fetch videos:', err);
+    }
   };
 
   useEffect(() => {
     fetchVideos();
   }, []);
 
-  const handleChange = (selectedOption: {value: string, label: string}) => {
+  const handleChange = (selectedOption: { value: string, label: string, thumbnail: string }) => {
     setSelectedOption(selectedOption);
-    onSelectVideo(selectedOption.value);
+    onSelectVideo(selectedOption.value, selectedOption.thumbnail);
   };
 
   return (

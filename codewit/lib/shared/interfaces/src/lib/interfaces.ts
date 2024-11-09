@@ -76,6 +76,7 @@ interface DemoResponse {
 interface DemoFormData {
   uid: number | undefined;
   youtube_id: string;
+  youtube_thumbnail: string;
   title: string;
   topic: string;
   tags: string[];

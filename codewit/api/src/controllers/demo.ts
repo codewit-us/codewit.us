@@ -25,13 +25,14 @@ async function getDemoById(uid: number): Promise<Demo | null> {
 async function createDemo(
   title: string,
   youtube_id: string,
+  youtube_thumbnail: string,
   topic: string,
   tags?: string[],
   language?: string
 ): Promise<Demo> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.create(
-      { title, youtube_id, topic },
+      { title, youtube_id, youtube_thumbnail, topic },
       { transaction }
     );
     if (tags) {
@@ -85,6 +86,7 @@ async function updateDemo(
   uid: number,
   title?: string,
   youtube_id?: string,
+  youtube_thumbnail?: string,
   tags?: string[],
   language?: string,
   topic?: string
@@ -123,6 +125,7 @@ async function updateDemo(
       }
       if (title) demo.title = title;
       if (youtube_id) demo.youtube_id = youtube_id;
+      if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
       if (topic) {
         demo.topic = topic;
       }
