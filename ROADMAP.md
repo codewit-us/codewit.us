@@ -149,10 +149,8 @@ The `codewit/api` directory contains the express back-end.
     - Command-line options:
       - `--force` - resyncs the database schema.
       - `--admin <emails>` - accepts a list of admin emails to seed.
-    - Example usage:
-      ```bash
-      node seed-admins.js --admin admin1@example.com admin2@example.com
-      ```
+    - Usage:
+      - See [README.MD](https://github.com/codewit-us/codewit.us/blob/main/README.md#admin-seeding)
 
 ### middleware
 
