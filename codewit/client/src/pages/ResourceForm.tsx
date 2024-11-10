@@ -1,3 +1,4 @@
+// codewit/client/src/pages/ResourceForm.tsx
 import React, { useState, useEffect } from "react";
 import ReusableTable from "../components/form/ReusableTable";
 import ReusableModal from "../components/form/ReusableModal";

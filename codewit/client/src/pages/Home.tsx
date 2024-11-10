@@ -1,3 +1,4 @@
+// codewit/client/src/pages/Home.tsx
 import { useFetchStudentCourses } from '../hooks/useCourse';
 import Error from '../components/error/Error';
 import Loading from '../components/loading/LoadingPage';

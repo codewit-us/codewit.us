@@ -1,3 +1,4 @@
+// codewit/client/src/components/codeblock/Checklist.tsx
 import React from 'react';
 import ChecklistItem from './ChecklistItem';
 import Progress from './Progress';

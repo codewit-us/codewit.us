@@ -1,3 +1,4 @@
+// codewit/client/src/components/videoui/HelpfulLinks.tsx
 import { LinkIcon } from "@heroicons/react/24/solid";
 
 const HelpfulLinks = ({ setHelpfulLinksOpen }: { 

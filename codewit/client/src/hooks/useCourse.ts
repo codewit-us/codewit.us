@@ -1,3 +1,4 @@
+// codewit/client/src/hooks/useCourse.ts
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Course } from '@codewit/interfaces';

@@ -1,3 +1,4 @@
+// codewit/client/src/components/logo/GoogleLogo.tsx
 interface GoogleLogoProps {
   className?: string; 
 }

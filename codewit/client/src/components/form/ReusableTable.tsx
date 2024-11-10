@@ -1,3 +1,4 @@
+// codewit/client/src/components/form/ReusableTable.tsx
 import React from "react";
 import { Table } from "flowbite-react";
 

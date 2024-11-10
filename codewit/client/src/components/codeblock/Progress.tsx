@@ -1,3 +1,4 @@
+// codewit/client/src/components/codeblock/Progress.tsx
 const Progress = ({ percentage }: { percentage: number }): JSX.Element => {
   return (
     <div className="w-full bg-gray-200 rounded-full dark:bg-gray-700">

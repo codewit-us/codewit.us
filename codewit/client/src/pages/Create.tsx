@@ -1,3 +1,4 @@
+// codewit/client/src/pages/Create.tsx
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { VideoCameraIcon, BookOpenIcon, LinkIcon, QueueListIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 
