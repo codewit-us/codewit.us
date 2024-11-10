@@ -24,7 +24,7 @@ export function App() {
   return (
     <div className="w-full h-screen bg-background-500">
       <NavBar 
-        email={user ? user.email : ''} 
+        name={user ? user.username : ''} 
         admin={user ? user.isAdmin : false}
         handleLogout={handleLogout} 
       />
