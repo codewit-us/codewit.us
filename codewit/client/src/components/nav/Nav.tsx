@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Navbar, Button } from "flowbite-react";
 import { Link } from "react-router-dom";
 import {
-  AcademicCapIcon as AcademicCapIconOutline,
   ArrowLeftStartOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
+import {
+  AcademicCapIcon
+} from "@heroicons/react/24/outline";
 import GoogleLogo from "../logo/GoogleLogo";
 
 const NavBar = ({
@@ -37,7 +39,7 @@ const NavBar = ({
       {name && (
         <div className="flex w-full justify-end space-x-2 text-accent-500">
           <div className="flex justify-center gap-2 items-center">
-            <AcademicCapIconOutline className="text-center h-6 w-6" />
+            <AcademicCapIcon className="text-center h-6 w-6 mt-1" />
             <span className="text-center text-[20px] font-medium">{name}</span>
           </div>
         </div>
@@ -47,7 +49,7 @@ const NavBar = ({
         <Button
           size="sm"
           onClick={toggleNavbar}
-          className="p-2 text-accent-600 hover:text-accent-700"
+          className="mt-1 text-accent-600 hover:text-accent-700"
         >
           {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
         </Button>

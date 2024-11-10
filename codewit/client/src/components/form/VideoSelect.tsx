@@ -26,7 +26,7 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
       setVideos(response.data.items.map((item: YouTubeSearchResult) => ({
         value: item.id.videoId,
         label: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.high.url, // Include high thumbnail
+        thumbnail: item.snippet.thumbnails.high.url, 
       })));
       setError(null);
     } catch (err) {
