@@ -4,9 +4,9 @@ import { Editor } from "@monaco-editor/react";
 import { ExerciseResponse, SelectedTag } from "@codewit/interfaces";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
-import CreateButton from "../components/CreateButton";
-import ReusableTable from "../components/ReusableTable";
-import ReusableModal from "../components/ReusableModal";
+import CreateButton from "../components/form/CreateButton";
+import ReusableTable from "../components/form/ReusableTable";
+import ReusableModal from "../components/form/ReusableModal";
 import { toast } from "react-toastify";
 import {
   usePostExercise,

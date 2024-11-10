@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import ReusableModal from "../components/ReusableModal";
-import ReusableTable from "../components/ReusableTable";
+import ReusableModal from "../components/form/ReusableModal";
+import ReusableTable from "../components/form/ReusableTable";
 import { toast } from "react-toastify";
 import VideoSelect from "../components/form/VideoSelect";
 import ExerciseSelect from "../components/form/ExerciseSelect";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
-import CreateButton from "../components/CreateButton";
+import CreateButton from "../components/form/CreateButton";
 import { useFetchDemos, usePostDemo, usePatchDemo, useDeleteDemo } from "../hooks/useDemo";
 import { DemoResponse } from "@codewit/interfaces";
 import { isFormValid } from "../utils/formValidationUtils";

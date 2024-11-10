@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ReusableTable from "../components/ReusableTable";
-import ReusableModal from "../components/ReusableModal";
+import ReusableTable from "../components/form/ReusableTable";
+import ReusableModal from "../components/form/ReusableModal";
 import InputLabel from "../components/form/InputLabel";
 import TextInput from "../components/form/TextInput";
-import CreateButton from "../components/CreateButton";
+import CreateButton from "../components/form/CreateButton";
 import { toast } from "react-toastify";
 import { Resource } from "@codewit/interfaces";
 import { isFormValid } from "../utils/formValidationUtils";

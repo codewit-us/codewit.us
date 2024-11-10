@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ReusableTable from "../components/ReusableTable";
-import ReusableModal from "../components/ReusableModal";
+import ReusableTable from "../components/form/ReusableTable";
+import ReusableModal from "../components/form/ReusableModal";
 import Select, { MultiValue } from "react-select";
 import LanguageSelect from "../components/form/LanguageSelect";
-import CreateButton from "../components/CreateButton";
+import CreateButton from "../components/form/CreateButton";
 import InputLabel from "../components/form/InputLabel";
 import TextInput from "../components/form/TextInput";
 import { SelectStyles } from "../utils/styles";
