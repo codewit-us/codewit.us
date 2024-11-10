@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from "react";
-import Error from "../components/error/Error";
 import MDEditor from "@uiw/react-markdown-editor";
-import { ExerciseResponse, SelectedTag, ExerciseFormData } from "@codewit/interfaces";
+import { Editor } from "@monaco-editor/react";
+import {
+  ExerciseResponse,
+  SelectedTag,
+  ExerciseFormData,
+} from "@codewit/interfaces";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
-import SubmitBtn from "../components/form/SubmitButton";
-import ExistingTable from "../components/form/ExistingTable";
-import Loading from '../components/loading/LoadingPage';
+import CreateButton from "../components/CreateButton";
+import ReusableTable from "../components/ReusableTable";
+import ReusableModal from "../components/ReusableModal";
+import Loading from "../components/loading/LoadingPage";
+import Error from "../components/error/Error";
 import {
   usePostExercise,
   usePatchExercise,
   useFetchExercises,
   useDeleteExercise,
 } from "../hooks/useExercise";
-import { Editor } from "@monaco-editor/react";
+import InputLabel from "../components/form/InputLabel";
 
 const ExerciseForms = (): JSX.Element => {
   const { data: exercises, setData: setExercises, loading: loadingEx, error: fetchError } = useFetchExercises();
@@ -21,15 +27,17 @@ const ExerciseForms = (): JSX.Element => {
   const patchExercise = usePatchExercise();
   const deleteExercise = useDeleteExercise();
 
+  const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState<ExerciseFormData>({
     exercise: { prompt: "" },
     isEditing: false,
     editingUid: -1,
-    topic: '',
+    topic: "",
     selectedLanguage: "cpp",
     selectedTags: [],
     referenceTest: "",
   });
+
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -38,8 +46,7 @@ const ExerciseForms = (): JSX.Element => {
     }
   }, [fetchError]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     const { editingUid, isEditing } = formData;
 
     const exerciseData = {
@@ -49,12 +56,13 @@ const ExerciseForms = (): JSX.Element => {
       language: formData.selectedLanguage,
       referenceTest: formData.referenceTest,
     };
-
+    console.log(exerciseData);
     try {
       let response: ExerciseResponse;
       if (isEditing && editingUid !== -1) {
         response = await patchExercise(exerciseData, editingUid);
       } else {
+        console.log("POSTING?")
         response = await postExercise(exerciseData);
       }
 
@@ -69,11 +77,12 @@ const ExerciseForms = (): JSX.Element => {
         exercise: { prompt: "" },
         isEditing: false,
         editingUid: -1,
-        topic: '',
+        topic: "",
         selectedLanguage: "cpp",
         selectedTags: [],
         referenceTest: "",
       });
+      setModalOpen(false);
     } catch (error) {
       setError(true);
       console.error("Error saving the exercise:", error);
@@ -88,34 +97,29 @@ const ExerciseForms = (): JSX.Element => {
     setFormData((prev) => ({ ...prev, referenceTest: value || "" }));
   };
 
-  const handleEdit = (exerciseUID: number) => {
-    const exerciseToEdit = exercises.find((ex) => ex.uid === exerciseUID);
-    if (!exerciseToEdit) {
-      console.error("Exercise with UID not found:", exerciseUID);
-      return;
-    }
-
+  const handleEdit = (exercise: ExerciseResponse) => {
     setFormData({
-      exercise: { prompt: exerciseToEdit.prompt },
+      exercise: { prompt: exercise.prompt },
       isEditing: true,
-      editingUid: exerciseUID,
-      topic: exerciseToEdit.topic,
-      selectedTags: exerciseToEdit.tags.map((tag) => ({
+      editingUid: exercise.uid,
+      topic: exercise.topic,
+      selectedTags: exercise.tags.map((tag) => ({
         label: typeof tag === "string" ? tag : tag.name,
         value: typeof tag === "string" ? tag : tag.name,
       })),
       selectedLanguage:
-        typeof exerciseToEdit.language === "string"
-          ? exerciseToEdit.language
-          : exerciseToEdit.language.name,
-      referenceTest: exerciseToEdit.referenceTest || "",
+        typeof exercise.language === "string"
+          ? exercise.language
+          : exercise.language.name,
+      referenceTest: exercise.referenceTest || "",
     });
+    setModalOpen(true);
   };
 
-  const handleDelete = async (exerciseId: number) => {
+  const handleDelete = async (exercise: ExerciseResponse) => {
     try {
-      await deleteExercise(exerciseId);
-      setExercises((prev) => prev.filter((ex) => ex.uid !== exerciseId));
+      await deleteExercise(exercise.uid);
+      setExercises((prev) => prev.filter((ex) => ex.uid !== exercise.uid));
     } catch (error) {
       console.error("Error deleting exercise:", error);
       setError(true);
@@ -126,7 +130,9 @@ const ExerciseForms = (): JSX.Element => {
     setFormData((prev) => ({ ...prev, selectedTags: tags }));
   };
 
-  const handleTopicSelect = (topics: { label: string, value: string }[] | { label: string, value: string }) => {
+  const handleTopicSelect = (
+    topics: { label: string; value: string }[] | { label: string; value: string }
+  ) => {
     const topic = Array.isArray(topics) ? topics[0].value : topics.value;
     setFormData((prev) => ({ ...prev, topic }));
   };
@@ -135,32 +141,87 @@ const ExerciseForms = (): JSX.Element => {
     setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
   };
 
-  if (error) {
-    return <Error />;
-  }
+  const columns = [
+    { header: "Prompt", accessor: "prompt" },
+    { header: "Topic", accessor: "topic" },
+    { header: "Language", accessor: "language.name" },
+  ];
 
   if (loadingEx) {
     return <Loading />;
   }
 
+  if (error) {
+    return <Error />;
+  }
+
   return (
-    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto p-6 gap-6">
-      <form onSubmit={handleSubmit} className=" bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6 rounded-xl overflow-auto">
-        <h2 className="text-xl font-semibold text-white mb-2">
-          {formData.isEditing ? "Edit Exercise" : "Create New Exercise"}
-        </h2>
-        <div className="mb-2 overflow-auto">
+    <div className="flex flex-col h-full bg-zinc-900 p-6">
+      {/* Create Exercise Button */}
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Exercise" />
+
+      {/* Existing Exercises Table */}
+      <ReusableTable
+        columns={columns}
+        data={exercises}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      {/* Modal for Creating/Editing Exercise */}
+      <ReusableModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setFormData({
+            exercise: { prompt: "" },
+            isEditing: false,
+            editingUid: -1,
+            topic: "",
+            selectedLanguage: "cpp",
+            selectedTags: [],
+            referenceTest: "",
+          });
+        }}
+        title={formData.isEditing ? "Edit Exercise" : "Create Exercise"}
+        footerActions={
+          <>
+            <button
+              onClick={handleSubmit}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md"
+            >
+              {formData.isEditing ? "Save Changes" : "Create Exercise"}
+            </button>
+            <button
+              onClick={() => {
+                setModalOpen(false);
+                setFormData({
+                  exercise: { prompt: "" },
+                  isEditing: false,
+                  editingUid: -1,
+                  topic: "",
+                  selectedLanguage: "cpp",
+                  selectedTags: [],
+                  referenceTest: "",
+                });
+              }}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <InputLabel htmlFor="prompt">Prompt</InputLabel>
           <MDEditor
             value={formData.exercise.prompt}
             onChange={handleEditorChange}
             height="300px"
             data-testid="prompt"
           />
-        </div>
-        <div className="mb-2 overflow-auto">
-          <h2 className="text-xl font-semibold text-white mb-2">
-            Reference Test
-          </h2>
+
+          <InputLabel htmlFor="referenceTest">Reference Test</InputLabel>
           <Editor
             height="200px"
             language={formData.selectedLanguage}
@@ -168,34 +229,26 @@ const ExerciseForms = (): JSX.Element => {
             onChange={handleScriptChange}
             theme="vs-dark"
           />
-        </div>
-        <div className="flex flex-row w-full gap-3 mb-6">
+
+          <div className="flex flex-row gap-3">
+            <TagSelect
+              selectedTags={formData.selectedTags}
+              setSelectedTags={handleTagSelect}
+              isMulti
+            />
+            <LanguageSelect
+              handleChange={handleLanguageChange}
+              initialLanguage={formData.selectedLanguage}
+            />
+          </div>
+
           <TagSelect
-            selectedTags={formData.selectedTags}
-            setSelectedTags={handleTagSelect}
-            isMulti={true}
-          />
-          <LanguageSelect
-            handleChange={handleLanguageChange}
-            initialLanguage={formData.selectedLanguage}
+            selectedTags={[{ value: formData.topic, label: formData.topic }]}
+            setSelectedTags={handleTopicSelect}
+            isMulti={false}
           />
         </div>
-        <TagSelect
-          selectedTags={[{ value: formData.topic, label: formData.topic }]}
-          setSelectedTags={handleTopicSelect}
-          isMulti={false}
-        />
-        <SubmitBtn
-          disabled={
-            formData.exercise.prompt === "" ||
-            formData.selectedTags.length === 0 ||
-            formData.topic === '' ||
-            formData.referenceTest === ""
-          }
-          text={formData.isEditing ? "Confirm Edit" : "Create"}
-        />
-      </form>
-      <ExistingTable items={exercises} onEdit={handleEdit} onDelete={handleDelete} />
+      </ReusableModal>
     </div>
   );
 };
