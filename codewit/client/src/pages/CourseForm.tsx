@@ -133,10 +133,8 @@ const CourseForm = (): JSX.Element => {
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-      {/* Button Section */}
       <CreateButton onClick={() => setModalOpen(true)} title="Create Course" />
 
-      {/* Table Section */}
       <ReusableTable
         columns={columns}
         data={courses}
@@ -144,7 +142,6 @@ const CourseForm = (): JSX.Element => {
         onDelete={handleDelete}
       />
 
-      {/* Modal Section */}
       <ReusableModal
         isOpen={modalOpen}
         onClose={() => {
@@ -175,7 +172,6 @@ const CourseForm = (): JSX.Element => {
           </>
         }
       >
-        {/* Form Fields */}
         <div className="space-y-4">
           <div>
             <InputLabel htmlFor="title">Title</InputLabel>
