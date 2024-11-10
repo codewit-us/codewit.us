@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ReusableModal from "../components/ReusableModal";
 import ReusableTable from "../components/ReusableTable";
+import { toast } from "react-toastify";
 import VideoSelect from "../components/form/VideoSelect";
 import ExerciseSelect from "../components/form/ExerciseSelect";
 import TagSelect from "../components/form/TagSelect";
@@ -8,6 +9,7 @@ import LanguageSelect from "../components/form/LanguageSelect";
 import CreateButton from "../components/CreateButton";
 import { useFetchDemos, usePostDemo, usePatchDemo, useDeleteDemo } from "../hooks/useDemo";
 import { DemoResponse } from "@codewit/interfaces";
+import { isFormValid } from "../utils/formValidationUtils";
 
 const DemoForm = (): JSX.Element => {
   const { data: demos, setData: setDemos } = useFetchDemos();
@@ -52,13 +54,15 @@ const DemoForm = (): JSX.Element => {
       if (isEditing) {
         const updatedDemo = await patchDemo(formData, formData.uid as number);
         setDemos((prev) => prev.map((demo) => (demo.uid === formData.uid ? updatedDemo : demo)));
+        toast.success("Demo successfully updated!");
       } else {
         const newDemo = await postDemo(formData);
         setDemos((prev) => [...prev, newDemo]);
+        toast.success("Demo successfully created!");
       }
       handleModalClose();
-    } catch (err) {
-      console.error("Error creating or updating demo:", err);
+    } catch {
+      toast.error("An error occurred. Please try again.");
     }
   };
 
@@ -81,10 +85,14 @@ const DemoForm = (): JSX.Element => {
     try {
       await deleteDemo(demo.uid);
       setDemos((prev) => prev.filter((d) => d.uid !== demo.uid));
-    } catch (err) {
-      console.error("Error deleting demo:", err);
+      toast.success("Demo successfully deleted!");
+    } catch {
+      toast.error("An error occurred while deleting.");
     }
   };
+
+  const requiredFields = ["title", "youtube_id", "youtube_thumbnail", "topic"];
+  const isValid = isFormValid(formData, requiredFields);
 
   const columns = [
     { header: "Title", accessor: "title" },
@@ -94,17 +102,21 @@ const DemoForm = (): JSX.Element => {
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-      <CreateButton onClick={() => setModalOpen(true)} title = "Create Demo" />
-
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Demo" />
       <ReusableTable columns={columns} data={demos} onEdit={handleEdit} onDelete={handleDelete} />
-
       <ReusableModal
         isOpen={modalOpen}
         onClose={handleModalClose}
         title={isEditing ? "Edit Demo" : "Create Demo"}
         footerActions={
           <>
-            <button onClick={handleSubmit} className="bg-blue-500 text-white px-4 py-2 rounded-md">
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
+            >
               {isEditing ? "Update" : "Create"}
             </button>
             <button onClick={handleModalClose} className="bg-gray-500 text-white px-4 py-2 rounded-md">
@@ -122,7 +134,6 @@ const DemoForm = (): JSX.Element => {
             placeholder="Enter demo title"
           />
         </div>
-
         <VideoSelect
           selectedVideoId={formData.youtube_id}
           onSelectVideo={(id, thumbnail) => {
@@ -130,12 +141,10 @@ const DemoForm = (): JSX.Element => {
             handleInputChange("youtube_thumbnail", thumbnail);
           }}
         />
-
         <ExerciseSelect
           initialExercises={formData.exercises}
           onSelectExercises={(exercises) => handleInputChange("exercises", exercises)}
         />
-
         <div className="grid grid-cols-2 gap-4">
           <TagSelect
             selectedTags={formData.tags.map((tag) => ({ label: tag, value: tag }))}
@@ -152,7 +161,6 @@ const DemoForm = (): JSX.Element => {
             handleChange={(e) => handleInputChange("language", e.target.value)}
           />
         </div>
-
         <TagSelect
           selectedTags={[{ value: formData.topic, label: formData.topic }]}
           setSelectedTags={(topic) => handleInputChange("topic", topic.value)}

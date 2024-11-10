@@ -1,18 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import MDEditor from "@uiw/react-markdown-editor";
 import { Editor } from "@monaco-editor/react";
-import {
-  ExerciseResponse,
-  SelectedTag,
-  ExerciseFormData,
-} from "@codewit/interfaces";
+import { ExerciseResponse, SelectedTag } from "@codewit/interfaces";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
 import CreateButton from "../components/CreateButton";
 import ReusableTable from "../components/ReusableTable";
 import ReusableModal from "../components/ReusableModal";
-import Loading from "../components/loading/LoadingPage";
-import Error from "../components/error/Error";
+import { toast } from "react-toastify";
 import {
   usePostExercise,
   usePatchExercise,
@@ -20,77 +15,60 @@ import {
   useDeleteExercise,
 } from "../hooks/useExercise";
 import InputLabel from "../components/form/InputLabel";
+import { isFormValid } from "../utils/formValidationUtils";
 
 const ExerciseForms = (): JSX.Element => {
-  const { data: exercises, setData: setExercises, loading: loadingEx, error: fetchError } = useFetchExercises();
+  const { data: exercises, setData: setExercises } = useFetchExercises();
   const postExercise = usePostExercise();
   const patchExercise = usePatchExercise();
   const deleteExercise = useDeleteExercise();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [formData, setFormData] = useState<ExerciseFormData>({
-    exercise: { prompt: "" },
-    isEditing: false,
-    editingUid: -1,
+  const [formData, setFormData] = useState({
+    prompt: "",
     topic: "",
     selectedLanguage: "cpp",
-    selectedTags: [],
+    selectedTags: [] as SelectedTag[],
     referenceTest: "",
+    isEditing: false,
+    editingUid: -1,
   });
-
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (fetchError) {
-      setError(true);
-    }
-  }, [fetchError]);
 
   const handleSubmit = async () => {
     const { editingUid, isEditing } = formData;
 
     const exerciseData = {
-      prompt: formData.exercise.prompt.trim(),
+      prompt: formData.prompt.trim(),
       topic: formData.topic,
       tags: formData.selectedTags.map((tag) => tag.value),
       language: formData.selectedLanguage,
       referenceTest: formData.referenceTest,
     };
-    console.log(exerciseData);
+
     try {
       let response: ExerciseResponse;
       if (isEditing && editingUid !== -1) {
         response = await patchExercise(exerciseData, editingUid);
+        setExercises((prev) =>
+          prev.map((ex) => (ex.uid === editingUid ? response : ex))
+        );
+        toast.success("Exercise successfully updated!");
       } else {
-        console.log("POSTING?")
         response = await postExercise(exerciseData);
+        setExercises((prev) => [...prev, response]);
+        toast.success("Exercise successfully created!");
       }
 
-      setExercises((prev) =>
-        isEditing
-          ? prev.map((ex) => (ex.uid === editingUid ? response : ex))
-          : [...prev, response]
-      );
-
-      // Reset form after successful submission
-      setFormData({
-        exercise: { prompt: "" },
-        isEditing: false,
-        editingUid: -1,
-        topic: "",
-        selectedLanguage: "cpp",
-        selectedTags: [],
-        referenceTest: "",
-      });
+      resetForm();
       setModalOpen(false);
     } catch (error) {
-      setError(true);
+      toast.error("Error saving the exercise. Please try again.");
       console.error("Error saving the exercise:", error);
     }
   };
 
   const handleEditorChange = (value: string | undefined) => {
-    setFormData((prev) => ({ ...prev, exercise: { prompt: value || "" } }));
+    setFormData((prev) => ({ ...prev, prompt: value || "" }));
   };
 
   const handleScriptChange = (value: string | undefined) => {
@@ -99,9 +77,7 @@ const ExerciseForms = (): JSX.Element => {
 
   const handleEdit = (exercise: ExerciseResponse) => {
     setFormData({
-      exercise: { prompt: exercise.prompt },
-      isEditing: true,
-      editingUid: exercise.uid,
+      prompt: exercise.prompt,
       topic: exercise.topic,
       selectedTags: exercise.tags.map((tag) => ({
         label: typeof tag === "string" ? tag : tag.name,
@@ -112,6 +88,8 @@ const ExerciseForms = (): JSX.Element => {
           ? exercise.language
           : exercise.language.name,
       referenceTest: exercise.referenceTest || "",
+      isEditing: true,
+      editingUid: exercise.uid,
     });
     setModalOpen(true);
   };
@@ -120,9 +98,10 @@ const ExerciseForms = (): JSX.Element => {
     try {
       await deleteExercise(exercise.uid);
       setExercises((prev) => prev.filter((ex) => ex.uid !== exercise.uid));
+      toast.success("Exercise successfully deleted!");
     } catch (error) {
+      toast.error("Error deleting exercise.");
       console.error("Error deleting exercise:", error);
-      setError(true);
     }
   };
 
@@ -141,26 +120,31 @@ const ExerciseForms = (): JSX.Element => {
     setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      prompt: "",
+      topic: "",
+      selectedLanguage: "cpp",
+      selectedTags: [],
+      referenceTest: "",
+      isEditing: false,
+      editingUid: -1,
+    });
+  };
+
+  const requiredFields = ["prompt", "referenceTest", "topic"];
+  const isValid = isFormValid(formData, requiredFields);
+
   const columns = [
     { header: "Prompt", accessor: "prompt" },
     { header: "Topic", accessor: "topic" },
     { header: "Language", accessor: "language.name" },
   ];
 
-  if (loadingEx) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return <Error />;
-  }
-
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-      {/* Create Exercise Button */}
       <CreateButton onClick={() => setModalOpen(true)} title="Create Exercise" />
 
-      {/* Existing Exercises Table */}
       <ReusableTable
         columns={columns}
         data={exercises}
@@ -168,42 +152,28 @@ const ExerciseForms = (): JSX.Element => {
         onDelete={handleDelete}
       />
 
-      {/* Modal for Creating/Editing Exercise */}
       <ReusableModal
         isOpen={modalOpen}
         onClose={() => {
+          resetForm();
           setModalOpen(false);
-          setFormData({
-            exercise: { prompt: "" },
-            isEditing: false,
-            editingUid: -1,
-            topic: "",
-            selectedLanguage: "cpp",
-            selectedTags: [],
-            referenceTest: "",
-          });
         }}
         title={formData.isEditing ? "Edit Exercise" : "Create Exercise"}
         footerActions={
           <>
             <button
               onClick={handleSubmit}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md"
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
             >
               {formData.isEditing ? "Save Changes" : "Create Exercise"}
             </button>
             <button
               onClick={() => {
+                resetForm();
                 setModalOpen(false);
-                setFormData({
-                  exercise: { prompt: "" },
-                  isEditing: false,
-                  editingUid: -1,
-                  topic: "",
-                  selectedLanguage: "cpp",
-                  selectedTags: [],
-                  referenceTest: "",
-                });
               }}
               className="bg-gray-500 text-white px-4 py-2 rounded-md"
             >
@@ -215,7 +185,7 @@ const ExerciseForms = (): JSX.Element => {
         <div className="space-y-4">
           <InputLabel htmlFor="prompt">Prompt</InputLabel>
           <MDEditor
-            value={formData.exercise.prompt}
+            value={formData.prompt}
             onChange={handleEditorChange}
             height="300px"
             data-testid="prompt"

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import ReusableTable from "../components/ReusableTable";
 import ReusableModal from "../components/ReusableModal";
-import SubmitBtn from "../components/form/SubmitButton";
 import InputLabel from "../components/form/InputLabel";
 import TextInput from "../components/form/TextInput";
-import Loading from "../components/loading/LoadingPage";
-import Error from "../components/error/Error";
 import CreateButton from "../components/CreateButton";
+import { toast } from "react-toastify";
 import { Resource } from "@codewit/interfaces";
+import { isFormValid } from "../utils/formValidationUtils";
 import {
   usePostResource,
   usePatchResource,
@@ -15,19 +14,14 @@ import {
   useDeleteResource,
 } from "../hooks/useResource";
 
-interface ResourceWithId extends Resource {
-  id?: string | number;
-}
-
 const ResourceForm = (): JSX.Element => {
-  const { data: existingResources, error: fetchError, loading: fetchLoading, setData: setExistingResources } =
+  const { data: existingResources, setData: setExistingResources } =
     useFetchResources();
   const postResource = usePostResource();
   const patchResource = usePatchResource();
   const deleteResource = useDeleteResource();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Resource>({
     uid: undefined,
     url: "",
@@ -35,20 +29,31 @@ const ResourceForm = (): JSX.Element => {
     source: "",
     likes: 0,
   });
+  const [isEditing, setIsEditing] = useState(false);
 
-  const [error, setError] = useState<string | null>(null);
+  const handleInputChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  useEffect(() => {
-    if (fetchError) {
-      setError("Failed to fetch resources.");
+  const handleSubmit = async () => {
+    try {
+      if (isEditing && formData.uid) {
+        const updatedResource = await patchResource(formData, formData.uid);
+        setExistingResources((prev) =>
+          prev.map((res) => (res.uid === formData.uid ? updatedResource : res))
+        );
+        toast.success("Resource successfully updated!");
+      } else {
+        const newResource = await postResource(formData);
+        setExistingResources((prev) => [...prev, newResource]);
+        toast.success("Resource successfully created!");
+      }
+      resetForm();
+      setModalOpen(false);
+    } catch (error) {
+      toast.error("Failed to save resource. Please try again.");
+      console.error("Error saving resource:", error);
     }
-  }, [fetchError]);
-
-  const handleChange = (name: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   };
 
   const handleEdit = (resource: Resource) => {
@@ -57,42 +62,33 @@ const ResourceForm = (): JSX.Element => {
     setModalOpen(true);
   };
 
-  const handleDelete = async (item: { uid?: string | number }) => {
-    console.log("here")
-    console.log(existingResources)
-    if (item.uid === undefined) return;
+  const handleDelete = async (resource: Resource) => {
     try {
-      await deleteResource(item.uid as number);
-      setExistingResources((prev) => prev.filter((res) => res.uid !== item.uid));
-    } catch {
-      setError("Failed to delete resource.");
+      if (resource.uid === undefined) return;
+      await deleteResource(resource.uid);
+      setExistingResources((prev) =>
+        prev.filter((res) => res.uid !== resource.uid)
+      );
+      toast.success("Resource successfully deleted!");
+    } catch (error) {
+      toast.error("Failed to delete resource.");
+      console.error("Error deleting resource:", error);
     }
   };
 
-  const handleSubmit = async () => {
-    setError(null);
-
-    try {
-      if (isEditing && formData.uid) {
-        const updatedResource = await patchResource(formData, formData.uid);
-        setExistingResources((prev) =>
-          prev.map((res) => (res.uid === formData.uid ? updatedResource : res))
-        );
-        setIsEditing(false);
-      } else {
-        const newResource = await postResource(formData);
-        setExistingResources((prev) => [...prev, newResource]);
-      }
-      setModalOpen(false);
-      setFormData({ uid: undefined, url: "", title: "", source: "", likes: 0 });
-    } catch (err) {
-      setError("Failed to submit resource.");
-    }
+  const resetForm = () => {
+    setFormData({
+      uid: undefined,
+      url: "",
+      title: "",
+      source: "",
+      likes: 0,
+    });
+    setIsEditing(false);
   };
 
-  if (fetchLoading) {
-    return <Loading />;
-  }
+  const requiredFields = ["url", "title", "source"];
+  const isValid = isFormValid(formData, requiredFields);
 
   const columns = [
     { header: "Title", accessor: "title" },
@@ -102,9 +98,8 @@ const ResourceForm = (): JSX.Element => {
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-      {/* Create Resource Button */}
-      <CreateButton onClick={() => setModalOpen(true)} title="Create Resource"/>
-      {/* Existing Resources Table */}
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Resource" />
+
       <ReusableTable
         columns={columns}
         data={existingResources}
@@ -112,28 +107,28 @@ const ResourceForm = (): JSX.Element => {
         onDelete={handleDelete}
       />
 
-      {/* Modal for Creating/Editing Resources */}
       <ReusableModal
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);
-          setIsEditing(false);
-          setFormData({ uid: undefined, url: "", title: "", source: "", likes: 0 });
+          resetForm();
         }}
         title={isEditing ? "Edit Resource" : "Create Resource"}
         footerActions={
           <>
             <button
               onClick={handleSubmit}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md"
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
             >
               {isEditing ? "Update" : "Create"}
             </button>
             <button
               onClick={() => {
                 setModalOpen(false);
-                setIsEditing(false);
-                setFormData({ uid: undefined, url: "", title: "", source: "", likes: 0 });
+                resetForm();
               }}
               className="bg-gray-500 text-white px-4 py-2 rounded-md"
             >
@@ -150,7 +145,7 @@ const ResourceForm = (): JSX.Element => {
               name="title"
               value={formData.title}
               placeholder="Enter resource title"
-              onChange={(e) => handleChange("title", e.target.value)}
+              onChange={(e) => handleInputChange("title", e.target.value)}
               required
             />
           </div>
@@ -162,7 +157,7 @@ const ResourceForm = (): JSX.Element => {
               name="url"
               value={formData.url}
               placeholder="Enter resource URL"
-              onChange={(e) => handleChange("url", e.target.value)}
+              onChange={(e) => handleInputChange("url", e.target.value)}
               required
             />
           </div>
@@ -174,15 +169,12 @@ const ResourceForm = (): JSX.Element => {
               name="source"
               value={formData.source}
               placeholder="Enter resource source"
-              onChange={(e) => handleChange("source", e.target.value)}
+              onChange={(e) => handleInputChange("source", e.target.value)}
               required
             />
           </div>
         </div>
       </ReusableModal>
-
-      {/* Error Message */}
-      {error && <Error message={error} />}
     </div>
   );
 };

@@ -8,6 +8,7 @@ import InputLabel from "../components/form/InputLabel";
 import TextInput from "../components/form/TextInput";
 import { SelectStyles } from "../utils/styles";
 import { SelectedTag, Course } from "@codewit/interfaces";
+import { toast } from "react-toastify";
 import {
   useFetchCourses,
   usePostCourse,
@@ -16,6 +17,7 @@ import {
 } from "../hooks/useCourse";
 import { useFetchModules } from "../hooks/useModule";
 import { useFetchUsers } from "../hooks/useUsers";
+import { isFormValid } from "../utils/formValidationUtils";
 
 const CourseForm = (): JSX.Element => {
   const { data: courses, setData: setCourses } = useFetchCourses();
@@ -84,12 +86,11 @@ const CourseForm = (): JSX.Element => {
     try {
       if (course.id !== undefined) {
         await deleteCourse(course.id);
-      } else {
-        console.error("Course ID is undefined");
+        setCourses((prev) => prev.filter((c) => c.id !== course.id));
+        toast.success("Course successfully deleted!");
       }
-      setCourses((prev) => prev.filter((c) => c.id !== course.id));
     } catch (err) {
-      console.error("Error deleting course:", err);
+      toast.error("Error deleting course.");
     }
   };
 
@@ -98,9 +99,11 @@ const CourseForm = (): JSX.Element => {
       if (isEditing) {
         const updatedCourse = await patchCourse(formData, formData.id as number);
         setCourses((prev) => prev.map((course) => (course.id === formData.id ? updatedCourse : course)));
+        toast.success("Course successfully updated!");
       } else {
         const newCourse = await postCourse(formData);
         setCourses((prev) => [...prev, newCourse]);
+        toast.success("Course successfully created!");
       }
       setModalOpen(false);
       setIsEditing(false);
@@ -113,9 +116,12 @@ const CourseForm = (): JSX.Element => {
         roster: [],
       });
     } catch (err) {
-      console.error("Error creating/updating course:", err);
+      toast.error("Error creating/updating course.");
     }
   };
+
+  const requiredFields = ["title"];
+  const isValid = isFormValid(formData, requiredFields);
 
   const columns = [
     { header: "Title", accessor: "title" },
@@ -126,12 +132,8 @@ const CourseForm = (): JSX.Element => {
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-
       {/* Button Section */}
-      <CreateButton 
-        onClick={() => setModalOpen(true)} 
-        title="Create Course" 
-      />
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Course" />
 
       {/* Table Section */}
       <ReusableTable
@@ -151,7 +153,13 @@ const CourseForm = (): JSX.Element => {
         title={isEditing ? "Edit Course" : "Create Course"}
         footerActions={
           <>
-            <button onClick={handleSubmit} className="bg-blue-500 text-white px-4 py-2 rounded-md">
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
+            >
               {isEditing ? "Update" : "Create"}
             </button>
             <button

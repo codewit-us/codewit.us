@@ -6,9 +6,9 @@ import ResourceSelect from "../components/form/ResourceSelect";
 import CreateButton from "../components/CreateButton";
 import ReusableTable from "../components/ReusableTable";
 import ReusableModal from "../components/ReusableModal";
-import Error from "../components/error/Error";
-import Loading from "../components/loading/LoadingPage";
+import { toast } from "react-toastify";
 import { SelectedTag, Module } from "@codewit/interfaces";
+import { isFormValid } from "../utils/formValidationUtils";
 import { useFetchResources } from "../hooks/useResource";
 import {
   usePostModule,
@@ -18,8 +18,8 @@ import {
 } from "../hooks/useModule";
 
 const ModuleForm = (): JSX.Element => {
-  const { data: existingResources, error: fetchResourceError } = useFetchResources();
-  const { data: existingModules, setData: setExistingModules, error: fetchModuleError } = useFetchModules();
+  const { data: existingResources } = useFetchResources();
+  const { data: existingModules, setData: setExistingModules } = useFetchModules();
 
   const postModule = usePostModule();
   const patchModule = usePatchModule();
@@ -34,19 +34,14 @@ const ModuleForm = (): JSX.Element => {
   });
 
   const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (fetchResourceError || fetchModuleError) {
-      setError("Failed to fetch resources or modules.");
-    }
-
-    const resourceOptions = existingResources.map((resource: any) => ({
+    const options = existingResources.map((resource: any) => ({
       value: resource.uid,
       label: resource.title,
     }));
-    setResourceOptions(resourceOptions);
-  }, [existingResources, fetchResourceError, fetchModuleError]);
+    setResourceOptions(options);
+  }, [existingResources]);
 
   const handleResourceChange = (selectedOptions: MultiValue<SelectedTag>) => {
     const resources = selectedOptions.map((option) => option.value);
@@ -61,7 +56,7 @@ const ModuleForm = (): JSX.Element => {
   const handleEdit = (module: Module) => {
     setFormData({
       ...module,
-      language: module.language.name,
+      language: module.language.name || module.language,
       topic: module.topic,
       resources: module.resources.map((resource) => resource.uid),
     });
@@ -72,9 +67,13 @@ const ModuleForm = (): JSX.Element => {
   const handleDelete = async (module: Module) => {
     try {
       await deleteModule(module.uid);
-      setExistingModules((prev) => prev.filter((mod) => mod.uid !== module.uid));
-    } catch (err) {
-      setError("Error deleting module.");
+      setExistingModules((prev) =>
+        prev.filter((mod) => mod.uid !== module.uid)
+      );
+      toast.success("Module successfully deleted!");
+    } catch (error) {
+      toast.error("Failed to delete module. Please try again.");
+      console.error("Error deleting module:", error);
     }
   };
 
@@ -83,36 +82,42 @@ const ModuleForm = (): JSX.Element => {
       if (isEditing) {
         const updatedModule = await patchModule(formData, formData.uid as number);
         setExistingModules((prev) =>
-          prev.map((mod) => (mod.uid === formData.uid ? updatedModule : mod))
+          prev.map((mod) =>
+            mod.uid === formData.uid ? updatedModule : mod
+          )
         );
-        setIsEditing(false);
+        toast.success("Module successfully updated!");
       } else {
         const newModule = await postModule(formData);
         setExistingModules((prev) => [...prev, newModule]);
+        toast.success("Module successfully created!");
       }
-      setFormData({ language: "cpp", topic: "", resources: [] });
+      resetForm();
       setModalOpen(false);
-    } catch (err) {
-      setError("Error saving module.");
+    } catch (error) {
+      toast.error("Failed to save module. Please try again.");
+      console.error("Error saving module:", error);
     }
   };
+
+  const resetForm = () => {
+    setFormData({ language: "cpp", topic: "", resources: [] });
+    setIsEditing(false);
+  };
+
+  const requiredFields = ["topic", "language"];
+  const isValid = isFormValid(formData, requiredFields);
 
   const columns = [
     { header: "Topic", accessor: "topic" },
     { header: "Language", accessor: "language.name" },
-    { header: "Resources", accessor: "resources.length" }, // Number of resources
+    { header: "Resources", accessor: "resources.length" },
   ];
-
-  if (error) {
-    return <Error message={error} />;
-  }
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-      {/* Create Module Button */}
       <CreateButton onClick={() => setModalOpen(true)} title="Create Module" />
 
-      {/* Existing Modules Table */}
       <ReusableTable
         columns={columns}
         data={existingModules}
@@ -120,28 +125,30 @@ const ModuleForm = (): JSX.Element => {
         onDelete={handleDelete}
       />
 
-      {/* Modal for Creating/Editing Module */}
       <ReusableModal
         isOpen={modalOpen}
         onClose={() => {
           setModalOpen(false);
-          setIsEditing(false);
-          setFormData({ language: "cpp", topic: "", resources: [] });
+          resetForm();
         }}
         title={isEditing ? "Edit Module" : "Create Module"}
         footerActions={
           <>
             <button
               onClick={handleSubmit}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md"
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
             >
               {isEditing ? "Save Changes" : "Create Module"}
             </button>
             <button
               onClick={() => {
                 setModalOpen(false);
-                setIsEditing(false);
-                setFormData({ language: "cpp", topic: "", resources: [] });
+                resetForm();
               }}
               className="bg-gray-500 text-white px-4 py-2 rounded-md"
             >
