@@ -3,6 +3,11 @@ export interface ModuleResponse {
     topic: string;
     language: string;
     resources: number[];
+    demos: {
+        uid: number;
+        title: string;
+        youtube_id: string;
+    }[] | [];
 }
 
 export interface ExerciseResponse {
