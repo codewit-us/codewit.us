@@ -9,6 +9,7 @@ export function formatModuleResponse(
     topic,
     language,
     resources,
+    demos, 
   } = module;
 
   return {
@@ -16,6 +17,11 @@ export function formatModuleResponse(
     topic,
     language: language.name,
     resources: resources.map(resource => resource.uid),
+    demos: demos ? demos.map(demo => ({
+      uid: demo.uid,
+      title: demo.title,
+      youtube_id: demo.youtube_id,
+    })) : [],
   };
 }
 
