@@ -36,5 +36,7 @@ export interface DemoResponse {
     title: string,
     topic: string,
     tags: string[],
-    language: string
+    language: string,
+    youtube_id: string,
+    exercises: number[]
 }
