@@ -76,6 +76,8 @@ export function formatDemoResponse(
     title: demo.title,
     topic: demo.topic,
     tags: demo.tags.map(each => each.name),
-    language: demo.language.name
+    language: demo.language.name,
+    youtube_id: demo.youtube_id,
+    exercises: demo.exercises ? demo.exercises.map(each => each.uid) : [],
   }
 }
