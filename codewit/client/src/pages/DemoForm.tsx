@@ -67,7 +67,7 @@ const DemoForm = (): JSX.Element => {
     }
   };
 
-  const handleEdit = (demo: DemoResponse) => {
+ const handleEdit = (demo: DemoResponse) => {
     setFormData({
       uid: demo.uid,
       title: demo.title,
