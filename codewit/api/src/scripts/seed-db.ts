@@ -44,6 +44,7 @@ const seedData = async () => {
       const demo = await Demo.create({
         title: `${topic} Demo ${num}`,
         youtube_id: 'XxBWL_ntnNE',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/XxBWL_ntnNE/maxresdefault.jpg',
         topic: topic,
       });
 
