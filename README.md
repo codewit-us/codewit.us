@@ -11,7 +11,7 @@ This project uses _Nx_ to manage the monorepo and npm as the package manager. To
 
 Navigate to `codewit.us/codewit/` and create a .env file with the following content (replace with your real values):
 
-```sh
+```env
 # Frontend
 YT_KEY='YOUR YOUTUBE API KEY'
 YT_CHANNEL_ID='YOUR CHANNEL ID'
@@ -54,7 +54,7 @@ The `codewit.us/codewit/api/src/scripts/seed-admins.ts` file is used to seed the
 
 To manually seed admin users, ensure the required environment variables are set in a `.env` file or exported in your terminal. Here are the necessary variables:
 
-```sh
+```env
 DB_HOST=localhost
 DB_USER=codewitus_user
 DB_PASSWORD=12345
