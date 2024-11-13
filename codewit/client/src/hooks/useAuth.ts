@@ -12,7 +12,6 @@ export function useAuth() {
         localStorage.setItem('userId', response.data.user.googleId);
       })
       .catch(error => {
-        console.error('Failed to fetch user:', error);
         setUser(null);
       })
       .finally(() => {
