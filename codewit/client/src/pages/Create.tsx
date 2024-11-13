@@ -11,7 +11,7 @@ const Create = (): JSX.Element => {
   );
 
   return (
-    <div className="md:flex w-full h-full">
+    <div className="md:flex w-full h-container-full">
       <div className="w-full md:w-52 bg-gray-800 border-r border-gray-700">
         <div className="flex flex-col p-4 space-y-1">
           <Link to="/create/module" className={linkClass('/create/module')}>

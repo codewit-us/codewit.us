@@ -31,6 +31,7 @@ class Demo extends Model<
   declare title: string;
   declare likes: number;
   declare youtube_id: string;
+  declare youtube_thumbnail: string;
   declare topic: string;
 
   declare exercises?: NonAttribute<Exercise[]>;
@@ -95,6 +96,10 @@ class Demo extends Model<
           defaultValue: 0,
         },
         youtube_id: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        youtube_thumbnail: {
           type: DataTypes.STRING,
           allowNull: false,
         },

@@ -37,18 +37,22 @@ const CodeEditor = ({onSubmit}: { onSubmit: (code: string) => Promise<void>;}): 
 
   return (
     <div className="flex flex-col w-full">
-      <div ref={editorRef} className="w-full h-96 border-2 border-alternate-background-500"></div>
+      <div 
+        ref={editorRef} 
+        className="w-full pt-1 h-96 rounded-lg border-2 border-gray-700 focus-within:border-accent-400 overflow-hidden transition-colors duration-200"
+      ></div>
       <div className="inline-flex gap-1 pt-1">
-        <button className="inline-flex justify-center align-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold w-1/3 py-2 px-4 rounded">
-            <ArrowPathIcon className="w-6 h-6" />
-            Reset
-          </button>
-          <button 
-            className="inline-flex justify-center align-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-bold w-2/3 py-2 px-4 rounded"
-            onClick={() => onSubmit(editorInstanceRef.current?.getValue() || '')}
-          >
-            <CheckIcon className="w-6 h-6" />
-            Submit
+        <button className="group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 border-red-400 hover:bg-red-400 rounded-lg focus:outline-none w-1/3">
+          <ArrowPathIcon className="w-6 h-6 mr-2 text-red-400 group-hover:text-white" />
+          <span className="text-red-400 group-hover:text-white">Reset</span>
+        </button>
+  
+        <button 
+          className="group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 border-accent-400 hover:bg-accent-400 rounded-lg focus:outline-none w-2/3"
+          onClick={() => onSubmit(editorInstanceRef.current?.getValue() || '')}
+        >
+          <CheckIcon className="w-6 h-6 mr-2 text-accent-400 group-hover:text-white" />
+          <span className="text-accent-400 group-hover:text-white">Submit</span>
         </button>
       </div>
     </div>

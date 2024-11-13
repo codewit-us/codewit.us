@@ -45,7 +45,7 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
 
   return (
     <div className="flex flex-col justify-center items-start w-full text-white">
-      <label htmlFor={isMulti ? 'tag-select' : 'single-tag-select'} className="block text-sm mb-2 font-medium text-white">
+      <label htmlFor={isMulti ? 'tag-select' : 'single-tag-select'} className="block text-sm mb-2 font-medium text-gray-400">
         {isMulti ? 'Select/Create Tags' : 'Select Topic'}
       </label>
       {isMulti
@@ -55,7 +55,7 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
           isMulti
           value={selectedTags}
           onChange={handleChange}
-          className="text-sm bg-blue text-white border-none w-full rounded-lg"
+          className="w-full"
           styles={SelectStyles}      
         />     
         :
@@ -64,7 +64,7 @@ const TagSelect = ({ setSelectedTags, selectedTags, isMulti = true }: TagSelectP
           value={selectedTags}
           onChange={handleChange}
           options={tags}
-          className="text-sm bg-blue text-white border-none w-full rounded-lg"
+          className="w-full"
           styles={SelectStyles}      
         />  
     }  

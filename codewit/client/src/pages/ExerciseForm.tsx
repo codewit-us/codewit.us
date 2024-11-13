@@ -144,8 +144,8 @@ const ExerciseForms = (): JSX.Element => {
   }
 
   return (
-    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className=" bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6">
+    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto p-6 gap-6">
+      <form onSubmit={handleSubmit} className=" bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6 rounded-xl overflow-auto">
         <h2 className="text-xl font-semibold text-white mb-2">
           {formData.isEditing ? "Edit Exercise" : "Create New Exercise"}
         </h2>

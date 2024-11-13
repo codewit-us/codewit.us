@@ -5,11 +5,11 @@ import SubmitBtn from "../components/form/SubmitButton";
 import TopicSelect from "../components/form/TagSelect";
 import { SelectStyles } from '../utils/styles';
 import Error from '../components/error/Error';
-import { SelectedTag } from '@codewit/interfaces';
 import ExistingTable from '../components/form/ExistingTable';
-import { Module } from '@codewit/interfaces';
 import { useFetchResources } from '../hooks/useResource';
+import { SelectedTag, Module } from '@codewit/interfaces';
 import { usePostModule, useFetchModules, useDeleteModule, usePatchModule } from '../hooks/useModule';
+import ResourceSelect from '../components/form/ResourceSelect';
 
 const ModuleForm = (): JSX.Element => {
   const { data: existingResources, error: fetchResourceError } = useFetchResources();
@@ -100,38 +100,42 @@ const ModuleForm = (): JSX.Element => {
   }
 
   return (
-    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className="bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6">
-        <h2 className="text-xl font-semibold text-white">{isEditing ? 'Edit Module' : 'Create Module'}</h2>
-        <div className="flex flex-row w-full gap-3 mb-8">
-          <TopicSelect
-            selectedTags={[{ value: module.topic, label: module.topic }]}
-            setSelectedTags={handleTopicSelect}
-            isMulti={false}
-          />
-          <LanguageSelect
-            handleChange={(e: React.ChangeEvent<HTMLSelectElement>) => setModule(prev => ({ ...prev, language: e.target.value }))}
-            initialLanguage={module.language.name || module.language}
-          />
-        </div>
-        <div>
-          <label htmlFor="resource-select" className="block text-sm mb-2 font-medium text-white">Select Resources</label>
-          <Select
-            id="resource-select"
-            value={resourceOptions.filter(option => module.resources.includes(option.value))}
-            onChange={handleResourceChange}
-            options={resourceOptions}
-            className="text-sm bg-blue text-white border-none w-full rounded-lg"
-            styles={SelectStyles}
-            isMulti
-            placeholder="Select..."
-          />
-        </div>
-        <SubmitBtn
-          text={isEditing ? 'Confirm Edit' : 'Create'}
-          disabled={module.topic === '' || module.language === ''}
-        />
-      </form>
+    <div className="flex h-full bg-zinc-900 p-6 gap-6 overflow-hidden">
+      <div className="w-1/3 min-w-[450px]">
+        <form onSubmit={handleSubmit} className="bg-gray-800/90 rounded-xl shadow-lg p-6 h-full">
+          <h2 className="text-xl font-bold text-white mb-6">
+            {isEditing ? 'Edit Module' : 'Create Module'}
+          </h2>
+          
+          <div className="space-y-6">
+              <TopicSelect
+                selectedTags={[{ value: module.topic, label: module.topic }]}
+                setSelectedTags={handleTopicSelect}
+                isMulti={false}
+              />
+            
+              <LanguageSelect
+                handleChange={(e) => setModule(prev => ({ 
+                  ...prev, 
+                  language: e.target.value 
+                }))}
+                initialLanguage={module.language.name || module.language}
+              />
+
+              <ResourceSelect
+                resourceOptions={resourceOptions}
+                selectedResources={module.resources}
+                handleResourceChange={handleResourceChange}
+              />
+
+              <SubmitBtn
+                text={isEditing ? 'Save Changes' : 'Create Module'}
+                disabled={module.topic === '' || module.language === ''}
+              />
+          </div>
+        </form>
+      </div>
+
       <ExistingTable
         items={existingModules}
         name="Modules"

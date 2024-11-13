@@ -5,9 +5,12 @@ interface InputLabelProps {
   children: React.ReactNode;
 }
 
-const InputLabel = ({ htmlFor, children }: InputLabelProps):JSX.Element => {
+const InputLabel = ({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }): JSX.Element => {
   return (
-    <label htmlFor={htmlFor} className="block mb-2 text-sm font-medium text-gray-200">
+    <label 
+      htmlFor={htmlFor} 
+      className="block text-sm font-medium text-gray-400 mb-2"
+    >
       {children}
     </label>
   );
