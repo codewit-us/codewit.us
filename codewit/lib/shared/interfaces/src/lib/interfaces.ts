@@ -32,6 +32,7 @@ interface ExerciseFormData{
 
 interface Demo {
   youtube_id: string;
+  youtube_thumbnail: string;
   title: string;
 }
 
