@@ -6,6 +6,7 @@
     "backend-dev": "nx run api:serve:development",
     "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001",
     "seed-admins": "nx run api:seed-admins-builder && node dist/api/seed-admins.js",
+    "seed-data": "nx run api:seed-db-builder && node dist/api/seed-db.js",
     "seed-admins-force": "nx run api:seed-admins-builder && node dist/api/seed-admins.js --force"
   },
   "private": true,
