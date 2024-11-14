@@ -60,6 +60,30 @@
         "development": {}
       }
     },
+    "seed-db-builder": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/api",
+        "format": ["cjs"],
+        "bundle": false,
+        "main": "api/src/scripts/seed-db.ts",
+        "tsConfig": "api/tsconfig.app.json",
+        "assets": ["api/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {}
+      }
+    },
     "serve": {
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",

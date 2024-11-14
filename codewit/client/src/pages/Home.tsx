@@ -1,4 +1,15 @@
+import { useFetchStudentCourses } from '../hooks/useCourse';
+import Error from '../components/error/Error';
+import Loading from '../components/loading/LoadingPage';
+
 const Home = (): JSX.Element => {
+
+  const { data, loading, error } = useFetchStudentCourses();
+
+  if (loading) return <Loading />;
+  if (error) return <Error message="Failed to fetch courses. Please try again later." />;
+  
+  console.log(data);
 
   return (
     <div className="h-container-full max-w-full overflow-auto bg-zinc-900">

@@ -31,6 +31,7 @@ const CreateDemo = (): JSX.Element => {
   const [formData, setFormData] = useState<DemoFormData>({
     uid: undefined,
     youtube_id: '',
+    youtube_thumbnail: '',
     title: '',
     topic: '',
     tags: [],
@@ -69,8 +70,8 @@ const CreateDemo = (): JSX.Element => {
     }));
   };
 
-  const handleVideoSelect = (videoId: string) => {
-    setFormData((prev: DemoFormData) => ({ ...prev, youtube_id: videoId }));
+  const handleVideoSelect = (videoId: string, videoThumbnail: string) => {
+    setFormData((prev: DemoFormData) => ({ ...prev, youtube_id: videoId, youtube_thumbnail: videoThumbnail }));
   };
 
   const handleTagSelect = (tags: { label: string, value: string }[]) => {
@@ -93,6 +94,7 @@ const CreateDemo = (): JSX.Element => {
         uid: demoToEdit.uid,
         title: demoToEdit.title,
         youtube_id: demoToEdit.youtube_id,
+        youtube_thumbnail: demoToEdit.youtube_thumbnail,
         topic: demoToEdit.topic,
         tags: demoToEdit.tags.map((tag: { name: string; }) => tag.name),
         language: demoToEdit.language.name,
@@ -116,23 +118,68 @@ const CreateDemo = (): JSX.Element => {
   if (fetchError) return <Error />;
 
   return (
-    <div className="flex justify-center items-start h-full bg-zinc-900 overflow-auto">
-      <form onSubmit={handleSubmit} className="bg-gray-800 bg-opacity-50 w-full h-full p-6 space-y-6">
-        <h2 className="text-xl font-semibold text-white">{isEditing ? 'Edit Demo Exercise' : 'Create Demo Exercise'}</h2>
-        <div>
-          <InputLabel htmlFor="title">Title</InputLabel>
-          <TextInput id="title" name="title" value={formData.title} placeholder="Enter title" onChange={handleInputChange} required />
-        </div>
-        <VideoSelect onSelectVideo={handleVideoSelect} selectedVideoId={formData.youtube_id} />
-        <ExerciseSelect onSelectExercises={updateExercises} initialExercises={formData.exercises} />
-        <div className="flex flex-row w-full gap-3">
-          <TagSelect selectedTags={formData.tags.map(tag => ({ label: tag, value: tag }))} setSelectedTags={handleTagSelect} isMulti={true} />
-          <LanguageSelect handleChange={handleInputChange} initialLanguage={formData.language} />
-        </div>
-        <TagSelect selectedTags={[{ value: formData.topic, label: formData.topic }]} setSelectedTags={handleTopicSelect} isMulti={false} />
-        <SubmitBtn disabled={formData.title === '' || formData.youtube_id === '' || formData.tags.length === 0 || formData.topic === ''} text={isEditing ? 'Confirm Edit' : 'Create'} />
-      </form>
-      <ExistingTable items={demos || []} name="Demos" onEdit={handleEdit} onDelete={handleDelete} />
+    <div className="flex h-full bg-zinc-900 p-6 gap-6">
+      <div className="w-1/3 min-w-[450px]">
+        <form onSubmit={handleSubmit} className="bg-gray-800/90 overflow-auto rounded-xl shadow-lg p-6 h-full">
+          <h2 className="text-xl font-bold text-white mb-6">
+            {isEditing ? 'Edit Demo Exercise' : 'Create Demo Exercise'}
+          </h2>
+          
+          <div className="space-y-6">
+            <div>
+              <InputLabel htmlFor="title">Title</InputLabel>
+              <TextInput 
+                id="title" 
+                name="title" 
+                value={formData.title} 
+                placeholder="Enter title" 
+                onChange={handleInputChange} 
+                required 
+              />
+            </div>
+
+            <VideoSelect 
+              onSelectVideo={handleVideoSelect} 
+              selectedVideoId={formData.youtube_id} 
+            />
+
+            <ExerciseSelect 
+              onSelectExercises={updateExercises} 
+              initialExercises={formData.exercises} 
+            />
+
+            <div className="flex flex-row w-full gap-3">
+              <TagSelect 
+                selectedTags={formData.tags.map(tag => ({ label: tag, value: tag }))} 
+                setSelectedTags={handleTagSelect} 
+                isMulti={true} 
+              />
+              <LanguageSelect 
+                handleChange={handleInputChange} 
+                initialLanguage={formData.language} 
+              />
+            </div>
+
+            <TagSelect 
+              selectedTags={[{ value: formData.topic, label: formData.topic }]} 
+              setSelectedTags={handleTopicSelect} 
+              isMulti={false} 
+            />
+
+            <SubmitBtn 
+              disabled={formData.title === '' || formData.youtube_id === '' || formData.tags.length === 0 || formData.topic === ''} 
+              text={isEditing ? 'Confirm Edit' : 'Create'} 
+            />
+          </div>
+        </form>
+      </div>
+
+      <ExistingTable 
+        items={demos || []} 
+        name="Demos" 
+        onEdit={handleEdit} 
+        onDelete={handleDelete} 
+      />
     </div>
   );
 };

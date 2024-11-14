@@ -4,7 +4,7 @@ import {
   colors,
   animals,
 } from 'unique-names-generator';
-import { Course, CourseModules, Language, Module, sequelize } from '../models';
+import { Course, CourseModules, Language, Module, Demo, sequelize } from '../models';
 import { CourseResponse } from '../typings/response.types';
 import { formatCourseResponse } from '../utils/responseFormatter';
 
@@ -182,4 +182,23 @@ async function getAllCourses(): Promise<Course[]> {
   return courses;
 }
 
-export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses };
+async function getStudentCourses(studentId: string): Promise<Course[]> {
+  const courses = await Course.findAll({
+    include: [
+      Language,
+      {
+        association: Course.associations.modules,
+        include: [Demo], 
+        through: { attributes: ['ordering'] },
+      },
+      { association: Course.associations.instructors },
+      { association: Course.associations.roster, where: { googleId: studentId } },
+    ],
+    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+  });
+
+  return courses;
+}
+
+
+export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses, getStudentCourses };

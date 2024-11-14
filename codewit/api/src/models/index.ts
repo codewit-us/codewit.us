@@ -9,6 +9,8 @@ import { Resource } from './resource';
 import { User } from './user';
 import { Attempt } from './attempt';
 
+require('dotenv').config();
+
 if (
   !process.env.DB_HOST ||
   !process.env.DB_NAME ||
