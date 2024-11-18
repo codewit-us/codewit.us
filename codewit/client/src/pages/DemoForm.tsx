@@ -96,9 +96,9 @@ const CreateDemo = (): JSX.Element => {
         youtube_id: demoToEdit.youtube_id,
         youtube_thumbnail: demoToEdit.youtube_thumbnail,
         topic: demoToEdit.topic,
-        tags: demoToEdit.tags.map((tag: { name: string; }) => tag.name),
-        language: demoToEdit.language.name,
-        exercises: demoToEdit.exercises.map((ex: { uid: number; }) => ex.uid)
+        tags: demoToEdit.tags,
+        language: demoToEdit.language,
+        exercises: demoToEdit.exercises
       });
     }
   };
