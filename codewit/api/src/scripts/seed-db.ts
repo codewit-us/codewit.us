@@ -24,8 +24,8 @@ const seedData = async () => {
   }
 
   const moduleTopics = [
-    'Variables', 'Objects', 'Decisions', 'Boolean Logic', 'While Loops',
-    'For Loops', 'Arrays', 'ArrayLists', '2D Arrays', 'Inheritance', 'Recursion'
+    'variable', 'object', 'decision', 'boolean expression', 'while loop',
+    'for loop', 'array', 'array list', 'multidimensional array', 'modularity', 'recursion'
   ];
 
   // create resources (we'll create one per module)
@@ -48,9 +48,15 @@ const seedData = async () => {
         topic: topic,
       });
 
+      // add language to demo
+      const [language] = await Language.findOrCreate({
+        where: { name: 'cpp' },
+      });
+      await demo.setLanguage(language);
+
       // add tags to demo
       await demo.addTag(
-        await Tag.findOrCreate({ 
+        await Tag.findOrCreate({
           where: { name: topic.toLowerCase() }
         }).then(([tag]) => tag),
         { through: { ordering: 1 } }
@@ -62,6 +68,13 @@ const seedData = async () => {
         topic: topic,
         referenceTest: 'test.assertEquals(solution(), expected);'
       });
+
+      // add tags to the exercise
+      const exerciseTag = await Tag.findOrCreate({
+        where: { name: `${topic.toLowerCase()}-exercise` }
+      }).then(([tag]) => tag);
+
+      await exercise.addTag(exerciseTag);
 
       await demo.addExercise(exercise);
 
@@ -82,8 +95,17 @@ const seedData = async () => {
     // associate demos with module
     await module.setDemos(demos);
 
-    // associate resource with module
-    await module.setResources([resources[index]]);
+    // create additional resources for each module
+    const additionalResources = await Promise.all([1, 2].map(async (num) => {
+      return await Resource.create({
+        url: `https://example.com/${topic.toLowerCase().replace(' ', '-')}-${num}`,
+        title: `${topic} Extra Resource ${num}`,
+        source: 'Documentation'
+      });
+    }));
+
+    // associate multiple resources with module
+    await module.setResources([resources[index], ...additionalResources]);
 
     return module;
   }));
@@ -115,7 +137,7 @@ const seedData = async () => {
   console.log('Created modules:', moduleTopics.length);
   console.log('Created demos:', moduleTopics.length * 3);
   console.log('Created exercises:', moduleTopics.length * 3);
-  console.log('Created resources:', resources.length);
+  console.log('Created resources:', resources.length + moduleTopics.length * 2);
 };
 
 (async () => {

@@ -101,79 +101,76 @@ async function updateDemo(
       include: [Exercise, Tag, Language],
       transaction,
     });
-    const oldTopic = demo.topic;
-    const oldLanguage = demo.language;
 
-    if (demo) {
-      if (tags) {
-        await demo.setTags([], { transaction });
+    if (!demo) throw new Error("Demo not found");
+
+    if (tags) {
+      await demo.setTags([], { transaction });
+      await Promise.all(
+        tags.map(async (tag, idx) => {
+          const [tagInstance] = await Tag.findOrCreate({
+            where: { name: tag },
+            transaction,
+          });
+          await demo.addTag(tagInstance, {
+            through: { ordering: idx + 1 },
+            transaction,
+          });
+        })
+      );
+    }
+
+    if (language) {
+      const [languageInstance] = await Language.findOrCreate({
+        where: { name: language },
+        transaction,
+      });
+      await demo.setLanguage(languageInstance, { transaction });
+    }
+
+    if (title) demo.title = title;
+    if (youtube_id) demo.youtube_id = youtube_id;
+    if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
+    if (topic) demo.topic = topic;
+
+    await demo.save({ transaction });
+
+    if (topic || language) {
+      const oldTopic = demo.topic;
+      const oldLanguage = demo.language;
+
+      if (oldLanguage && oldTopic) {
+        const oldModules = await Module.findAll({
+          where: { topic: oldTopic },
+          include: [{ model: Language, where: { uid: oldLanguage.uid } }],
+          transaction,
+        });
 
         await Promise.all(
-          tags.map(async (tag, idx) => {
-            const [tagInstance] = await Tag.findOrCreate({
-              where: { name: tag },
-              transaction,
-            });
-            await demo.addTag(tagInstance, {
-              through: { ordering: idx + 1 },
-              transaction,
-            });
+          oldModules.map(async (module) => {
+            await module.removeDemo(demo.uid, { transaction });
           })
         );
       }
-      if (language) {
-        const [languageInstance] = await Language.findOrCreate({
-          where: { name: language },
-          transaction,
-        });
-        await demo.setLanguage(languageInstance, { transaction });
-      }
-      if (title) demo.title = title;
-      if (youtube_id) demo.youtube_id = youtube_id;
-      if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
-      if (topic) {
-        demo.topic = topic;
-      }
 
-      await demo.save({ transaction });
-      await demo.reload({
-        include: [Exercise, Tag, Language],
-        order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      const newModules = await Module.findAll({
+        where: { topic: demo.topic },
+        include: [{ model: Language, where: { uid: demo.language.uid } }],
         transaction,
       });
 
-      if (topic || language) {
-        if (oldLanguage && oldTopic) {
-          const oldmodules = await Module.findAll({
-            where: {
-              topic: oldTopic,
-            },
-            include: [{ model: Language, where: { uid: oldLanguage.uid } }],
-            transaction,
-          });
-
-          Promise.all(
-            oldmodules.map(async (module) => {
-              await module.removeDemo(demo.uid, { transaction });
-            })
-          );
-        }
-
-        const modules = await Module.findAll({
-          where: {
-            topic: demo.topic,
-          },
-          include: [{ model: Language, where: { uid: demo.language.uid } }],
-          transaction,
-        });
-
-        Promise.all(
-          modules.map(async (module) => {
-            await module.addDemo(demo, { transaction });
-          })
-        );
-      }
+      await Promise.all(
+        newModules.map(async (module) => {
+          await module.addDemo(demo, { transaction });
+        })
+      );
     }
+
+    await demo.reload({
+      include: [Exercise, Tag, Language],
+      order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      transaction,
+    });
 
     return formatDemoResponse(demo);
   });

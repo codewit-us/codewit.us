@@ -15,11 +15,9 @@ import {
   useFetchCourses, 
   useDeleteCourse  
 } from '../hooks/useCourse';
-import { useFetchModules } from '../hooks/useModule';
 import { useFetchUsers } from '../hooks/useUsers';
 
 const CourseForm = (): JSX.Element => {
-  const { data: modules, error: fetchModuleError } = useFetchModules();
   const { data: courses, setData: setCourses, error: fetchCoursesError } = useFetchCourses();
   const { data: users, error: fetchUsersError } = useFetchUsers();
   
@@ -42,13 +40,15 @@ const CourseForm = (): JSX.Element => {
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    if (fetchModuleError || fetchCoursesError || fetchUsersError) {
+    if ( fetchCoursesError || fetchUsersError) {
       setError(true);
     }
 
-    const options = modules.map((module: any) => ({
-      value: module.uid,
-      label: module.uid
+
+    if (courses.length === 0) return;
+    const options = courses[0].modules.map((module: number) => ({
+      value: module,       
+      label: `Module ${module}`,
     }));
     setModuleOptions(options);
 
@@ -58,7 +58,7 @@ const CourseForm = (): JSX.Element => {
     }));
     setUserOptions(userOptions);
 
-  }, [modules, courses, users, fetchModuleError, fetchCoursesError, fetchUsersError]);
+  }, [courses, users, fetchCoursesError, fetchUsersError]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -77,13 +77,12 @@ const CourseForm = (): JSX.Element => {
     setIsEditing(true);
     const foundCourse = courses.find(course => course.id === id);
     if (foundCourse) {
-      const arrayOfModuleIds = foundCourse.modules.map(module => module.uid);
       const arrayOfInstrIds = foundCourse.instructors.map(instr => instr.uid);
       const arrayOfRosterIds = foundCourse.roster.map(roster => roster.uid);
       setCourse({
         title: foundCourse.title,
-        language: foundCourse.language.name ? foundCourse.language.name : foundCourse.language,
-        modules: arrayOfModuleIds,
+        language: foundCourse.language,
+        modules: foundCourse.modules,
         id: foundCourse.id,
         instructors: arrayOfInstrIds,
         roster: arrayOfRosterIds,
@@ -93,6 +92,7 @@ const CourseForm = (): JSX.Element => {
 
   const handleDelete = async (id: string | number) => {
     try {
+      console.log('Deleting course:', id);
       await deleteCourse(id);
       setCourses((prev) => prev.filter((course) => course.id !== id));
     } catch (err) {
@@ -105,6 +105,7 @@ const CourseForm = (): JSX.Element => {
     e.preventDefault();
     try {
       if (isEditing) {
+        console.log('Editing course:', course);
         await patchCourse(course, course.id ?? -1);
         const updatedCourses = courses.map((c) => (c.id === course.id ? course : c));
         setCourses(updatedCourses);

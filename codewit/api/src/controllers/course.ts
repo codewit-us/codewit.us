@@ -4,7 +4,7 @@ import {
   colors,
   animals,
 } from 'unique-names-generator';
-import { Course, CourseModules, Language, Module, Demo, sequelize } from '../models';
+import { Course, CourseModules, Language, Module, Demo, Resource, sequelize } from '../models';
 import { CourseResponse } from '../typings/response.types';
 import { formatCourseResponse } from '../utils/responseFormatter';
 
@@ -134,7 +134,12 @@ async function updateCourse(
 
     await course.save({ transaction });
     await course.reload({
-      include: [Language, Module],
+      include: [
+        Language, 
+        Module,
+        { association: Course.associations.instructors },
+        { association: Course.associations.roster },
+      ],
       order: [[Module, CourseModules, 'ordering', 'ASC']],
       transaction,
     });
@@ -143,7 +148,7 @@ async function updateCourse(
   });
 }
 
-async function deleteCourse(uid: string): Promise<CourseResponse | null> {
+async function deleteCourse(uid: string): Promise<Course | null> {
   const course = await Course.findByPk(uid);
 
   if (!course) {
@@ -152,7 +157,7 @@ async function deleteCourse(uid: string): Promise<CourseResponse | null> {
 
   await course.destroy();
 
-  return formatCourseResponse(course);
+  return course;
 }
 
 async function getCourse(uid: string): Promise<CourseResponse | null> {
@@ -172,23 +177,28 @@ async function getCourse(uid: string): Promise<CourseResponse | null> {
 async function getAllCourses(): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language,
-      Module,
+      Language, 
+      {
+        association: Course.associations.modules,
+        include: [Language, Resource], 
+        through: { attributes: ['ordering'] },
+      },
       { association: Course.associations.instructors },
       { association: Course.associations.roster },
     ],
-    order: [[Module, CourseModules, 'ordering', 'ASC']],
+    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
   });
   return formatCourseResponse(courses);
 }
 
+
 async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language,
+      Language, 
       {
         association: Course.associations.modules,
-        include: [Demo], 
+        include: [Language, Resource], 
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },
@@ -197,7 +207,7 @@ async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
     order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
   });
 
-  return formatCourseResponse(courses);
+  return formatCourseResponse(courses, true);
 }
 
 

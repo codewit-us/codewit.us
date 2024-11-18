@@ -2,7 +2,7 @@ export interface ModuleResponse {
     uid: number;
     topic: string;
     language: string;
-    resources: number[];
+    resources: ResourceResponse[];
     demos: {
         uid: number;
         title: string;
@@ -23,9 +23,22 @@ export interface CourseResponse {
     id: string;
     title: string;
     language: string;
-    modules: number[];
-    roster: number[];
-    instructors: number[];
+    modules: ModuleFormResponse[] | number[];
+    roster: UserResponse[];
+    instructors: UserResponse[];
+}
+
+export interface UserResponse {
+    uid: number;
+    username: string;
+    email: string;
+}
+
+export interface ModuleFormResponse {
+    uid: number;
+    topic: string;
+    language: string;
+    resources: ResourceResponse[];    
 }
 
 export type ResourceType = {
@@ -36,9 +49,10 @@ export type ResourceType = {
     source: string;
     createdAt?: string;
     updatedAt?: string;
+    ModuleResources?: any[];
 };
 
-export type ResourceResponse = Omit<ResourceType, 'createdAt' | 'updatedAt'>;
+export type ResourceResponse = Omit<ResourceType, 'createdAt' | 'updatedAt' | 'ModuleResources'>;
 
 export interface DemoResponse {
     uid: number,
@@ -47,5 +61,6 @@ export interface DemoResponse {
     tags: string[],
     language: string,
     youtube_id: string,
+    youtube_thumbnail: string,
     exercises: number[]
 }
