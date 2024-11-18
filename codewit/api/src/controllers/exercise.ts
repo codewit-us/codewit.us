@@ -2,18 +2,21 @@ import { Exercise, ExerciseTags, Language, Tag, sequelize } from '../models';
 import { ExerciseResponse } from '../typings/response.types';
 import { formatExerciseResponse } from '../utils/responseFormatter';
 
-async function getAllExercises(): Promise<Exercise[]> {
-  return await Exercise.findAll({
+async function getAllExercises(): Promise<ExerciseResponse[]> {
+  const exercises =  await Exercise.findAll({
     include: [Tag, Language],
     order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
   });
+
+  return formatExerciseResponse(exercises);
 }
 
-async function getExerciseById(uid: number): Promise<Exercise | null> {
-  return await Exercise.findByPk(uid, {
+async function getExerciseById(uid: number): Promise<ExerciseResponse | null> {
+  const exercise =  await Exercise.findByPk(uid, {
     include: [Tag, Language],
     order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
   });
+  return formatExerciseResponse(exercise);
 }
 
 async function createExercise(
@@ -122,13 +125,13 @@ async function updateExercise(
   });
 }
 
-async function deleteExercise(uid: number): Promise<Exercise | null> {
+async function deleteExercise(uid: number): Promise<ExerciseResponse | null> {
   const exercise = await Exercise.findByPk(uid);
   if (exercise) {
     await exercise.destroy();
   }
 
-  return exercise;
+  return formatExerciseResponse(exercise);
 }
 
 export {

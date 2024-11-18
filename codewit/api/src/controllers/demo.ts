@@ -10,18 +10,21 @@ import {
 import { DemoResponse } from '../typings/response.types';
 import { formatDemoResponse } from '../utils/responseFormatter';
 
-async function getAllDemos(): Promise<Demo[]> {
-  return await Demo.findAll({
+async function getAllDemos(): Promise<DemoResponse[]> {
+  const demos = await Demo.findAll({
     include: [Exercise, Tag, Language],
     order: [[Tag, DemoTags, 'ordering', 'ASC']],
   });
+
+  return formatDemoResponse(demos);
 }
 
-async function getDemoById(uid: number): Promise<Demo | null> {
-  return await Demo.findByPk(uid, {
+async function getDemoById(uid: number): Promise<DemoResponse | null> {
+  const demo =  await Demo.findByPk(uid, {
     include: [Exercise, Tag, Language],
     order: [[Tag, DemoTags, 'ordering', 'ASC']],
   });
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function createDemo(
@@ -179,52 +182,52 @@ async function updateDemo(
 async function addExercisesToDemo(
   uid: number,
   exercises: number[]
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.addExercises(exercises);
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function removeExercisesFromDemo(
   uid: number,
   exercises: number[]
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.removeExercises(exercises);
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function setExercisesForDemo(
   uid: number,
   exercises: number[]
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.setExercises(exercises);
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
-async function deleteDemo(uid: number): Promise<Demo | null> {
+async function deleteDemo(uid: number): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.destroy();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
-async function likeDemo(uid: number, user_uid: number): Promise<Demo | null> {
+async function likeDemo(uid: number, user_uid: number): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
 
   if (!demo) {
@@ -240,13 +243,13 @@ async function likeDemo(uid: number, user_uid: number): Promise<Demo | null> {
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function removeLikeDemo(
   uid: number,
   user_uid: number
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
 
   if (!demo) {
@@ -262,7 +265,7 @@ async function removeLikeDemo(
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 export {

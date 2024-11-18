@@ -28,13 +28,17 @@ export interface CourseResponse {
     instructors: number[];
 }
 
-export interface ResourceResponse {
-    uid: number,
-    title: string,
-    source: string,
-    likes: number,
-    url: string
-}
+export type ResourceType = {
+    uid: number;
+    likes: number;
+    url: string;
+    title: string;
+    source: string;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type ResourceResponse = Omit<ResourceType, 'createdAt' | 'updatedAt'>;
 
 export interface DemoResponse {
     uid: number,

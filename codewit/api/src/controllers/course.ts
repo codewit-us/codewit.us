@@ -143,7 +143,7 @@ async function updateCourse(
   });
 }
 
-async function deleteCourse(uid: string): Promise<Course | null> {
+async function deleteCourse(uid: string): Promise<CourseResponse | null> {
   const course = await Course.findByPk(uid);
 
   if (!course) {
@@ -152,10 +152,10 @@ async function deleteCourse(uid: string): Promise<Course | null> {
 
   await course.destroy();
 
-  return course;
+  return formatCourseResponse(course);
 }
 
-async function getCourse(uid: string): Promise<Course | null> {
+async function getCourse(uid: string): Promise<CourseResponse | null> {
   const course = await Course.findByPk(uid, {
     include: [
       Language,
@@ -166,10 +166,10 @@ async function getCourse(uid: string): Promise<Course | null> {
     order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
 
-  return course;
+  return formatCourseResponse(course);
 }
 
-async function getAllCourses(): Promise<Course[]> {
+async function getAllCourses(): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
       Language,
@@ -179,10 +179,10 @@ async function getAllCourses(): Promise<Course[]> {
     ],
     order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
-  return courses;
+  return formatCourseResponse(courses);
 }
 
-async function getStudentCourses(studentId: string): Promise<Course[]> {
+async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
       Language,
@@ -197,7 +197,7 @@ async function getStudentCourses(studentId: string): Promise<Course[]> {
     order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
   });
 
-  return courses;
+  return formatCourseResponse(courses);
 }
 
 

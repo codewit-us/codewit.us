@@ -37,12 +37,12 @@ async function createModule(
   });
 }
 
-async function getModule(uid: number): Promise<Module | null> {
+async function getModule(uid: number): Promise<ModuleResponse | null> {
   const module = await Module.findByPk(uid, {
     include: [Language, Demo, Resource],
   });
 
-  return module;
+  return formatModuleResponse(module);
 }
 
 async function updateModule(
@@ -101,22 +101,22 @@ async function updateModule(
   });
 }
 
-async function getModules(): Promise<Module[]> {
+async function getModules(): Promise<ModuleResponse[]> {
   const modules = await Module.findAll({
     include: [Language, Demo, Resource],
   });
 
-  return modules;
+  return formatModuleResponse(modules);
 }
 
-async function deleteModule(uid: number): Promise<Module | null> {
+async function deleteModule(uid: number): Promise<ModuleResponse | null> {
   const module = await Module.findByPk(uid);
   if (!module) {
     return null;
   }
 
   await module.destroy();
-  return module;
+  return formatModuleResponse(module);
 }
 
 export { createModule, getModule, updateModule, getModules, deleteModule };

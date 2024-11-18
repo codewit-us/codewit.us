@@ -1,23 +1,28 @@
-import { Course, Demo, Exercise, Module, User } from '../models';
-import { ModuleResponse, ExerciseResponse, CourseResponse, ResourceResponse, DemoResponse } from '../typings/response.types';
+import { Course, Demo, Exercise, Module, Resource } from '../models';
+import { ModuleResponse, ExerciseResponse, CourseResponse, ResourceResponse, DemoResponse, ResourceType } from '../typings/response.types';
 
-export function formatModuleResponse(
+function formatResponse<T, R>(input: T[], formatter: (item: T) => R): R[];
+function formatResponse<T, R>(input: T, formatter: (item: T) => R): R;
+function formatResponse<T, R>(
+  input: T | T[],
+  formatter: (item: T) => R
+): R | R[] {
+  if (Array.isArray(input)) {
+    return input.map(formatter);
+  } else {
+    return formatter(input);
+  }
+}
+
+export function formatSingleModule(
   module: Module
 ): ModuleResponse {
-  const {
-    uid,
-    topic,
-    language,
-    resources,
-    demos, 
-  } = module;
-
   return {
-    uid,
-    topic,
-    language: language.name,
-    resources: resources.map(resource => resource.uid),
-    demos: demos ? demos.map(demo => ({
+    uid: module.uid,
+    topic: module.topic,
+    language: module.language.name,
+    resources: module.resources.map(resource => resource.uid),
+    demos: module.demos ? module.demos.map(demo => ({
       uid: demo.uid,
       title: demo.title,
       youtube_id: demo.youtube_id,
@@ -25,56 +30,31 @@ export function formatModuleResponse(
   };
 }
 
-export function formatExerciseResponse(
+export function formatSingleExercise(
   exercise: Exercise
 ): ExerciseResponse {
-  const {
-    uid,
-    topic,
-    prompt,
-    referenceTest,
-    language,
-    tags,
-  } = exercise;
-
   return {
-    uid,
-    topic,
-    language: language.name,
-    tags: tags.map(tag => tag.name),
-    prompt,
-    referenceTest,
+    uid: exercise.uid,
+    topic: exercise.topic,
+    language: exercise.language?.name || '',
+    tags: exercise.tags?.map(tag => tag.name) || [],
+    prompt: exercise.prompt,
+    referenceTest: exercise.referenceTest,
   };
 }
 
-export function formatCourseResponse(course: Course): CourseResponse {
-  const {
-    id,
-    title,
-    language,
-    modules,
-    instructors,
-    roster,
-  } = course;
-
+function formatSingleCourse(course: Course): CourseResponse {
   return {
-    id,
-    title,
-    language: language.name,
-    modules: modules.map(module => module.uid),
-    instructors: instructors.map(instructor => instructor.uid),
-    roster: roster.map(user => user.uid),
+    id: course.id,
+    title: course.title,
+    language: course.language.name,
+    modules: course.modules.map(module => module.uid),
+    instructors: course.instructors.map(instructor => instructor.uid),
+    roster: course.roster.map(user => user.uid),
   };
 }
 
-export function formatResourceResponse(
-  resource: {uid: number, likes: number, url: string, title: string, source: string, createdAt?: string; updatedAt?: string }
-): ResourceResponse {
-  const {createdAt, updatedAt, ...filteredResource} = resource;
-  return filteredResource;
-}
-
-export function formatDemoResponse(
+export function formatSingleDemo(
   demo: Demo
 ): DemoResponse {
   return {
@@ -86,4 +66,50 @@ export function formatDemoResponse(
     youtube_id: demo.youtube_id,
     exercises: demo.exercises ? demo.exercises.map(each => each.uid) : [],
   }
+}
+
+const formatSingleResource = (res: Resource): ResourceResponse => {
+  const plainRes = res.get({ plain: true }) as ResourceType;
+  const { createdAt, updatedAt, ...filteredResource } = plainRes;
+  return filteredResource;
+};
+
+export function formatModuleResponse(module: Module): ModuleResponse;
+export function formatModuleResponse(module: Module[]): ModuleResponse[];
+export function formatModuleResponse(
+  module: Module | Module[]
+): ModuleResponse | ModuleResponse[] {
+  return formatResponse(module, formatSingleModule);
+}
+
+export function formatExerciseResponse(exercise: Exercise): ExerciseResponse;
+export function formatExerciseResponse(exercise: Exercise[]): ExerciseResponse[];
+export function formatExerciseResponse(
+  exercise: Exercise | Exercise[]
+): ExerciseResponse | ExerciseResponse[] {
+  return formatResponse(exercise, formatSingleExercise);
+}
+
+export function formatCourseResponse(course: Course): CourseResponse;
+export function formatCourseResponse(course: Course[]): CourseResponse[];
+export function formatCourseResponse(
+  course: Course | Course[]
+): CourseResponse | CourseResponse[] {
+  return formatResponse(course, formatSingleCourse);
+}
+
+export function formatResourceResponse(resource: Resource): ResourceResponse;
+export function formatResourceResponse(resource: Resource[]): ResourceResponse[];
+export function formatResourceResponse(
+  resource: Resource | Resource[]
+): ResourceResponse | ResourceResponse[] {
+  return formatResponse(resource, formatSingleResource);
+}
+
+export function formatDemoResponse(demo: Demo[]): DemoResponse[];
+export function formatDemoResponse(demo: Demo): DemoResponse;
+export function formatDemoResponse(
+  demo: Demo | Demo[]
+): DemoResponse | DemoResponse[] {
+  return formatResponse(demo, formatSingleDemo);
 }
