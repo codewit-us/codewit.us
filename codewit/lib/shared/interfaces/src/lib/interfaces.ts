@@ -95,7 +95,7 @@ interface Resource {
 interface Course {
   title: string;
   language: string;
-  modules: string[];
+  modules: number[];
   instructors: number[];
   roster: number[];
   id?: string | number;
