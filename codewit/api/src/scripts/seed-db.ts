@@ -24,8 +24,8 @@ const seedData = async () => {
   }
 
   const moduleTopics = [
-    'Variables', 'Objects', 'Decisions', 'Boolean Logic', 'While Loops',
-    'For Loops', 'Arrays', 'ArrayLists', '2D Arrays', 'Inheritance', 'Recursion'
+    'variable', 'object', 'decision', 'boolean expression', 'while loop',
+    'for loop', 'array', 'array list', 'multidimensional array', 'modularity', 'recursion'
   ];
 
   // create resources (we'll create one per module)
