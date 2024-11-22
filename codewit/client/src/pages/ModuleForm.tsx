@@ -75,7 +75,7 @@ const ModuleForm = (): JSX.Element => {
       if (isEditing) {
         const resources = module.resources;
         const topic = module.topic;
-        const language = module.language.name;
+        const language = module.language;
         const updatedModule = {
           language,
           topic,
@@ -119,7 +119,7 @@ const ModuleForm = (): JSX.Element => {
                   ...prev, 
                   language: e.target.value 
                 }))}
-                initialLanguage={module.language.name || module.language}
+                initialLanguage={module.language}
               />
 
               <ResourceSelect

@@ -12,7 +12,7 @@ const options = [
   { value: 'python', label: 'Python' },
 ];
 
-const LanguageSelect = ({ handleChange, initialLanguage }: LanguageSelectProps) => (
+const LanguageSelect = ({handleChange, initialLanguage }: LanguageSelectProps) => (
   <div className="w-full">
     <label htmlFor="language" className="block text-sm font-medium text-gray-400 mb-2">
       Language
@@ -21,7 +21,7 @@ const LanguageSelect = ({ handleChange, initialLanguage }: LanguageSelectProps) 
       id="language"
       name="language"
       options={options}
-      onChange={option => handleChange({ target: { value: option?.value || '' }} as any)}
+      onChange={option => handleChange({ target: { value: option?.value || '', name: "language"}} as any)}
       value={options.find(option => option.value === initialLanguage) || options[0]}
       isSearchable={false}
       styles={SelectStyles}

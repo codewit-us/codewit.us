@@ -1,10 +1,12 @@
 import { Demo, Language, Module, Resource, sequelize } from '../models';
+import { ModuleResponse } from '../typings/response.types';
+import { formatModuleResponse } from '../utils/responseFormatter';
 
 async function createModule(
   topic: string,
   language: string,
   resources: number[]
-): Promise<Module> {
+): Promise<ModuleResponse> {
   return sequelize.transaction(async (transaction) => {
     const [languageInstance] = await Language.findOrCreate({
       where: { name: language },
@@ -31,16 +33,16 @@ async function createModule(
     await module.setResources(resources, { transaction });
     await module.reload({ include: [Language, Demo, Resource], transaction });
 
-    return module;
+    return formatModuleResponse(module);
   });
 }
 
-async function getModule(uid: number): Promise<Module | null> {
+async function getModule(uid: number): Promise<ModuleResponse | null> {
   const module = await Module.findByPk(uid, {
     include: [Language, Demo, Resource],
   });
 
-  return module;
+  return formatModuleResponse(module);
 }
 
 async function updateModule(
@@ -48,7 +50,7 @@ async function updateModule(
   topic?: string,
   language?: string,
   resources?: number[]
-): Promise<Module | null> {
+): Promise<ModuleResponse> {
   return sequelize.transaction(async (transaction) => {
     const module = await Module.findByPk(uid, {
       include: [Language, Demo, Resource],
@@ -95,26 +97,26 @@ async function updateModule(
       transaction,
     });
 
-    return module;
+    return formatModuleResponse(module);
   });
 }
 
-async function getModules(): Promise<Module[]> {
+async function getModules(): Promise<ModuleResponse[]> {
   const modules = await Module.findAll({
     include: [Language, Demo, Resource],
   });
 
-  return modules;
+  return formatModuleResponse(modules);
 }
 
-async function deleteModule(uid: number): Promise<Module | null> {
+async function deleteModule(uid: number): Promise<ModuleResponse | null> {
   const module = await Module.findByPk(uid);
   if (!module) {
     return null;
   }
 
   await module.destroy();
-  return module;
+  return formatModuleResponse(module);
 }
 
 export { createModule, getModule, updateModule, getModules, deleteModule };
