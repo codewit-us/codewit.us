@@ -23,7 +23,7 @@ export interface CourseResponse {
     id: string;
     title: string;
     language: string;
-    modules: ModuleFormResponse[] | number[];
+    modules: ModuleResponse[] | number[];
     roster: UserResponse[];
     instructors: UserResponse[];
 }
@@ -32,13 +32,6 @@ export interface UserResponse {
     uid: number;
     username: string;
     email: string;
-}
-
-export interface ModuleFormResponse {
-    uid: number;
-    topic: string;
-    language: string;
-    resources: ResourceResponse[];    
 }
 
 export type ResourceType = {
