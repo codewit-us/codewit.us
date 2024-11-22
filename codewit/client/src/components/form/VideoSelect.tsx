@@ -40,6 +40,13 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
     fetchVideos();
   }, []);
 
+  useEffect(() => {
+    if (selectedVideoId) {
+      const preselectedOption = videos.find(video => video.value === selectedVideoId);
+      setSelectedOption(preselectedOption || null);
+    }
+  }, [selectedVideoId, videos]);  
+
   const handleChange = (selectedOption: { value: string, label: string, thumbnail: string }) => {
     setSelectedOption(selectedOption);
     onSelectVideo(selectedOption.value, selectedOption.thumbnail);

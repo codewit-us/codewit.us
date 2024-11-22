@@ -1,28 +1,30 @@
 import { Resource } from '../models';
+import { ResourceResponse } from '../typings/response.types';
+import { formatResourceResponse } from '../utils/responseFormatter';
 
 export async function createResource(
   url: string,
   title: string,
   source: string
-): Promise<Resource> {
+): Promise<ResourceResponse> {
   const resource = await Resource.create({ url, title, source });
-  return resource;
+  return formatResourceResponse(resource);
 }
 
-export async function getAllResources(): Promise<Resource[]> {
+export async function getAllResources(): Promise<ResourceResponse[]> {
   const resources = await Resource.findAll();
-  return resources;
+  return formatResourceResponse(resources);
 }
 
-export async function getResource(uid: number): Promise<Resource | null> {
+export async function getResource(uid: number): Promise<ResourceResponse | null> {
   const resource = await Resource.findByPk(uid);
-  return resource;
+  return formatResourceResponse(resource);
 }
 
 export async function likeResource(
   uid: number,
   user_uid: number
-): Promise<Resource | null> {
+): Promise<ResourceResponse | null> {
   const resource = await Resource.findByPk(uid);
 
   if (!resource) {
@@ -38,13 +40,13 @@ export async function likeResource(
     await resource.reload();
   }
 
-  return resource;
+  return formatResourceResponse(resource);
 }
 
 export async function removeLikeResource(
   uid: number,
   user_uid: number
-): Promise<Resource | null> {
+): Promise<ResourceResponse | null> {
   const resource = await Resource.findByPk(uid);
 
   if (!resource) {
@@ -60,17 +62,17 @@ export async function removeLikeResource(
     await resource.reload();
   }
 
-  return resource;
+  return formatResourceResponse(resource);
 }
 
-export async function deleteResource(uid: number): Promise<Resource | null> {
+export async function deleteResource(uid: number): Promise<ResourceResponse | null> {
   const resource = await Resource.findByPk(uid);
   if (resource) {
     await resource.destroy();
     return resource;
   }
 
-  return resource;
+  return formatResourceResponse(resource);
 }
 
 export async function updateResource(
@@ -78,7 +80,7 @@ export async function updateResource(
   url?: string,
   title?: string,
   source?: string
-): Promise<Resource | null> {
+): Promise<ResourceResponse> {
   const resource = await Resource.findByPk(uid);
   if (!resource) {
     return null;
@@ -97,5 +99,5 @@ export async function updateResource(
   await resource.save();
   await resource.reload();
 
-  return resource;
+  return formatResourceResponse(resource);
 }

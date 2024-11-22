@@ -4,7 +4,9 @@ import {
   colors,
   animals,
 } from 'unique-names-generator';
-import { Course, CourseModules, Language, Demo, Module, sequelize } from '../models';
+import { Course, CourseModules, Language, Module, Demo, Resource, sequelize } from '../models';
+import { CourseResponse } from '../typings/response.types';
+import { formatCourseResponse } from '../utils/responseFormatter';
 
 async function createCourse(
   title: string,
@@ -12,7 +14,7 @@ async function createCourse(
   modules?: number[],
   instructors?: number[],
   roster?: number[]
-): Promise<Course> {
+): Promise<CourseResponse> {
   return sequelize.transaction(async (transaction) => {
     // acquire SHARE ROW EXCLUSIVE lock, This lock allows concurrent reads
     // and locks the table against concurrent writes to avoid race conditions
@@ -76,7 +78,7 @@ async function createCourse(
       transaction,
     });
 
-    return course;
+    return formatCourseResponse(course);
   });
 }
 
@@ -87,7 +89,7 @@ async function updateCourse(
   modules?: number[],
   instructors?: number[],
   roster?: number[]
-): Promise<Course | null> {
+): Promise<CourseResponse> {
   return sequelize.transaction(async (transaction) => {
     const course = await Course.findByPk(uid, { transaction });
 
@@ -132,12 +134,17 @@ async function updateCourse(
 
     await course.save({ transaction });
     await course.reload({
-      include: [Language, Module],
+      include: [
+        Language, 
+        Module,
+        { association: Course.associations.instructors },
+        { association: Course.associations.roster },
+      ],
       order: [[Module, CourseModules, 'ordering', 'ASC']],
       transaction,
     });
 
-    return course;
+    return formatCourseResponse(course);
   });
 }
 
@@ -153,7 +160,7 @@ async function deleteCourse(uid: string): Promise<Course | null> {
   return course;
 }
 
-async function getCourse(uid: string): Promise<Course | null> {
+async function getCourse(uid: string): Promise<CourseResponse | null> {
   const course = await Course.findByPk(uid, {
     include: [
       Language,
@@ -164,29 +171,34 @@ async function getCourse(uid: string): Promise<Course | null> {
     order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
 
-  return course;
+  return formatCourseResponse(course);
 }
 
-async function getAllCourses(): Promise<Course[]> {
+async function getAllCourses(): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language,
-      Module,
+      Language, 
+      {
+        association: Course.associations.modules,
+        include: [Language, Resource], 
+        through: { attributes: ['ordering'] },
+      },
       { association: Course.associations.instructors },
       { association: Course.associations.roster },
     ],
-    order: [[Module, CourseModules, 'ordering', 'ASC']],
+    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
   });
-  return courses;
+  return formatCourseResponse(courses);
 }
 
-async function getStudentCourses(studentId: string): Promise<Course[]> {
+
+async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language,
+      Language, 
       {
         association: Course.associations.modules,
-        include: [Demo], 
+        include: [Language, Resource], 
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },
@@ -195,7 +207,7 @@ async function getStudentCourses(studentId: string): Promise<Course[]> {
     order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
   });
 
-  return courses;
+  return formatCourseResponse(courses, true);
 }
 
 

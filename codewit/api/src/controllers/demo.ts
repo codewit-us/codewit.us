@@ -7,19 +7,24 @@ import {
   DemoTags,
   sequelize,
 } from '../models';
+import { DemoResponse } from '../typings/response.types';
+import { formatDemoResponse } from '../utils/responseFormatter';
 
-async function getAllDemos(): Promise<Demo[]> {
-  return await Demo.findAll({
+async function getAllDemos(): Promise<DemoResponse[]> {
+  const demos = await Demo.findAll({
     include: [Exercise, Tag, Language],
     order: [[Tag, DemoTags, 'ordering', 'ASC']],
   });
+
+  return formatDemoResponse(demos);
 }
 
-async function getDemoById(uid: number): Promise<Demo | null> {
-  return await Demo.findByPk(uid, {
+async function getDemoById(uid: number): Promise<DemoResponse | null> {
+  const demo =  await Demo.findByPk(uid, {
     include: [Exercise, Tag, Language],
     order: [[Tag, DemoTags, 'ordering', 'ASC']],
   });
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function createDemo(
@@ -29,7 +34,7 @@ async function createDemo(
   topic: string,
   tags?: string[],
   language?: string
-): Promise<Demo> {
+): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.create(
       { title, youtube_id, youtube_thumbnail, topic },
@@ -78,7 +83,7 @@ async function createDemo(
       transaction,
     });
 
-    return demo;
+    return formatDemoResponse(demo);
   });
 }
 
@@ -90,139 +95,136 @@ async function updateDemo(
   tags?: string[],
   language?: string,
   topic?: string
-): Promise<Demo | null> {
+): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.findByPk(uid, {
       include: [Exercise, Tag, Language],
       transaction,
     });
-    const oldTopic = demo.topic;
-    const oldLanguage = demo.language;
 
-    if (demo) {
-      if (tags) {
-        await demo.setTags([], { transaction });
+    if (!demo) throw new Error("Demo not found");
+
+    if (tags) {
+      await demo.setTags([], { transaction });
+      await Promise.all(
+        tags.map(async (tag, idx) => {
+          const [tagInstance] = await Tag.findOrCreate({
+            where: { name: tag },
+            transaction,
+          });
+          await demo.addTag(tagInstance, {
+            through: { ordering: idx + 1 },
+            transaction,
+          });
+        })
+      );
+    }
+
+    if (language) {
+      const [languageInstance] = await Language.findOrCreate({
+        where: { name: language },
+        transaction,
+      });
+      await demo.setLanguage(languageInstance, { transaction });
+    }
+
+    if (title) demo.title = title;
+    if (youtube_id) demo.youtube_id = youtube_id;
+    if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
+    if (topic) demo.topic = topic;
+
+    await demo.save({ transaction });
+
+    if (topic || language) {
+      const oldTopic = demo.topic;
+      const oldLanguage = demo.language;
+
+      if (oldLanguage && oldTopic) {
+        const oldModules = await Module.findAll({
+          where: { topic: oldTopic },
+          include: [{ model: Language, where: { uid: oldLanguage.uid } }],
+          transaction,
+        });
 
         await Promise.all(
-          tags.map(async (tag, idx) => {
-            const [tagInstance] = await Tag.findOrCreate({
-              where: { name: tag },
-              transaction,
-            });
-            await demo.addTag(tagInstance, {
-              through: { ordering: idx + 1 },
-              transaction,
-            });
+          oldModules.map(async (module) => {
+            await module.removeDemo(demo.uid, { transaction });
           })
         );
       }
-      if (language) {
-        const [languageInstance] = await Language.findOrCreate({
-          where: { name: language },
-          transaction,
-        });
-        await demo.setLanguage(languageInstance, { transaction });
-      }
-      if (title) demo.title = title;
-      if (youtube_id) demo.youtube_id = youtube_id;
-      if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
-      if (topic) {
-        demo.topic = topic;
-      }
 
-      await demo.save({ transaction });
-      await demo.reload({
-        include: [Exercise, Tag, Language],
-        order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      const newModules = await Module.findAll({
+        where: { topic: demo.topic },
+        include: [{ model: Language, where: { uid: demo.language.uid } }],
         transaction,
       });
 
-      if (topic || language) {
-        if (oldLanguage && oldTopic) {
-          const oldmodules = await Module.findAll({
-            where: {
-              topic: oldTopic,
-            },
-            include: [{ model: Language, where: { uid: oldLanguage.uid } }],
-            transaction,
-          });
-
-          Promise.all(
-            oldmodules.map(async (module) => {
-              await module.removeDemo(demo.uid, { transaction });
-            })
-          );
-        }
-
-        const modules = await Module.findAll({
-          where: {
-            topic: demo.topic,
-          },
-          include: [{ model: Language, where: { uid: demo.language.uid } }],
-          transaction,
-        });
-
-        Promise.all(
-          modules.map(async (module) => {
-            await module.addDemo(demo, { transaction });
-          })
-        );
-      }
+      await Promise.all(
+        newModules.map(async (module) => {
+          await module.addDemo(demo, { transaction });
+        })
+      );
     }
 
-    return demo;
+    await demo.reload({
+      include: [Exercise, Tag, Language],
+      order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      transaction,
+    });
+
+    return formatDemoResponse(demo);
   });
 }
 
 async function addExercisesToDemo(
   uid: number,
   exercises: number[]
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.addExercises(exercises);
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function removeExercisesFromDemo(
   uid: number,
   exercises: number[]
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.removeExercises(exercises);
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function setExercisesForDemo(
   uid: number,
   exercises: number[]
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.setExercises(exercises);
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
-async function deleteDemo(uid: number): Promise<Demo | null> {
+async function deleteDemo(uid: number): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
   if (demo) {
     await demo.destroy();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
-async function likeDemo(uid: number, user_uid: number): Promise<Demo | null> {
+async function likeDemo(uid: number, user_uid: number): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
 
   if (!demo) {
@@ -238,13 +240,13 @@ async function likeDemo(uid: number, user_uid: number): Promise<Demo | null> {
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 async function removeLikeDemo(
   uid: number,
   user_uid: number
-): Promise<Demo | null> {
+): Promise<DemoResponse | null> {
   const demo = await Demo.findByPk(uid, { include: [Exercise, Tag, Language] });
 
   if (!demo) {
@@ -260,7 +262,7 @@ async function removeLikeDemo(
     await demo.reload();
   }
 
-  return demo;
+  return demo ? formatDemoResponse(demo) : null;
 }
 
 export {

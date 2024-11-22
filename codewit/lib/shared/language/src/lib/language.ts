@@ -1,7 +1,7 @@
 enum Language {
   CPP = 'cpp',
   Java = 'java',
-  Python = 'Python',
+  Python = 'python',
 }
 
 export { Language };
