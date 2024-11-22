@@ -13,7 +13,7 @@ root.render(
   // <StrictMode>
     <BrowserRouter>
       <App />
-      <ToastContainer position="bottom-right" autoClose={3000} />
+      <ToastContainer position="bottom-right" autoClose={1000} />
     </BrowserRouter>
   // </StrictMode>
 );

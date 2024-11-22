@@ -94,7 +94,7 @@ const DemoForm = (): JSX.Element => {
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-      <CreateButton onClick={() => setModalOpen(true)} title="Demo" />
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Demo" />
       <ReusableTable columns={columns} data={demos} onEdit={handleEdit} onDelete={handleDelete} />
       <ReusableModal
         isOpen={modalOpen}
