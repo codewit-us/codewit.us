@@ -55,7 +55,7 @@ interface Tag {
 }
 
 interface SelectedTag {
-  value: string;
+  value: number;
   label: string;
 }
 
@@ -65,11 +65,12 @@ interface DemoResponse {
   title: string;
   topic: string;
   youtube_id: string;
+  youtube_thumbnail: string;
   updatedAt: string;
   createdAt: string;
   exercises: Exercise[];
-  tags: Tag[] | string [];
-  language: string | {name:string;};
+  tags: string[];
+  language: string;
   languageUid: string;
 }
 

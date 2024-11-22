@@ -111,7 +111,7 @@ const ModuleForm = (): JSX.Element => {
 
   const columns = [
     { header: "Topic", accessor: "topic" },
-    { header: "Language", accessor: "language.name" },
+    { header: "Language", accessor: "language" },
     { header: "Resources", accessor: "resources.length" },
   ];
 

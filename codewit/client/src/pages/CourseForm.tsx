@@ -45,7 +45,7 @@ const CourseForm = (): JSX.Element => {
   const [userOptions, setUserOptions] = useState<SelectedTag[]>([]);
 
   useEffect(() => {
-    // Map modules and users into the format expected by react-select
+
     setModuleOptions(
       modules.map((module: any) => ({
         value: module.uid,
@@ -53,13 +53,14 @@ const CourseForm = (): JSX.Element => {
       }))
     );
 
+    // Prepare options for users
     setUserOptions(
       users.map((user: any) => ({
         value: user.uid,
         label: user.username,
       }))
     );
-  }, [modules, users]);
+  }, [users, courses]);
 
   const handleInputChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -72,12 +73,9 @@ const CourseForm = (): JSX.Element => {
 
   const handleEdit = (course: any) => {
     setFormData({
-      id: course.id,
-      title: course.title,
-      language: course.language.name || course.language,
-      modules: course.modules.map((module: any) => module.uid),
-      instructors: course.instructors.map((instr: any) => instr.uid),
-      roster: course.roster.map((student: any) => student.uid),
+      ...course,
+      instructors: course.instructors.map((instructor: any) => instructor.uid), // Only include uid for instructors
+      roster: course.roster.map((user: any) => user.uid), // Only include uid for roster
     });
     setIsEditing(true);
     setModalOpen(true);
@@ -97,28 +95,38 @@ const CourseForm = (): JSX.Element => {
 
   const handleSubmit = async () => {
     try {
+      const payload = {
+        ...formData,
+        instructors: formData.instructors.map((uid) => ( uid)), 
+        roster: formData.roster.map((uid) => (uid)), 
+      };
+
       if (isEditing) {
-        const updatedCourse = await patchCourse(formData, formData.id as number);
+        const updatedCourse = await patchCourse(payload, formData.id as number);
         setCourses((prev) => prev.map((course) => (course.id === formData.id ? updatedCourse : course)));
         toast.success("Course successfully updated!");
       } else {
-        const newCourse = await postCourse(formData);
+        const newCourse = await postCourse(payload);
         setCourses((prev) => [...prev, newCourse]);
         toast.success("Course successfully created!");
       }
       setModalOpen(false);
       setIsEditing(false);
-      setFormData({
-        id: "",
-        title: "",
-        language: "cpp",
-        modules: [],
-        instructors: [],
-        roster: [],
-      });
+      resetFormData();
     } catch (err) {
       toast.error("Error creating/updating course.");
     }
+  };
+
+  const resetFormData = () => {
+    setFormData({
+      id: "",
+      title: "",
+      language: "cpp",
+      modules: [],
+      instructors: [],
+      roster: [],
+    });
   };
 
   const requiredFields = ["title"];
@@ -147,6 +155,7 @@ const CourseForm = (): JSX.Element => {
         onClose={() => {
           setModalOpen(false);
           setIsEditing(false);
+          resetFormData();
         }}
         title={isEditing ? "Edit Course" : "Create Course"}
         footerActions={
@@ -164,6 +173,7 @@ const CourseForm = (): JSX.Element => {
               onClick={() => {
                 setModalOpen(false);
                 setIsEditing(false);
+                resetFormData();
               }}
               className="bg-gray-500 text-white px-4 py-2 rounded-md"
             >

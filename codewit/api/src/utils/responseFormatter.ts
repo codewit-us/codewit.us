@@ -47,8 +47,6 @@ export function formatSingleExercise(
 
 function formatSingleCourse(course: Course, isGetStudent = false): CourseResponse {
 
-  console.log(JSON.stringify(course));
-
   const filterUser = (user: any): UserResponse => ({
     uid: user.uid,
     username: user.username,

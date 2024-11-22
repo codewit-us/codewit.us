@@ -21,7 +21,7 @@ const DemoForm = (): JSX.Element => {
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    uid: undefined,
+    uid: undefined as number | undefined,
     title: "",
     youtube_id: "",
     youtube_thumbnail: "",
@@ -53,7 +53,7 @@ const DemoForm = (): JSX.Element => {
   const handleSubmit = async () => {
     try {
       if (isEditing) {
-        const updatedDemo = await patchDemo(formData, formData.uid as number);
+        const updatedDemo = await patchDemo(formData, formData.uid as unknown as number);
         setDemos((prev) => prev.map((demo) => (demo.uid === formData.uid ? updatedDemo : demo)));
         toast.success("Demo successfully updated!");
       } else {
@@ -68,16 +68,7 @@ const DemoForm = (): JSX.Element => {
   };
 
  const handleEdit = (demo: DemoResponse) => {
-    setFormData({
-      uid: demo.uid,
-      title: demo.title,
-      youtube_id: demo.youtube_id,
-      youtube_thumbnail: demo.youtube_thumbnail,
-      topic: demo.topic.name,
-      tags: demo.tags.map((tag) => tag.name),
-      language: demo.language.name,
-      exercises: demo.exercises.map((ex) => ex.uid),
-    });
+    setFormData(demo);
     setIsEditing(true);
     setModalOpen(true);
   };
@@ -98,12 +89,12 @@ const DemoForm = (): JSX.Element => {
   const columns = [
     { header: "Title", accessor: "title" },
     { header: "Topic", accessor: "topic" },
-    { header: "Language", accessor: "language.name" },
+    { header: "Language", accessor: "language" },
   ];
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
-      <CreateButton onClick={() => setModalOpen(true)} title="Create Demo" />
+      <CreateButton onClick={() => setModalOpen(true)} title="Demo" />
       <ReusableTable columns={columns} data={demos} onEdit={handleEdit} onDelete={handleDelete} />
       <ReusableModal
         isOpen={modalOpen}

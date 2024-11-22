@@ -1,4 +1,6 @@
 // codewit/client/src/components/form/CreateButton.tsx
+import { PlusIcon } from '@heroicons/react/24/outline';
+
 interface CreateButtonProps {
   title: string;
   onClick: () => void;
@@ -10,7 +12,10 @@ const CreateButton: React.FC<CreateButtonProps> = ({
 })=> {
   return (
   <div className="flex justify-end mb-2">
-    <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={onClick}>
+    <button className="flex bg-accent-500 text-white px-4 py-1 rounded-md" onClick={onClick}>
+      <PlusIcon 
+        className="w-6 h-6 mr-2"
+      />
       {title}
     </button>
   </div>
