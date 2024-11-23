@@ -95,21 +95,24 @@ interface Resource {
 }
 
 interface Course {
+  id: string;
   title: string;
   language: string;
-  modules: number[];
-  instructors: number[];
-  roster: number[];
-  id?: string | number;
+  modules: Module[];
+  instructors: Array<{
+    uid: number;
+    username: string;
+    email: string;
+  }>;
 }
 
 interface Module {
-  language: string;
+  uid: number;
   topic: string;
-  demos?: DemoResponse[];
-  resources: string[]; 
-  uid?: number;
+  language: string;
+  resources: Resource[];
 }
+
 
 interface User {
   uid: number;
