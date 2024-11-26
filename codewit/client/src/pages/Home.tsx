@@ -1,12 +1,13 @@
 // codewit/client/src/pages/Home.tsx
+import { useState } from 'react';
 import { useFetchStudentCourses } from '../hooks/useCourse';
+import { useAuth } from '../hooks/useAuth';
 import Error from '../components/error/Error';
 import Loading from '../components/loading/LoadingPage';
-import { useState } from 'react';
 import { Resource } from '@codewit/interfaces';
 import { PlayIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import bulbLit from '../../public/bulb(lit).svg';
-import buldUnlit from '../../public/bulb(lit).svg';
+import bulbUnlit from '../../public/bulb(unlit).svg';
 
 const ModuleSection = ({ resource }: { resource: Resource }) => (
   <div className="relative overflow-hidden w-48">
@@ -35,27 +36,65 @@ const ModuleSection = ({ resource }: { resource: Resource }) => (
   </div>
 );
 
+const EmptyState = () => (
+  <div className="flex flex-col items-center justify-center py-20">
+    <h2 className="text-xl font-bold text-white mb-4">No Courses Available</h2>
+    <p className="text-zinc-400">Please check back later for available courses.</p>
+  </div>
+);
+
+const UnauthorizedState = () => (
+  <div className="h-2/3 flex flex-col items-center justify-center">
+    <h2 className="text-xl font-bold text-white mb-4">Please Sign In</h2>
+    <p className="text-zinc-400">Sign in to access your courses</p>
+    <form action="http://localhost:3001/oauth2/google" method="get">
+      <input
+          type="submit"
+          value="Log in"
+          className="mt-4 px-5 py-2.5 flex items-center text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-4 focus:ring-blue-300"
+      />
+    </form>
+  </div>
+);
+
 const Home = (): JSX.Element => {
   const [expandedModule, setExpandedModule] = useState<number | null>(1);
   const { data, loading, error } = useFetchStudentCourses();
-  const course = data[0];
+  const { user } = useAuth();
 
-  // console.log(course)
+  // Check for unauthenticated state
+  if (!user) {
+    return <UnauthorizedState />;
+  }
 
   if (loading) return <Loading />;
   if (error) return <Error message="Failed to fetch courses. Please try again later." />;
+  
+  // Check for empty or invalid data
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return <EmptyState />;
+  }
+
+  const course = data[0];
+
+  // Additional validation for course structure
+  if (!course?.modules) {
+    return <Error message="Course data is invalid or incomplete." />;
+  }
 
   return (
     <div className="h-container-full max-w-full overflow-auto bg-zinc-900">
       <div className="max-w-7xl mx-auto px-10 py-4">
-       
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white mb-2">{course.title}</h1>
-          <p className="text-zinc-400">Language: {course.language}</p>
-        </div>
+
+        {course &&
+         <div className="mb-8">
+            <h1 className="text-2xl font-bold text-white mb-2">{course?.title}</h1>
+            <p className="text-zinc-400">Language: {course?.language}</p>
+          </div>
+        }
 
         <div className="space-y-1.5">
-          {course.modules.map((module) => (
+          {course?.modules.map((module) => (
            <div key={module.uid} className="bg-foreground-500 overflow-hidden rounded-md font-bold">
               <button
                 className="w-full px-10 py-4 flex items-center justify-between hover:bg-foreground-600"
