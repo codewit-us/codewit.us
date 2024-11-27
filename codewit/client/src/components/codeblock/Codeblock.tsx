@@ -1,3 +1,4 @@
+// codewit/client/src/components/codeblock/Codeblock.tsx
 import { useEffect, useRef } from 'react';
 import * as monaco from 'monaco-editor';
 import { ArrowPathIcon, CheckIcon } from '@heroicons/react/24/solid';

@@ -1,223 +1,242 @@
-import { useState, useEffect, ChangeEvent } from 'react';
-import Select, { MultiValue } from 'react-select';
-import LanguageSelect from '../components/form/LanguageSelect';
-import InputLabel from '../components/form/InputLabel';
-import TextInput from '../components/form/TextInput';
-import SubmitBtn from '../components/form/SubmitButton';
-import { SelectStyles } from '../utils/styles';
-import Error from '../components/error/Error';
-import { SelectedTag } from '@codewit/interfaces';
-import ExistingTable from '../components/form/ExistingTable';
-import { Course } from '@codewit/interfaces';
-import { 
-  usePostCourse, 
-  usePatchCourse, 
-  useFetchCourses, 
-  useDeleteCourse  
-} from '../hooks/useCourse';
-import { useFetchUsers } from '../hooks/useUsers';
+// codewit/client/src/pages/CourseForm.tsx
+import React, { useState, useEffect } from "react";
+import ReusableTable from "../components/form/ReusableTable";
+import ReusableModal from "../components/form/ReusableModal";
+import Select, { MultiValue } from "react-select";
+import LanguageSelect from "../components/form/LanguageSelect";
+import CreateButton from "../components/form/CreateButton";
+import InputLabel from "../components/form/InputLabel";
+import TextInput from "../components/form/TextInput";
+import { SelectStyles } from "../utils/styles";
+import { SelectedTag, Course } from "@codewit/interfaces";
+import { toast } from "react-toastify";
+import {
+  useFetchCourses,
+  usePostCourse,
+  usePatchCourse,
+  useDeleteCourse,
+} from "../hooks/useCourse";
+import { useFetchModules } from "../hooks/useModule";
+import { useFetchUsers } from "../hooks/useUsers";
+import { isFormValid } from "../utils/formValidationUtils";
 
 const CourseForm = (): JSX.Element => {
-  const { data: courses, setData: setCourses, error: fetchCoursesError } = useFetchCourses();
-  const { data: users, error: fetchUsersError } = useFetchUsers();
-  
+  const { data: courses, setData: setCourses } = useFetchCourses();
+  const { data: modules } = useFetchModules();
+  const { data: users } = useFetchUsers();
+
   const postCourse = usePostCourse();
   const patchCourse = usePatchCourse();
   const deleteCourse = useDeleteCourse();
 
-  const [course, setCourse] = useState<Course>({
-    title: '',
-    language: 'cpp',
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [formData, setFormData] = useState<Course>({
+    id: "",
+    title: "",
+    language: "cpp",
     modules: [],
-    id: '',
     instructors: [],
-    roster: []
+    roster: [],
   });
 
   const [moduleOptions, setModuleOptions] = useState<SelectedTag[]>([]);
   const [userOptions, setUserOptions] = useState<SelectedTag[]>([]);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    if ( fetchCoursesError || fetchUsersError) {
-      setError(true);
-    }
 
+    setModuleOptions(
+      modules.map((module: any) => ({
+        value: module.uid,
+        label: module.title || module.uid,
+      }))
+    );
 
-    if (courses.length === 0) return;
-    const options = courses[0].modules.map((module: number) => ({
-      value: module,       
-      label: `Module ${module}`,
-    }));
-    setModuleOptions(options);
+    // Prepare options for users
+    setUserOptions(
+      users.map((user: any) => ({
+        value: user.uid,
+        label: user.username,
+      }))
+    );
+  }, [users, courses]);
 
-    const userOptions = users.map((user: any) => ({
-      value: user.uid,
-      label: user.username
-    }));
-    setUserOptions(userOptions);
-
-  }, [courses, users, fetchCoursesError, fetchUsersError]);
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setCourse((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleInputChange = (name: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (selectedOption: MultiValue<SelectedTag>, name: string) => {
-    const selectedValues = selectedOption ? selectedOption.map(option => option.value) : [];
-    setCourse((prev) => ({ ...prev, [name]: selectedValues }));
+    const selectedValues = selectedOption ? selectedOption.map((option) => option.value) : [];
+    setFormData((prev) => ({ ...prev, [name]: selectedValues }));
   };
 
-  const handleEdit = (id: string | number) => {
+  const handleEdit = (course: any) => {
+    setFormData({
+      ...course,
+      instructors: course.instructors.map((instructor: any) => instructor.uid), // Only include uid for instructors
+      roster: course.roster.map((user: any) => user.uid), // Only include uid for roster
+    });
     setIsEditing(true);
-    const foundCourse = courses.find(course => course.id === id);
-    if (foundCourse) {
-      const arrayOfInstrIds = foundCourse.instructors.map(instr => instr.uid);
-      const arrayOfRosterIds = foundCourse.roster.map(roster => roster.uid);
-      setCourse({
-        title: foundCourse.title,
-        language: foundCourse.language,
-        modules: foundCourse.modules,
-        id: foundCourse.id,
-        instructors: arrayOfInstrIds,
-        roster: arrayOfRosterIds,
-      });
-    }
+    setModalOpen(true);
   };
 
-  const handleDelete = async (id: string | number) => {
+  const handleDelete = async (course: Course) => {
     try {
-      console.log('Deleting course:', id);
-      await deleteCourse(id);
-      setCourses((prev) => prev.filter((course) => course.id !== id));
-    } catch (err) {
-      console.error("Failed to delete course", err);
-      setError(true);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      if (isEditing) {
-        console.log('Editing course:', course);
-        await patchCourse(course, course.id ?? -1);
-        const updatedCourses = courses.map((c) => (c.id === course.id ? course : c));
-        setCourses(updatedCourses);
-        setIsEditing(false);
-        window.location.reload();
-      } else {
-        const newCourse = await postCourse(course);
-        setCourses((prev) => [...prev, newCourse]);
-        setCourse({
-          title: '',
-          language: 'cpp',
-          modules: [],
-          id: '',
-          instructors: [],
-          roster: []
-        });
+      if (course.id !== undefined) {
+        await deleteCourse(course.id);
+        setCourses((prev) => prev.filter((c) => c.id !== course.id));
+        toast.success("Course successfully deleted!");
       }
     } catch (err) {
-      console.error('Error creating/updating course', err);
-      setError(true);
+      toast.error("Error deleting course.");
     }
   };
 
-  if (error) {
-    return <Error />;
-  }
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        ...formData,
+        instructors: formData.instructors.map((uid) => ( uid)), 
+        roster: formData.roster.map((uid) => (uid)), 
+      };
+
+      if (isEditing) {
+        const updatedCourse = await patchCourse(payload, formData.id as number);
+        setCourses((prev) => prev.map((course) => (course.id === formData.id ? updatedCourse : course)));
+        toast.success("Course successfully updated!");
+      } else {
+        const newCourse = await postCourse(payload);
+        setCourses((prev) => [...prev, newCourse]);
+        toast.success("Course successfully created!");
+      }
+      setModalOpen(false);
+      setIsEditing(false);
+      resetFormData();
+    } catch (err) {
+      toast.error("Error creating/updating course.");
+    }
+  };
+
+  const resetFormData = () => {
+    setFormData({
+      id: "",
+      title: "",
+      language: "cpp",
+      modules: [],
+      instructors: [],
+      roster: [],
+    });
+  };
+
+  const requiredFields = ["title"];
+  const isValid = isFormValid(formData, requiredFields);
+
+  const columns = [
+    { header: "Title", accessor: "title" },
+    { header: "Modules", accessor: "modules.length" },
+    { header: "Instructors", accessor: "instructors.length" },
+    { header: "Roster", accessor: "roster.length" },
+  ];
 
   return (
-    <div className="flex h-full bg-zinc-900 p-6 gap-6">
-      <div className="w-1/3 min-w-[450px]">
-        <form onSubmit={handleSubmit} className="bg-gray-800/90 rounded-xl shadow-lg p-6 h-full overflow-auto">
-          <h2 className="text-xl font-bold text-white mb-6">
-            {isEditing ? "Edit Course" : "Create Course"}
-          </h2>
-          
-          <div className="space-y-6">
-            <div>
-              <InputLabel htmlFor="title">Title</InputLabel>
-              <TextInput 
-                id="title" 
-                name="title" 
-                value={course.title} 
-                placeholder="Enter title" 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
+    <div className="flex flex-col h-full bg-zinc-900 p-6">
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Course" />
 
-            <LanguageSelect
-              handleChange={handleChange}
-              initialLanguage={course.language}
-            />
-
-            <div>
-              <InputLabel htmlFor="modules">Modules</InputLabel>
-              <Select
-                id="modules"
-                isMulti
-                options={moduleOptions}
-                className="text-sm bg-blue text-white border-none w-full rounded-lg"
-                styles={SelectStyles}
-                onChange={(selectedOption: MultiValue<SelectedTag>) => 
-                  handleSelectChange(selectedOption, 'modules')}
-                value={moduleOptions.filter((option) => 
-                  course.modules.includes(option.value))}
-              />
-            </div>
-
-            <div>
-              <InputLabel htmlFor="instructors">Instructors</InputLabel>
-              <Select 
-                id="instructors"
-                isMulti
-                options={userOptions}
-                className="text-sm bg-blue text-white border-none w-full rounded-lg"
-                styles={SelectStyles}
-                onChange={(selectedOption: MultiValue<SelectedTag>) => 
-                  handleSelectChange(selectedOption, 'instructors')}
-                value={userOptions.filter((option) => 
-                  course.instructors.includes(parseInt(option.value)))}
-              />
-            </div>
-
-            <div>
-              <InputLabel htmlFor="roster">Roster</InputLabel>
-              <Select 
-                id="roster"
-                isMulti
-                options={userOptions}
-                className="text-sm bg-blue text-white border-none w-full rounded-lg"
-                styles={SelectStyles}
-                onChange={(selectedOption: MultiValue<SelectedTag>) => 
-                  handleSelectChange(selectedOption, 'roster')}
-                value={userOptions.filter((option) => 
-                  course.roster.includes(parseInt(option.value)))}
-              />
-            </div>
-
-            <SubmitBtn
-              text={isEditing ? 'Confirm Edit' : 'Create'}
-              disabled={course.title === '' || course.modules.length === 0}
-            />
-          </div>
-        </form>
-      </div>
-
-      <ExistingTable
-        items={courses}
-        name="Courses"
+      <ReusableTable
+        columns={columns}
+        data={courses}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
+
+      <ReusableModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setIsEditing(false);
+          resetFormData();
+        }}
+        title={isEditing ? "Edit Course" : "Create Course"}
+        footerActions={
+          <>
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {isEditing ? "Update" : "Create"}
+            </button>
+            <button
+              onClick={() => {
+                setModalOpen(false);
+                setIsEditing(false);
+                resetFormData();
+              }}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <InputLabel htmlFor="title">Title</InputLabel>
+            <TextInput
+              id="title"
+              name="title"
+              value={formData.title}
+              placeholder="Enter course title"
+              onChange={(e) => handleInputChange("title", e.target.value)}
+              required
+            />
+          </div>
+
+          <LanguageSelect
+            handleChange={(e) => handleInputChange("language", e.target.value)}
+            initialLanguage={formData.language}
+          />
+
+          <div>
+            <InputLabel htmlFor="modules">Modules</InputLabel>
+            <Select
+              id="modules"
+              isMulti
+              options={moduleOptions}
+              styles={SelectStyles}
+              value={moduleOptions.filter((option) => formData.modules.includes(option.value))}
+              onChange={(selectedOption) => handleSelectChange(selectedOption, "modules")}
+            />
+          </div>
+
+          <div>
+            <InputLabel htmlFor="instructors">Instructors</InputLabel>
+            <Select
+              id="instructors"
+              isMulti
+              options={userOptions}
+              styles={SelectStyles}
+              value={userOptions.filter((option) => formData.instructors.includes(option.value))}
+              onChange={(selectedOption) => handleSelectChange(selectedOption, "instructors")}
+            />
+          </div>
+
+          <div>
+            <InputLabel htmlFor="roster">Roster</InputLabel>
+            <Select
+              id="roster"
+              isMulti
+              options={userOptions}
+              styles={SelectStyles}
+              value={userOptions.filter((option) => formData.roster.includes(option.value))}
+              onChange={(selectedOption) => handleSelectChange(selectedOption, "roster")}
+            />
+          </div>
+        </div>
+      </ReusableModal>
     </div>
   );
 };

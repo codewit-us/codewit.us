@@ -1,5 +1,6 @@
 /* v8 ignore next 98 */
 const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
+const flowbite = require("flowbite-react/tailwind");
 const { join } = require('path');
 
 /** @type {import('tailwindcss').Config} */
@@ -9,6 +10,7 @@ module.exports = {
       __dirname,
       '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'
     ),
+    flowbite.content(),
     ...createGlobPatternsForDependencies(__dirname),
   ],
   theme: {
@@ -90,11 +92,12 @@ module.exports = {
         code: ['Menlo', 'Consolas', 'Courier New', 'monospace'],
       },
       height: {
-        'container-full': 'calc(100% - 64.8px)',
+        'container-full': 'calc(100% - 49px)',
       },
     },
   },
   plugins: [
     require('@tailwindcss/typography'),
+    flowbite.plugin(),
   ],
 };

@@ -1,3 +1,4 @@
+// codewit/client/src/hooks/useResource.ts
 import { useState, useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
 import { Resource } from '@codewit/interfaces';

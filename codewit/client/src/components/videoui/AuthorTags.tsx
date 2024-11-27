@@ -1,3 +1,4 @@
+// codewit/client/src/components/videoui/AuthorTags.tsx
 import { Tag } from "@codewit/interfaces";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 

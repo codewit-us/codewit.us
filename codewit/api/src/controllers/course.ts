@@ -198,7 +198,7 @@ async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
       Language, 
       {
         association: Course.associations.modules,
-        include: [Language, Resource], 
+        include: [Language, Resource, Demo], 
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },

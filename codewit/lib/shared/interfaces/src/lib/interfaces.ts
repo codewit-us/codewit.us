@@ -32,6 +32,7 @@ interface ExerciseFormData{
 
 interface Demo {
   youtube_id: string;
+  youtube_thumbnail: string;
   title: string;
 }
 
@@ -55,7 +56,7 @@ interface Tag {
 }
 
 interface SelectedTag {
-  value: string;
+  value: number;
   label: string;
 }
 
@@ -65,11 +66,12 @@ interface DemoResponse {
   title: string;
   topic: string;
   youtube_id: string;
+  youtube_thumbnail: string;
   updatedAt: string;
   createdAt: string;
   exercises: Exercise[];
-  tags: Tag[] | string [];
-  language: string | {name:string;};
+  tags: string[];
+  language: string;
   languageUid: string;
 }
 
@@ -93,21 +95,25 @@ interface Resource {
 }
 
 interface Course {
+  id: string;
   title: string;
   language: string;
-  modules: number[];
-  instructors: number[];
-  roster: number[];
-  id?: string | number;
+  modules: Module[];
+  instructors: Array<{
+    uid: number;
+    username: string;
+    email: string;
+  }>;
 }
 
 interface Module {
-  language: string;
+  demos: any;
+  uid: number;
   topic: string;
-  demos?: DemoResponse[];
-  resources: string[]; 
-  uid?: number;
+  language: string;
+  resources: Resource[];
 }
+
 
 interface User {
   uid: number;

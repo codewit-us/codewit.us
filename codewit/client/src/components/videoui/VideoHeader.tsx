@@ -1,3 +1,4 @@
+// codewit/client/src/components/videoui/VideoHeader.tsx
 import { HandThumbUpIcon } from "@heroicons/react/24/outline";
 
 const VideoHeader = ({ title, uid, handleClick }: { title: string, uid:number | undefined, handleClick: (uid: number) => void; }): JSX.Element => (

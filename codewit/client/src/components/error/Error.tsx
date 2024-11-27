@@ -1,3 +1,4 @@
+// codewit/client/src/components/error/Error.tsx
 // Error.tsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";

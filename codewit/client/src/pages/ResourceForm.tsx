@@ -1,147 +1,181 @@
-import React, { useState, useEffect } from 'react';
-import SubmitBtn from '../components/form/SubmitButton';
-import InputLabel from '../components/form/InputLabel';
-import TextInput from '../components/form/TextInput';
-import Error from '../components/error/Error';
-import ExistingTable from '../components/form/ExistingTable';
-import Loading from '../components/loading/LoadingPage';
-import { Resource } from '@codewit/interfaces';
+// codewit/client/src/pages/ResourceForm.tsx
+import React, { useState, useEffect } from "react";
+import ReusableTable from "../components/form/ReusableTable";
+import ReusableModal from "../components/form/ReusableModal";
+import InputLabel from "../components/form/InputLabel";
+import TextInput from "../components/form/TextInput";
+import CreateButton from "../components/form/CreateButton";
+import { toast } from "react-toastify";
+import { Resource } from "@codewit/interfaces";
+import { isFormValid } from "../utils/formValidationUtils";
 import {
   usePostResource,
   usePatchResource,
   useFetchResources,
-  useDeleteResource
-} from '../hooks/useResource';
+  useDeleteResource,
+} from "../hooks/useResource";
 
 const ResourceForm = (): JSX.Element => {
-  const { data: existingResources, error: fetchError, loading: fetchLoading, setData: setExistingResources } = useFetchResources();
+  const { data: existingResources, setData: setExistingResources } =
+    useFetchResources();
   const postResource = usePostResource();
   const patchResource = usePatchResource();
   const deleteResource = useDeleteResource();
 
-  const [resource, setResource] = useState<Resource>({ url: '', title: '', source: '', likes: 0 });
-  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [formData, setFormData] = useState<Resource>({
+    uid: undefined,
+    url: "",
+    title: "",
+    source: "",
+    likes: 0,
+  });
   const [isEditing, setIsEditing] = useState(false);
 
-  useEffect(() => {
-    if (fetchError) {
-      setError('Failed to fetch resources.');
-    }
-  }, [fetchError]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setResource(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleInputChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEdit = (uid: number) => {
-    const resourceToEdit = existingResources.find(res => res.uid === uid);
-    if (resourceToEdit) {
-      setIsEditing(true);
-      setResource(resourceToEdit);
-    }
-  };
-
-  const handleDelete = async (uid: number) => {
+  const handleSubmit = async () => {
     try {
-      await deleteResource(uid);
-      setExistingResources(prev => prev.filter(res => res.uid !== uid));
-    } catch {
-      setError('Failed to delete resource.');
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    try {
-      if (isEditing && resource.uid) {
-        const updatedResource = await patchResource(resource, resource.uid);
-        setExistingResources(prev => prev.map(res => (res.uid === resource.uid ? updatedResource : res)));
-        setIsEditing(false);
+      if (isEditing && formData.uid) {
+        const updatedResource = await patchResource(formData, formData.uid);
+        setExistingResources((prev) =>
+          prev.map((res) => (res.uid === formData.uid ? updatedResource : res))
+        );
+        toast.success("Resource successfully updated!");
       } else {
-        const newResource = await postResource(resource);
-        setExistingResources(prev => [...prev, newResource]);
+        const newResource = await postResource(formData);
+        setExistingResources((prev) => [...prev, newResource]);
+        toast.success("Resource successfully created!");
       }
-      setResource({ url: '', title: '', source: '', likes: 0 });
-    } catch (err) {
-      setError('Failed to submit resource.');
+      resetForm();
+      setModalOpen(false);
+    } catch (error) {
+      toast.error("Failed to save resource. Please try again.");
+      console.error("Error saving resource:", error);
     }
   };
 
-  if (error) {
-    return <Error message={error} />;
-  }
+  const handleEdit = (resource: Resource) => {
+    setFormData(resource);
+    setIsEditing(true);
+    setModalOpen(true);
+  };
 
-  if (fetchLoading) {
-    return <Loading />;
-  }
+  const handleDelete = async (resource: Resource) => {
+    try {
+      if (resource.uid === undefined) return;
+      await deleteResource(resource.uid);
+      setExistingResources((prev) =>
+        prev.filter((res) => res.uid !== resource.uid)
+      );
+      toast.success("Resource successfully deleted!");
+    } catch (error) {
+      toast.error("Failed to delete resource.");
+      console.error("Error deleting resource:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      uid: undefined,
+      url: "",
+      title: "",
+      source: "",
+      likes: 0,
+    });
+    setIsEditing(false);
+  };
+
+  const requiredFields = ["url", "title", "source"];
+  const isValid = isFormValid(formData, requiredFields);
+
+  const columns = [
+    { header: "Title", accessor: "title" },
+    { header: "URL", accessor: "url" },
+    { header: "Source", accessor: "source" },
+  ];
 
   return (
-    <div className="flex h-full bg-zinc-900 p-6 gap-6 overflow">
-      {/* Form Section */}
-      <div className="w-1/3 min-w-[450px]">
-        <form onSubmit={handleSubmit} className="bg-gray-800/90 rounded-xl shadow-lg p-6 h-full">
-          <h2 className="text-xl font-bold text-white mb-6">
-            {isEditing ? 'Edit Resource' : 'Create Resource'}
-          </h2>
-          
-          <div className="space-y-6">
-            <div>
-              <InputLabel htmlFor="title">Title</InputLabel>
-              <TextInput 
-                id="title" 
-                value={resource.title} 
-                name="title" 
-                placeholder="Enter Title" 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
+    <div className="flex flex-col h-full bg-zinc-900 p-6">
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Resource" />
 
-            <div>
-              <InputLabel htmlFor="url">URL</InputLabel>
-              <TextInput 
-                id="url" 
-                value={resource.url} 
-                name="url" 
-                placeholder="Enter URL" 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
+      <ReusableTable
+        columns={columns}
+        data={existingResources}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-            <div>
-              <InputLabel htmlFor="source">Source</InputLabel>
-              <TextInput 
-                id="source" 
-                value={resource.source} 
-                name="source" 
-                placeholder="Enter Source" 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-
-            <SubmitBtn 
-              disabled={!resource.url || !resource.title || !resource.source} 
-              text={isEditing ? 'Update' : 'Create'} 
+      <ReusableModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          resetForm();
+        }}
+        title={isEditing ? "Edit Resource" : "Create Resource"}
+        footerActions={
+          <>
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {isEditing ? "Update" : "Create"}
+            </button>
+            <button
+              onClick={() => {
+                setModalOpen(false);
+                resetForm();
+              }}
+              className="bg-gray-500 text-white px-4 py-2 rounded-md"
+            >
+              Cancel
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <InputLabel htmlFor="title">Title</InputLabel>
+            <TextInput
+              id="title"
+              name="title"
+              value={formData.title}
+              placeholder="Enter resource title"
+              onChange={(e) => handleInputChange("title", e.target.value)}
+              required
             />
           </div>
-        </form>
-      </div>
 
-      {/* Existing Resources Table */}
-      <ExistingTable 
-        items={existingResources} 
-        name="Resources" 
-        onEdit={handleEdit} 
-        onDelete={handleDelete} 
-      />
+          <div>
+            <InputLabel htmlFor="url">URL</InputLabel>
+            <TextInput
+              id="url"
+              name="url"
+              value={formData.url}
+              placeholder="Enter resource URL"
+              onChange={(e) => handleInputChange("url", e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <InputLabel htmlFor="source">Source</InputLabel>
+            <TextInput
+              id="source"
+              name="source"
+              value={formData.source}
+              placeholder="Enter resource source"
+              onChange={(e) => handleInputChange("source", e.target.value)}
+              required
+            />
+          </div>
+        </div>
+      </ReusableModal>
     </div>
   );
 };

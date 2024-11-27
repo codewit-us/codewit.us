@@ -1,187 +1,169 @@
-import React, { useEffect, useState } from 'react';
-import Error from '../components/error/Error';
-import { DemoResponse, DemoFormData } from '@codewit/interfaces';
-import VideoSelect from '../components/form/VideoSelect';
-import { useNavigate } from 'react-router-dom';
-import ExerciseSelect from '../components/form/ExerciseSelect';
-import TagSelect from '../components/form/TagSelect';
-import LanguageSelect from '../components/form/LanguageSelect';
-import SubmitBtn from '../components/form/SubmitButton';
-import InputLabel from '../components/form/InputLabel';
-import TextInput from '../components/form/TextInput';
-import ExistingTable from '../components/form/ExistingTable';
-import Loading from '../components/loading/LoadingPage';
-import {
-  usePatchDemo,
-  usePatchDemoExercise,
-  usePostDemo,
-  useFetchDemos,
-  useDeleteDemo
-} from '../hooks/useDemo';
+// codewit/client/src/pages/DemoForm.tsx
+import React, { useState } from "react";
+import ReusableModal from "../components/form/ReusableModal";
+import ReusableTable from "../components/form/ReusableTable";
+import { toast } from "react-toastify";
+import VideoSelect from "../components/form/VideoSelect";
+import ExerciseSelect from "../components/form/ExerciseSelect";
+import TagSelect from "../components/form/TagSelect";
+import LanguageSelect from "../components/form/LanguageSelect";
+import CreateButton from "../components/form/CreateButton";
+import { useFetchDemos, usePostDemo, usePatchDemo, useDeleteDemo } from "../hooks/useDemo";
+import { DemoResponse } from "@codewit/interfaces";
+import { isFormValid } from "../utils/formValidationUtils";
+import LoadingPage from "../components/loading/LoadingPage";
 
-const CreateDemo = (): JSX.Element => {
-  const navigate = useNavigate();
-  const { data: demos, loading, error: fetchError, setData: setDemos } = useFetchDemos();
+const DemoForm = (): JSX.Element => {
+  const { data: demos, setData: setDemos } = useFetchDemos();
   const postDemo = usePostDemo();
   const patchDemo = usePatchDemo();
-  const patchDemoExercise = usePatchDemoExercise();
   const deleteDemo = useDeleteDemo();
 
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [formData, setFormData] = useState<DemoFormData>({
-    uid: undefined,
-    youtube_id: '',
-    youtube_thumbnail: '',
-    title: '',
-    topic: '',
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    uid: undefined as number | undefined,
+    title: "",
+    youtube_id: "",
+    youtube_thumbnail: "",
+    topic: "",
+    language: "cpp",
     tags: [],
-    language: 'cpp',
-    exercises: []
+    exercises: [],
   });
 
-  useEffect(() => {
-    if (!loading && fetchError) {
-      console.error('Error fetching demos:', fetchError);
-    }
-  }, [loading, fetchError]);
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setFormData({
+      uid: undefined,
+      title: "",
+      youtube_id: "",
+      youtube_thumbnail: "",
+      topic: "",
+      language: "cpp",
+      tags: [],
+      exercises: [],
+    });
+    setIsEditing(false);
+  };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleInputChange = (name: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async () => {
     try {
-      const { uid, ...demoData } = formData;
-      const response = isEditing && uid
-        ? await patchDemo(demoData, uid)
-        : await postDemo(demoData);
-
-      if (response && response.uid) {
-        await patchDemoExercise({ exercises: formData.exercises }, response.uid);
-        window.location.reload();
+      if (isEditing) {
+        const updatedDemo = await patchDemo(formData, formData.uid as unknown as number);
+        setDemos((prev) => prev.map((demo) => (demo.uid === formData.uid ? updatedDemo : demo)));
+        toast.success("Demo successfully updated!");
+      } else {
+        const newDemo = await postDemo(formData);
+        setDemos((prev) => [...prev, newDemo]);
+        toast.success("Demo successfully created!");
       }
-    } catch (error) {
-      console.error('Error processing the form:', error);
+      handleModalClose();
+    } catch {
+      toast.error("An error occurred. Please try again.");
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev: DemoFormData) => ({
-      ...prev,
-      [name]: value
-    }));
+ const handleEdit = (demo: DemoResponse) => {
+    setFormData(demo);
+    setIsEditing(true);
+    setModalOpen(true);
   };
 
-  const handleVideoSelect = (videoId: string, videoThumbnail: string) => {
-    setFormData((prev: DemoFormData) => ({ ...prev, youtube_id: videoId, youtube_thumbnail: videoThumbnail }));
-  };
-
-  const handleTagSelect = (tags: { label: string, value: string }[]) => {
-    setFormData((prev: DemoFormData) => ({ ...prev, tags: tags.map(tag => tag.value) }));
-  };
-
-  const handleTopicSelect = (topic: { label: string, value: string }) => {
-    setFormData((prev: DemoFormData) => ({ ...prev, topic: topic.value }));
-  };
-
-  const updateExercises = (selectedIds: string[]) => {
-    setFormData((prev: DemoFormData) => ({ ...prev, exercises: selectedIds }));
-  };
-
-  const handleEdit = (demoUid: number) => {
-    const demoToEdit = demos.find(demo => demo.uid === demoUid);
-    if (demoToEdit) {
-      setIsEditing(true);
-      setFormData({
-        uid: demoToEdit.uid,
-        title: demoToEdit.title,
-        youtube_id: demoToEdit.youtube_id,
-        youtube_thumbnail: demoToEdit.youtube_thumbnail,
-        topic: demoToEdit.topic,
-        tags: demoToEdit.tags,
-        language: demoToEdit.language,
-        exercises: demoToEdit.exercises
-      });
-    }
-  };
-
-  const handleDelete = async (demoUid: number) => {
+  const handleDelete = async (demo: DemoResponse) => {
     try {
-      await deleteDemo(demoUid);
-      if (demos) {
-        setDemos(demos.filter((demo: { uid: number; }) => demo.uid !== demoUid));
-      }
-    } catch (error) {
-      console.error('Error deleting demo:', error);
+      await deleteDemo(demo.uid);
+      setDemos((prev) => prev.filter((d) => d.uid !== demo.uid));
+      toast.success("Demo successfully deleted!");
+    } catch {
+      toast.error("An error occurred while deleting.");
     }
   };
 
-  if (loading) return <Loading />
-  if (fetchError) return <Error />;
+  const requiredFields = ["title", "youtube_id", "youtube_thumbnail", "topic"];
+  const isValid = isFormValid(formData, requiredFields);
+
+  const columns = [
+    { header: "Title", accessor: "title" },
+    { header: "Topic", accessor: "topic" },
+    { header: "Language", accessor: "language" },
+  ];
+
+  if (!demos) return <LoadingPage />;
 
   return (
-    <div className="flex h-full bg-zinc-900 p-6 gap-6">
-      <div className="w-1/3 min-w-[450px]">
-        <form onSubmit={handleSubmit} className="bg-gray-800/90 overflow-auto rounded-xl shadow-lg p-6 h-full">
-          <h2 className="text-xl font-bold text-white mb-6">
-            {isEditing ? 'Edit Demo Exercise' : 'Create Demo Exercise'}
-          </h2>
-          
-          <div className="space-y-6">
-            <div>
-              <InputLabel htmlFor="title">Title</InputLabel>
-              <TextInput 
-                id="title" 
-                name="title" 
-                value={formData.title} 
-                placeholder="Enter title" 
-                onChange={handleInputChange} 
-                required 
-              />
-            </div>
-
-            <VideoSelect 
-              onSelectVideo={handleVideoSelect} 
-              selectedVideoId={formData.youtube_id} 
-            />
-
-            <ExerciseSelect 
-              onSelectExercises={updateExercises} 
-              initialExercises={formData.exercises} 
-            />
-
-            <div className="flex flex-row w-full gap-3">
-              <TagSelect 
-                selectedTags={formData.tags.map(tag => ({ label: tag, value: tag }))} 
-                setSelectedTags={handleTagSelect} 
-                isMulti={true} 
-              />
-              <LanguageSelect 
-                handleChange={handleInputChange} 
-                initialLanguage={formData.language} 
-              />
-            </div>
-
-            <TagSelect 
-              selectedTags={[{ value: formData.topic, label: formData.topic }]} 
-              setSelectedTags={handleTopicSelect} 
-              isMulti={false} 
-            />
-
-            <SubmitBtn 
-              disabled={formData.title === '' || formData.youtube_id === '' || formData.tags.length === 0 || formData.topic === ''} 
-              text={isEditing ? 'Confirm Edit' : 'Create'} 
-            />
-          </div>
-        </form>
-      </div>
-
-      <ExistingTable 
-        items={demos || []} 
-        name="Demos" 
-        onEdit={handleEdit} 
-        onDelete={handleDelete} 
-      />
+    <div className="flex flex-col h-full bg-zinc-900 p-6">
+      <CreateButton onClick={() => setModalOpen(true)} title="Create Demo" />
+      <ReusableTable columns={columns} data={demos} onEdit={handleEdit} onDelete={handleDelete} />
+      {/* <ReusableModal
+        isOpen={modalOpen}
+        onClose={handleModalClose}
+        title={isEditing ? "Edit Demo" : "Create Demo"}
+        footerActions={
+          <>
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid}
+              className={`px-4 py-2 rounded-md ${
+                isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {isEditing ? "Update" : "Create"}
+            </button>
+            <button onClick={handleModalClose} className="bg-gray-500 text-white px-4 py-2 rounded-md">
+              Cancel
+            </button>
+          </>
+        }
+      >
+        <div>
+          <label className="block mb-2 text-sm font-medium text-gray-400">Title</label>
+          <input
+            value={formData.title}
+            onChange={(e) => handleInputChange("title", e.target.value)}
+            className="block w-full p-2 rounded-md bg-gray-700 text-white"
+            placeholder="Enter demo title"
+          />
+        </div>
+        <VideoSelect
+          selectedVideoId={formData.youtube_id}
+          onSelectVideo={(id, thumbnail) => {
+            handleInputChange("youtube_id", id);
+            handleInputChange("youtube_thumbnail", thumbnail);
+          }}
+        />
+        <ExerciseSelect
+          initialExercises={formData.exercises}
+          onSelectExercises={(exercises) => handleInputChange("exercises", exercises)}
+        />
+        <div className="grid grid-cols-2 gap-4">
+          <TagSelect
+            selectedTags={formData.tags.map((tag) => ({ label: tag, value: tag }))}
+            setSelectedTags={(tags) =>
+              handleInputChange(
+                "tags",
+                tags.map((tag) => tag.value)
+              )
+            }
+            isMulti
+          />
+          <LanguageSelect
+            initialLanguage={formData.language}
+            handleChange={(e) => handleInputChange("language", e.target.value)}
+          />
+        </div>
+        <TagSelect
+          selectedTags={[{ value: formData.topic, label: formData.topic }]}
+          setSelectedTags={(topic) => handleInputChange("topic", topic.value)}
+          isMulti={false}
+        />
+      </ReusableModal> */}
     </div>
   );
 };
 
-export default CreateDemo;
+export default DemoForm;

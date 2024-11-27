@@ -1,3 +1,4 @@
+// codewit/client/src/components/form/InputLabel.tsx
 import React from 'react';
 
 interface InputLabelProps {
@@ -9,7 +10,7 @@ const InputLabel = ({ htmlFor, children }: { htmlFor: string; children: React.Re
   return (
     <label 
       htmlFor={htmlFor} 
-      className="block text-sm font-medium text-gray-400 mb-2"
+      className="block text-sm font-medium text-gray-400"
     >
       {children}
     </label>

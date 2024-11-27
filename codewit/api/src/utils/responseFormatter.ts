@@ -1,6 +1,6 @@
 import { format } from 'path';
 import { Course, Demo, Exercise, Module, Resource } from '../models';
-import { ModuleResponse, ExerciseResponse, CourseResponse, ResourceResponse, DemoResponse, ResourceType, UserResponse, ModuleFormResponse} from '../typings/response.types';
+import { ModuleResponse, ExerciseResponse, CourseResponse, ResourceResponse, DemoResponse, ResourceType, UserResponse} from '../typings/response.types';
 
 function formatResponse<T, R>(input: T[], formatter: (item: T) => R): R[];
 function formatResponse<T, R>(input: T, formatter: (item: T) => R): R;
@@ -28,6 +28,7 @@ export function formatSingleModule(
       uid: demo.uid,
       title: demo.title,
       youtube_id: demo.youtube_id,
+      youtube_thumbnail: demo.youtube_thumbnail,
     })) : [],
   };
 }
@@ -47,15 +48,13 @@ export function formatSingleExercise(
 
 function formatSingleCourse(course: Course, isGetStudent = false): CourseResponse {
 
-  console.log(JSON.stringify(course));
-
   const filterUser = (user: any): UserResponse => ({
     uid: user.uid,
     username: user.username,
     email: user.email,
   });
 
-  const filterModule = (module: Module): ModuleFormResponse | number => {
+  const filterModule = (module: Module): ModuleResponse | number => {
     if (!isGetStudent) {
       return module.uid;
     }
@@ -64,6 +63,12 @@ function formatSingleCourse(course: Course, isGetStudent = false): CourseRespons
       uid: module.uid,
       topic: module.topic,
       language: module.language.name,
+      demos: module.demos?.map((demo) => ({
+        uid: demo.uid,
+        title: demo.title,
+        youtube_id: demo.youtube_id,
+        youtube_thumbnail: demo.youtube_thumbnail,
+      })) || [],
       resources: module.resources.map((resource) => formatSingleResource(resource)),
     };
   };
@@ -73,7 +78,7 @@ function formatSingleCourse(course: Course, isGetStudent = false): CourseRespons
     title: course.title,
     language: course.language.name,
     modules: isGetStudent
-      ? course.modules.map((module) => filterModule(module) as ModuleFormResponse)
+      ? course.modules.map((module) => filterModule(module) as ModuleResponse)
       : course.modules.map((module) => filterModule(module) as number),
     instructors: course.instructors.map((instructor) => filterUser(instructor)),
     roster: course.roster.map((user) => filterUser(user)),

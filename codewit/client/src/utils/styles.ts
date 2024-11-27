@@ -1,3 +1,4 @@
+// codewit/client/src/utils/styles.ts
 const styles = {
   control: (provided: any) => ({
     ...provided,

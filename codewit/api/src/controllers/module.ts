@@ -110,13 +110,15 @@ async function getModules(): Promise<ModuleResponse[]> {
 }
 
 async function deleteModule(uid: number): Promise<ModuleResponse | null> {
-  const module = await Module.findByPk(uid);
+  const module = await Module.findByPk(uid, {
+    include: [Language, Demo, Resource], 
+  });
   if (!module) {
     return null;
   }
-
+  const formattedModule = formatModuleResponse(module);
   await module.destroy();
-  return formatModuleResponse(module);
+  return formattedModule;
 }
 
 export { createModule, getModule, updateModule, getModules, deleteModule };

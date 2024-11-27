@@ -1,3 +1,4 @@
+// codewit/client/src/components/loading/LoadingIcon.tsx
 const LoadingIcons = (): JSX.Element => { 
   return (
     <div role="status">
