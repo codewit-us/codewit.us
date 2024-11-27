@@ -4,22 +4,22 @@ import { useFetchStudentCourses } from '../hooks/useCourse';
 import { useAuth } from '../hooks/useAuth';
 import Error from '../components/error/Error';
 import Loading from '../components/loading/LoadingPage';
-import { Resource } from '@codewit/interfaces';
+import { DemoResponse } from '@codewit/interfaces';
 import { PlayIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import bulbLit from '../../public/bulb(lit).svg';
 import bulbUnlit from '../../public/bulb(unlit).svg';
 
-const ModuleSection = ({ resource }: { resource: Resource }) => (
+const ModuleSection = ({ demo }: { demo: DemoResponse }) => (
   <div className="relative overflow-hidden w-48">
     <div className="relative h-32"> 
       <img 
-        src={resource.url}
-        alt={resource.title}
+        src={demo.youtube_thumbnail}
+        alt={demo.title}
         className="w-full h-full object-cover"
       />
       <div className="absolute inset-0 bg-black bg-opacity-80 flex rounded-lg items-center justify-center group hover:bg-opacity-30 transition-all">
        <a 
-          href={resource.url}
+          href={'/read/' + demo.uid}
           target="_blank"
           rel="noopener noreferrer"
           className="text-2xl text-white opacity-70 group-hover:opacity-100 transition-opacity">
@@ -30,7 +30,7 @@ const ModuleSection = ({ resource }: { resource: Resource }) => (
 
     <div className="p-1">
       <h3 className="font-medium text-sm mb-1 text-white">
-        {resource.title}
+        {demo.title}
       </h3>
     </div>
   </div>
@@ -121,8 +121,8 @@ const Home = (): JSX.Element => {
                 <div className="border-t border-zinc-700 px-10 py-2">
                     <p className="font-bold text-white">Choose a Lesson: </p>
                     <div className="flex justify-start space-x-10 py-2">
-                      {module.resources.map((resource) => (
-                        <ModuleSection key={resource.uid} resource={resource} />
+                      {module.demos.map((demos) => (
+                        <ModuleSection key={demos.uid} demo={demos} />
                       ))}
                     </div>
                 </div>

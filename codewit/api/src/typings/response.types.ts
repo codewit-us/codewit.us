@@ -7,6 +7,7 @@ export interface ModuleResponse {
         uid: number;
         title: string;
         youtube_id: string;
+        youtube_thumbnail: string;
     }[] | [];
 }
 

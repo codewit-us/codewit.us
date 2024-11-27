@@ -28,6 +28,7 @@ export function formatSingleModule(
       uid: demo.uid,
       title: demo.title,
       youtube_id: demo.youtube_id,
+      youtube_thumbnail: demo.youtube_thumbnail,
     })) : [],
   };
 }
@@ -66,6 +67,7 @@ function formatSingleCourse(course: Course, isGetStudent = false): CourseRespons
         uid: demo.uid,
         title: demo.title,
         youtube_id: demo.youtube_id,
+        youtube_thumbnail: demo.youtube_thumbnail,
       })) || [],
       resources: module.resources.map((resource) => formatSingleResource(resource)),
     };
