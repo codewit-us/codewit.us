@@ -6,8 +6,8 @@ import Error from '../components/error/Error';
 import Loading from '../components/loading/LoadingPage';
 import { DemoResponse } from '@codewit/interfaces';
 import { PlayIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
-import bulbLit from '../../public/bulb(lit).svg';
-import bulbUnlit from '../../public/bulb(unlit).svg';
+import bulbLit from '/bulb(lit).svg';
+import bulbUnlit from '/bulb(unlit).svg';
 
 const ModuleSection = ({ demo }: { demo: DemoResponse }) => (
   <div className="relative overflow-hidden w-48">
@@ -20,7 +20,6 @@ const ModuleSection = ({ demo }: { demo: DemoResponse }) => (
       <div className="absolute inset-0 bg-black bg-opacity-80 flex rounded-lg items-center justify-center group hover:bg-opacity-30 transition-all">
        <a 
           href={'/read/' + demo.uid}
-          target="_blank"
           rel="noopener noreferrer"
           className="text-2xl text-white opacity-70 group-hover:opacity-100 transition-opacity">
             <PlayIcon className="h-8 w-8 text-white" />
@@ -62,13 +61,14 @@ const Home = (): JSX.Element => {
   const { data, loading, error } = useFetchStudentCourses();
   const { user } = useAuth();
 
+  
+  if (loading) return <Loading />;
+  if (error) return <Error message="Failed to fetch courses. Please try again later." />;
+  
   // Check for unauthenticated state
   if (!user) {
     return <UnauthorizedState />;
   }
-
-  if (loading) return <Loading />;
-  if (error) return <Error message="Failed to fetch courses. Please try again later." />;
   
   // Check for empty or invalid data
   if (!data || !Array.isArray(data) || data.length === 0) {
@@ -121,8 +121,8 @@ const Home = (): JSX.Element => {
                 <div className="border-t border-zinc-700 px-10 py-2">
                     <p className="font-bold text-white">Choose a Lesson: </p>
                     <div className="flex justify-start space-x-10 py-2">
-                      {module.demos.map((demos) => (
-                        <ModuleSection key={demos.uid} demo={demos} />
+                      {module.demos.map((demos: DemoResponse, indx: number) => (
+                        <ModuleSection key={indx} demo={demos} />
                       ))}
                     </div>
                 </div>

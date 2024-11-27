@@ -11,6 +11,7 @@ import CreateButton from "../components/form/CreateButton";
 import { useFetchDemos, usePostDemo, usePatchDemo, useDeleteDemo } from "../hooks/useDemo";
 import { DemoResponse } from "@codewit/interfaces";
 import { isFormValid } from "../utils/formValidationUtils";
+import LoadingPage from "../components/loading/LoadingPage";
 
 const DemoForm = (): JSX.Element => {
   const { data: demos, setData: setDemos } = useFetchDemos();
@@ -92,11 +93,13 @@ const DemoForm = (): JSX.Element => {
     { header: "Language", accessor: "language" },
   ];
 
+  if (!demos) return <LoadingPage />;
+
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
       <CreateButton onClick={() => setModalOpen(true)} title="Create Demo" />
       <ReusableTable columns={columns} data={demos} onEdit={handleEdit} onDelete={handleDelete} />
-      <ReusableModal
+      {/* <ReusableModal
         isOpen={modalOpen}
         onClose={handleModalClose}
         title={isEditing ? "Edit Demo" : "Create Demo"}
@@ -158,7 +161,7 @@ const DemoForm = (): JSX.Element => {
           setSelectedTags={(topic) => handleInputChange("topic", topic.value)}
           isMulti={false}
         />
-      </ReusableModal>
+      </ReusableModal> */}
     </div>
   );
 };

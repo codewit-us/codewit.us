@@ -107,6 +107,7 @@ interface Course {
 }
 
 interface Module {
+  demos: any;
   uid: number;
   topic: string;
   language: string;

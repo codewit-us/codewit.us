@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Table, Pagination } from "flowbite-react";
+import LoadingPage from "../loading/LoadingPage";
+import type { CustomFlowbiteTheme } from "flowbite-react";
 
 interface Column {
   header: string;
@@ -11,13 +13,33 @@ interface ReusableTableProps<T> {
   data: T[];
   onEdit: (item: T) => void;
   onDelete: (item: T) => void;
-  itemsPerPage?: number; 
+  itemsPerPage?: number;
 }
 
 const getNestedValue = (obj: any, path: string): any => {
   return path
     .split(".")
     .reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : null), obj);
+};
+
+const paginationTheme: CustomFlowbiteTheme["pagination"] = {
+  pages: {
+    base: "mt-2 inline-flex items-center -space-x-px text-gray-400",
+    showIcon: "inline-flex",
+    previous: {
+      base: "ml-0 rounded-l-lg border border-gray-700 bg-gray-800 px-3 py-2 leading-tight text-gray-400 hover:bg-gray-700 hover:text-white",
+      icon: "h-5 w-5",
+    },
+    next: {
+      base: "rounded-r-lg border border-gray-700 bg-gray-800 px-3 py-2 leading-tight text-gray-400 hover:bg-gray-700 hover:text-white",
+      icon: "h-5 w-5",
+    },
+    selector: {
+      base: "w-10 h-10 border border-gray-700 bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white flex justify-center items-center",
+      active: "bg-accent-500 text-white border-gray-700",
+      disabled: "cursor-not-allowed opacity-50",
+    },
+  },
 };
 
 const ReusableTable = <T extends { id?: string | number; uid?: string | number }>({
@@ -27,15 +49,26 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
   onDelete,
   itemsPerPage = 14,
 }: ReusableTableProps<T>) => {
+
+  useEffect(() => {
+    const tableWrapper = document.querySelector('[data-testid="table-element"] > div:first-child');
+    if (tableWrapper) {
+      tableWrapper.remove();
+    }
+  }, []);
+
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / itemsPerPage);
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-
   const currentData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
     return data.slice(startIndex, startIndex + itemsPerPage);
-  }, [data, startIndex, itemsPerPage]);
+  }, [data, currentPage, itemsPerPage]);
+
+  if (! currentData) {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="rounded-md border border-gray-700 bg-gray-900 text-gray-400">
@@ -54,14 +87,16 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
                 {col.header}
               </Table.HeadCell>
             ))}
-            <Table.HeadCell>
-              <span className="sr-only">Actions</span>
+            <Table.HeadCell
+              className="text-gray-300 font-semibold"
+            >
+                Actions
             </Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y divide-gray-700">
-            {currentData.map((item) => (
+            {currentData.map((item, index) => (
               <Table.Row
-                key={item.id || item.uid}
+                key={index}
                 className="hover:bg-gray-800 transition-colors duration-300"
               >
                 {columns.map((col) => (
@@ -93,29 +128,12 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
           </Table.Body>
         </Table>
       </div>
-      {/* Pagination */}
       <div className="flex justify-center items-center bg-gray-800 text-white py-2 rounded-b-md">
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={(page) => setCurrentPage(page)}
-          theme={{
-            pages: {
-              base: "inline-flex items-center px-3 py-1 text-sm font-medium",
-              active: "bg-blue-600 text-white rounded-md",
-              inactive: "text-gray-400 hover:bg-gray-700 rounded-md",
-            },
-            previous: {
-              base: "inline-flex items-center px-3 py-1 text-sm font-medium",
-              inactive: "text-gray-400",
-              active: "hover:bg-gray-700",
-            },
-            next: {
-              base: "inline-flex items-center px-3 py-1 text-sm font-medium",
-              inactive: "text-gray-400",
-              active: "hover:bg-gray-700",
-            },
-          }}
+          theme={paginationTheme}
         />
       </div>
     </div>
