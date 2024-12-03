@@ -6,6 +6,14 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
+const API_PORT = process.env.API_PORT
+const API_HOST = process.env.API_HOST
+if (!API_HOST || !API_PORT) {
+  throw new Error('BACKEND_URL is not set');
+}
+
+const BACKEND_URL = `http://${API_HOST}:${API_PORT}/api`;
+
 export default defineConfig({
   root: __dirname,
   cacheDir: '../node_modules/.vite/client',
@@ -20,35 +28,35 @@ export default defineConfig({
     host: 'localhost',
     proxy: {
       '/demos': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/exercises': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/modules': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/resources': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/courses': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/oauth2': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/users': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
       '/attempts': {
-        target: 'http://nginx:80',
+        target: BACKEND_URL,
         changeOrigin: true,
       },
     },
