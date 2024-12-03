@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   codewitus_db:
     image: postgres:16-bookworm
@@ -9,6 +7,8 @@ services:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_USER=codewitus_user
       - POSTGRES_DB=codewitus_db
+    networks:
+      - codewitus
 
   app:
     depends_on:
@@ -23,6 +23,8 @@ services:
       - DB_PORT=5432
       - API_PORT=3000
       - API_HOST=0.0.0.0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     env_file:
       - .env
     restart: unless-stopped
@@ -40,12 +42,13 @@ services:
         - path: lib/
           target: /codewit/lib/
           action: sync
+    networks:
+      - codewitus
     stdin_open: true
     tty: true
-    
 
   frontend:
-    depends_on: 
+    depends_on:
       - app
       - codewitus_db
     build:
@@ -66,5 +69,50 @@ services:
         - path: lib/
           target: /codewit/lib/
           action: sync
+    networks:
+      - codewitus
     stdin_open: true
     tty: true
+
+  codeeval:
+    depends_on:
+      - frontend
+      - app
+      - codewitus_db
+    image: rohith2801/codewit.us-codeeval:latest
+    restart: unless-stopped
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3002
+    ports:
+      - 3002:3002
+    networks:
+      - codewitus
+
+  nginx:
+    depends_on:
+      - frontend
+      - app
+      - codewitus_db
+    image: nginx:latest
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - codewitus
+    stdin_open: true
+    tty: true
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    networks:
+      - codewitus
+
+networks:
+  codewitus:
+    driver: bridge

@@ -20,35 +20,35 @@ export default defineConfig({
     host: 'localhost',
     proxy: {
       '/demos': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
       '/exercises': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
       '/modules': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
       '/resources': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
       '/courses': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
       '/oauth2': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
       '/users': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
       '/attempts': {
-        target: 'http://app:3000',
+        target: 'http://nginx:80',
         changeOrigin: true,
       },
     },
