@@ -132,5 +132,8 @@ dist
 # vscode files
 .vscode/
 
+# personal computer files
+.DS_Store
+
 # Google oauth secrets
 client_secret*.json
