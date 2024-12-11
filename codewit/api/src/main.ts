@@ -10,14 +10,29 @@ import userRouter from './routes/user';
 import attemptRouter from './routes/attempt';
 import passport from 'passport';
 import session from 'express-session';
-import { COOKIE_KEY, HOST, PORT } from './secrets';
+import { COOKIE_KEY, HOST, PORT, REDIS_HOST, REDIS_PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
+import { RedisStore } from "connect-redis"
+import { createClient } from "redis"
 
 const app = express();
 
+let redisClient = createClient(
+  {
+    url: `redis://${REDIS_HOST}:${REDIS_PORT}`,
+  }
+)
+redisClient.connect().catch(console.error)
+
+let redisStore = new RedisStore({
+  client: redisClient,
+  prefix: "codewit:",
+})
+
 app.use(
   session({
+    store: redisStore,
     secret: COOKIE_KEY,
     resave: false,
     saveUninitialized: false,
