@@ -24,7 +24,8 @@ attemptRouter.post('/', checkAuth, async (req, res) => {
     const attempt = await createAttempt(
       validatedBody.data.exerciseId,
       req.user.uid,
-      validatedBody.data.code
+      validatedBody.data.code,
+      req.headers.cookie
     );
     if (!attempt)
       return res.status(404).json({ message: 'Exercise/User not found' });

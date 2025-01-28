@@ -1,9 +1,11 @@
 import { Attempt, Exercise, sequelize, User } from '../models';
+import { EvaluationPayload, executeCodeEvaluation } from '../utils/codeEvalService';
 
 async function createAttempt(
   exerciseId: number,
   userId: number,
-  code: string
+  code: string,
+  cookies: string
 ): Promise<Attempt | null> {
   return sequelize.transaction(async (transaction) => {
     await sequelize.query('LOCK TABLE "attempts" IN SHARE ROW EXCLUSIVE MODE', {
@@ -45,6 +47,37 @@ async function createAttempt(
 
     await attempt.reload({ include: [Exercise, User], transaction });
 
+
+    // Evaluate Code
+    const evaluationPayload: EvaluationPayload = {
+      language: 'java', // Replace with dynamic logic
+      code,
+      runTests: true,
+      testCode: exercise.referenceTest,
+    };
+
+    try {
+      const response = await executeCodeEvaluation(evaluationPayload, cookies);
+
+      const { TestsRun, Passed } = response;
+
+      if (TestsRun > 0) {
+        const completionPercentage = Math.round((Passed / TestsRun) * 100);
+        attempt.completionPercentage = completionPercentage;
+        attempt.error = response.Error;
+        
+
+        console.log(`Completion Percentage: ${completionPercentage}%`);
+      } else {
+        attempt.error = response.Error;
+        console.warn('Invalid response data for completion percentage calculation:', response);
+      }
+    } catch (error) {
+      console.error('Code evaluation failed:', error.message);
+      throw new Error('Code evaluation failed');
+    }
+
+    await attempt.save({ transaction });
     return attempt;
   });
 }

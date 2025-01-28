@@ -50,7 +50,7 @@ const Read = (): JSX.Element => {
     const submission = {
       timestamp: new Date().toISOString(),
       userId: userId,
-      exerciseId: demo.exercises[currentExerciseIndex].uid,
+      exerciseId: demo.exercises[currentExerciseIndex],
       code: code,
     };
 
