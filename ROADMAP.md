@@ -195,3 +195,24 @@ The `codewit/api` directory contains the express back-end.
   - `GOOGLE_REDIRECT_URL` - callback URL for Google OAuth.
   - `COOKIE_KEY` - key for securing cookies.
   - `FRONTEND_URL` - URL of the frontend application.
+  - `REDIS_HOST` - Redis host for express session storage.
+  - `REDIS_PORT` - Redis port for express session storage.
+
+- The redis host and port are used for storing user sessions in Redis and is also utilized by codeeval to check whether the user is authenticated or not.
+
+### CodeEval
+
+The codeval implementation resides at [codewit-us/codeval](https://github.com/codewit-us/codeval) and is used to evaluate user-submitted code.
+
+This **code execution server** uses Redis-based session authentication and provides an API endpoint (`POST /execute`) for running user-submitted code in Python, C++, or Java. 
+
+1. **Session Handling**: Users must be authenticated via Redis sessions.  
+2. **Code Execution**:
+   - The submitted code is stored in a temporary directory.
+   - If required, the code is compiled (C++ with `g++`, Java with `javac`).
+   - The program is executed with optional `stdin`, and output is captured.
+3. **Test Execution** (if enabled):
+   - Python tests run with `pytest`, C++ with `CxxTest`, and Java with `JUnit`.
+4. **Security & Cleanup**:
+   - Execution is time-limited to prevent infinite loops.
+   - Temporary files and directories are deleted after execution.
