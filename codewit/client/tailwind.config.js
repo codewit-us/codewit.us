@@ -106,13 +106,16 @@ module.exports = {
   daisyui: {
     themes: [
       {
-        light: {
-          ...require('daisyui/src/theming/themes')['light'],
-          primary: '#3da2b4', 
-          secondary: '#271a13', 
-          accent: '#f8eedf', 
-          neutral: '#40312a', 
-          'base-100': '#ffffff', 
+        // light: {
+        //   ...require('daisyui/src/theming/themes')['light'],
+        //   primary: '#3da2b4', 
+        //   secondary: '#271a13', 
+        //   accent: '#f8eedf', 
+        //   neutral: '#40312a', 
+        //   'base-100': '#ffffff', 
+        // },
+        daisyui: {
+           themes: ["coffee"],
         },
       },
     ],
