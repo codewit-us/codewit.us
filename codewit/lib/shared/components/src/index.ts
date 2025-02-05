@@ -1,1 +1,1 @@
-export * from './lib';
+export { Accordion } from './lib/Accordion';
