@@ -14,6 +14,8 @@ module.exports = {
     join(__dirname, '../lib/shared/components/**/*.{ts,tsx}'),
     flowbite.content(),
     ...createGlobPatternsForDependencies(__dirname),
+    './src/**/*.{js,jsx,ts,tsx}',
+    '../../node_modules/flowbite-react/lib/**/*.js',
   ],
   theme: {
     screens: {
@@ -96,26 +98,35 @@ module.exports = {
       height: {
         'container-full': 'calc(100% - 49px)',
       },
+      keyframes: {
+        'pulse-subtle': {
+          '0%, 100%': { opacity: 1 },
+          '50%': { opacity: 0.8 },
+        },
+      },
+      animation: {
+        'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [
     require('@tailwindcss/typography'),
     flowbite.plugin(),
-    require('daisyui'), 
+    require('daisyui'),
   ],
   daisyui: {
     themes: [
       {
         // light: {
         //   ...require('daisyui/src/theming/themes')['light'],
-        //   primary: '#3da2b4', 
-        //   secondary: '#271a13', 
-        //   accent: '#f8eedf', 
-        //   neutral: '#40312a', 
-        //   'base-100': '#ffffff', 
+        //   primary: '#3da2b4',
+        //   secondary: '#271a13',
+        //   accent: '#f8eedf',
+        //   neutral: '#40312a',
+        //   'base-100': '#ffffff',
         // },
         daisyui: {
-           themes: ["coffee"],
+          themes: ['coffee'],
         },
       },
     ],

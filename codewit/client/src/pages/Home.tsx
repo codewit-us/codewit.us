@@ -64,7 +64,18 @@ const Home = ({
   const modules = course.modules.map((module) => ({
     moduleHeader: (
       <div className="flex items-center space-x-5">
-        <img src={bulbLit} className="size-6" alt="bulb lit" />
+        <div className="relative">
+          <img
+            src={bulbLit}
+            className="size-6 relative z-10"
+            alt="bulb lit"
+            style={{
+              filter:
+                'drop-shadow(0 0 10px rgba(255, 255, 150, 0.9)) drop-shadow(0 0 15px rgba(255, 200, 0, 0.8))',
+            }}
+          />
+          <div className="absolute inset-0 rounded-full bg-yellow-300/40 blur-md -z-10" />
+        </div>
         <span className="text-white text-left">{module.topic}</span>
         <small className="font-bold text-accent-500">completed</small>
       </div>
