@@ -1,25 +1,25 @@
 // codewit/client/src/components/nav/Nav.tsx
-import { useState } from "react";
-import { Navbar, Button } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Navbar, Button } from 'flowbite-react';
+import { Link } from 'react-router-dom';
 import {
   ArrowLeftStartOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
-} from "@heroicons/react/24/solid";
-import {
-  AcademicCapIcon
-} from "@heroicons/react/24/outline";
-import GoogleLogo from "../logo/GoogleLogo";
+} from '@heroicons/react/24/solid';
+import { AcademicCapIcon } from '@heroicons/react/24/outline';
+import GoogleLogo from '../logo/GoogleLogo';
 
 const NavBar = ({
   name,
   admin,
   handleLogout,
+  courseTitle,
 }: {
   name: string;
   admin: boolean;
   handleLogout: () => void;
+  courseTitle?: string;
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -28,7 +28,10 @@ const NavBar = ({
   };
 
   return (
-    <Navbar fluid={true}className="bg-foreground-600 p-1 border-b border-background-400">
+    <Navbar
+      fluid={true}
+      className="bg-foreground-600 p-1 border-b border-background-400"
+    >
       <Link to="/" className="block min-w-[9.1rem]">
         <img
           src="/logo-dark.png"
@@ -37,28 +40,40 @@ const NavBar = ({
         />
       </Link>
 
-      {name && (
-        <div className="flex w-full justify-end space-x-2 text-accent-500">
-          <div className="flex justify-center gap-2 items-center">
-            <AcademicCapIcon className="text-center h-6 w-6 mt-1" />
-            <span className="text-center text-[20px] font-medium">{name}</span>
-          </div>
+      <div className="flex items-center justify-between flex-grow">
+        <div className="flex items-center">
+          {courseTitle && (
+            <span className="ml-10 text-[16px] font-bold text-foreground-200">
+              {courseTitle}
+            </span>
+          )}
         </div>
-      )}
 
-      <div className="flex items-center">
-        <Button
-          size="sm"
-          onClick={toggleNavbar}
-          className="mt-1 text-accent-600 hover:text-accent-700"
-        >
-          {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-        </Button>
+        <div className="flex items-center gap-4">
+          {name && (
+            <div className="flex items-center gap-2 text-accent-500">
+              <AcademicCapIcon className="h-6 w-6" />
+              <span className="text-[20px] font-medium">{name}</span>
+            </div>
+          )}
+
+          <Button
+            size="sm"
+            onClick={toggleNavbar}
+            className="text-accent-600 hover:text-accent-700"
+          >
+            {isOpen ? (
+              <XMarkIcon className="h-6 w-6" />
+            ) : (
+              <Bars3Icon className="h-6 w-6" />
+            )}
+          </Button>
+        </div>
       </div>
 
       <div
         className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+          isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="flex justify-end p-2">
@@ -106,7 +121,11 @@ const NavBar = ({
               </Button>
             </div>
           ) : (
-            <form action="http://localhost:3001/oauth2/google" method="get" className="w-full">
+            <form
+              action="http://localhost:3001/oauth2/google"
+              method="get"
+              className="w-full"
+            >
               <button
                 type="submit"
                 className="w-full bg-white text-gray-600 hover:bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 flex items-center gap-3 shadow-md transition-all"

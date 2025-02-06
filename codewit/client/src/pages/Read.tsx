@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import NotFound from '../components/notfound/NotFound';
-import CodeBlock from "../components/codeblock/Codeblock";
+import CodeBlock from '../components/codeblock/Codeblock';
 import { DemoResponse, Demo as DemoType } from '@codewit/interfaces';
-import Checklist from "../components/codeblock/Checklist";
+import Checklist from '../components/codeblock/Checklist';
 import Loading from '../components/loading/LoadingPage';
 import HelpfulLinks from '../components/videoui/HelpfulLinks';
 import Exercises from '../components/codeblock/Exercises';
@@ -17,10 +17,17 @@ import RelatedDemos from '../components/videoui/RelatedDemos';
 import { useFetchSingleDemo } from '../hooks/useDemo';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/solid';
 
-
 const Read = (): JSX.Element => {
   const { uid } = useParams<{ uid: string }>();
-  const { data: demo, loading, error } = useFetchSingleDemo(uid!) as unknown as { data: DemoResponse, loading: boolean, error: boolean };
+  const {
+    data: demo,
+    loading,
+    error,
+  } = useFetchSingleDemo(uid!) as unknown as {
+    data: DemoResponse;
+    loading: boolean;
+    error: boolean;
+  };
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
   const [relatedDemosOpen, setRelatedDemosOpen] = useState<boolean>(false);
   const [helpfulLinksOpen, setHelpfulLinksOpen] = useState<boolean>(false);
@@ -56,9 +63,11 @@ const Read = (): JSX.Element => {
 
     try {
       await axios.post('/attempts', submission);
-      const isSuccess = true; 
+      const isSuccess = true;
       if (isSuccess) {
-        setCurrentExerciseIndex((prevIndex) => prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex);
+        setCurrentExerciseIndex((prevIndex) =>
+          prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex
+        );
       }
     } catch (e) {
       console.error('Error submitting code:', e);
@@ -78,23 +87,22 @@ const Read = (): JSX.Element => {
       {/* left side */}
       <Resizable
         defaultSize={{
-          width: "60%",
-          height: "100%",
+          width: '60%',
+          height: '100%',
         }}
         maxWidth="65%"
         minWidth="30%"
         enable={{ right: true }}
         className="overflow-x-hidden overflow-y-hidden pl-2 pt-2 pr-5 font-white"
         handleClasses={{
-          right: "h-full flex items-center justify-center bg-foreground-700",
+          right:
+            'h-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
         }}
         handleComponent={{
           right: (
-            <div className='mr-[5px] w-[5px] h-16 rounded-full bg-foreground-500 hover:bg-foreground-400'>
+            <div className="group mr-[5px] w-[5px] h-16 rounded-full bg-foreground-500">
               <div className="flex flex-col items-center justify-center mt-[18px]">
-                <EllipsisVerticalIcon 
-                  className="h-6 w-6"
-                />
+                <EllipsisVerticalIcon className="h-[30px] w-[30px] text-foreground-200" />
               </div>
             </div>
           ),
@@ -103,15 +111,19 @@ const Read = (): JSX.Element => {
         {demo && (
           <div className="w-full h-full">
             <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
-            <div className='ml-2'>
-              <VideoHeader title={demo.title} uid={demo.uid} handleClick={likeVideo} />
-              <AuthorTags 
-                tags={demo.tags}
+            <div className="ml-2">
+              <VideoHeader
+                title={demo.title}
+                uid={demo.uid}
+                handleClick={likeVideo}
               />
-                <div className={`mt-1 h-36 overflow-y-auto flex-grow ${showBorder ? 'border-2 border-gray-600 border-dashed rounded-md' : ''}`}>
-                  <RelatedDemos setRelatedDemosOpen={setRelatedDemosOpen}/>
-                  <HelpfulLinks setHelpfulLinksOpen={setHelpfulLinksOpen}/>
-                </div>
+              <AuthorTags tags={demo.tags} />
+              <div
+                className="mt-1 h-full overflow-y-auto flex-grow"
+              >
+                <RelatedDemos />
+                <HelpfulLinks />
+              </div>
             </div>
           </div>
         )}
