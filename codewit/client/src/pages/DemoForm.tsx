@@ -99,7 +99,7 @@ const DemoForm = (): JSX.Element => {
     <div className="flex flex-col h-full bg-zinc-900 p-6">
       <CreateButton onClick={() => setModalOpen(true)} title="Create Demo" />
       <ReusableTable columns={columns} data={demos} onEdit={handleEdit} onDelete={handleDelete} />
-      {/* <ReusableModal
+      <ReusableModal
         isOpen={modalOpen}
         onClose={handleModalClose}
         title={isEditing ? "Edit Demo" : "Create Demo"}
@@ -161,7 +161,7 @@ const DemoForm = (): JSX.Element => {
           setSelectedTags={(topic) => handleInputChange("topic", topic.value)}
           isMulti={false}
         />
-      </ReusableModal> */}
+      </ReusableModal>
     </div>
   );
 };
