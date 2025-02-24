@@ -118,9 +118,7 @@ const Read = (): JSX.Element => {
                 handleClick={likeVideo}
               />
               <AuthorTags tags={demo.tags} />
-              <div
-                className="mt-1 h-full overflow-y-auto flex-grow"
-              >
+              <div className="mt-1 h-[26vh] overflow-y-auto">
                 <RelatedDemos />
                 <HelpfulLinks />
               </div>
@@ -133,7 +131,9 @@ const Read = (): JSX.Element => {
       <div className="flex-1 h-full w-full md:overflow-auto pt-2 px-2 flex flex-col gap-2">
         <Exercises exercises={demo.exercises} idx={currentExerciseIndex} />
         <CodeBlock onSubmit={handleSubmission} />
-        <Checklist />
+        <div className="h-[50vh] overflow-y-auto">
+          <Checklist />
+        </div>
       </div>
     </div>
   );
