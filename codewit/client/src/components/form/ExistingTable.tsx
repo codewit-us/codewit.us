@@ -40,7 +40,7 @@ const ExistingTable = ({ items, name = "Exercises", onEdit, onDelete }: Existing
           </thead>
           <tbody>
             {items && items.map((ex, index) => (
-              <tr key={index} className="border-b border-gray-700">
+              <tr key={index} className="border-b border-gray-800">
                 <td className="px-6 py-4">
                   <div className="max-w-md md:max-w-2xl whitespace-nowrap overflow-hidden overflow-ellipsis">
                     {name === "Demos" ? (
