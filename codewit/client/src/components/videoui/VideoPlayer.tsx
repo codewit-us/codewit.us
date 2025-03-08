@@ -1,6 +1,5 @@
-// codewit/client/src/components/videoui/VideoPlayer.tsx
 const VideoPlayer = ({ youtube_id, title }: { youtube_id: string; title: string }): JSX.Element => (
-  <div className="bg-zinc-800 w-full h-3/5 aspect-video overflow-hidden text-xl font-bold rounded-lg">
+  <div className="bg-zinc-800 w-full h-3/5 aspect-video overflow-hidden text-xl font-bold rounded-lg border-2 border-gray-800">
     <iframe
       className="w-full h-full"
       title={title}
