@@ -7,6 +7,14 @@ export const getTopicSelect = () => cy.get('[id="single-tag-select"]');
 export const getLanguageSelect = () => cy.get('[data-testid="language-select"]');
 export const getNavBar = () => cy.get('[data-testid="navbar-toggle"]');
 export const getResourceSelect = () => cy.get('[data-testid="resource-select"]')
+export const getYoutubeIdInput = () => cy.get('[id="youtube_id"]');
+export const getExerciseSelect = () => cy.get('div[id="exercise-select"]');
+export const getTitleInput = () => cy.get('input[name="title"]').should('be.visible');
+export const getDemoTitle = () => cy.get('[data-testid="demo-title"]');
+
+export const getModuleSelect = () => cy.get('[data-testid="module-select"]');
+export const getInstructorSelect = () => cy.get('[data-testid="instructor-select"]');
+export const getRosterSelect = () => cy.get('[data-testid="roster-select"]');
 
 export const getHomeModule = () => cy.get('[data-testid="module"]');
 export const mockNonAdminUser = () => {

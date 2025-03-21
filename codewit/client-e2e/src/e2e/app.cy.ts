@@ -12,7 +12,10 @@ import { getSubmitButton,
          getResourceSelect,
          getModuleSelect,
          getInstructorSelect,
-         getRosterSelect
+         getRosterSelect,
+         getYoutubeIdInput,
+         getExerciseSelect,
+         getTitleInput
       } from "../support/app.po";
 
 
@@ -281,7 +284,7 @@ describe.only('Testing Create Page Visibility', () => {
 
     cy.contains("Create Course").click();
 
-    cy.get('Title').should('be.visible');
+    getTitleInput().should('be.visible');
     getLanguageSelect().should('be.visible');
     getModuleSelect().should('be.visible');
     getInstructorSelect().should('be.visible');
@@ -291,14 +294,17 @@ describe.only('Testing Create Page Visibility', () => {
     cy.contains('Cancel').should('be.visible');
   });
 
-  it.only('should show demo create form modal with fields', () => {
+  it('should show demo create form modal with fields', () => {
     cy.visit('/create/demo');
 
     cy.contains("Create Demo").click();
 
-    cy.get('Title').should('be.visible');
     getLanguageSelect().should('be.visible');
     getTopicSelect().should('be.visible');
+    getTagSelect().should('be.visible');
+    getYoutubeIdInput().should('be.visible');
+    getTitleInput().should('be.visible');
+    getExerciseSelect().should('be.visible');
 
     getSubmitButton().should('be.disabled');
     cy.contains('Cancel').should('be.visible');
