@@ -138,6 +138,7 @@ const ModuleForm = (): JSX.Element => {
             <button
               onClick={handleSubmit}
               disabled={!isValid}
+              data-testid="submit-button"
               className={`px-4 py-2 rounded-md ${
                 isValid
                   ? "bg-blue-500 text-white"

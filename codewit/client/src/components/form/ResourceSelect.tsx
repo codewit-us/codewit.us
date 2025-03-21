@@ -15,7 +15,10 @@ const ResourceSelect = ({
   handleResourceChange 
 }: ResourceSelectProps) => {
   return (
-    <div className="w-full">
+    <div 
+      className="w-full"
+      data-testid="resource-select"  
+    >
       <label 
         htmlFor="resource-select" 
         className="block text-sm font-medium text-gray-400 mb-2"

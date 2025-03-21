@@ -14,7 +14,10 @@ const options = [
 ];
 
 const LanguageSelect = ({handleChange, initialLanguage }: LanguageSelectProps) => (
-  <div className="w-full">
+  <div 
+    className="w-full"
+    data-testid="language-select"
+  >
     <label htmlFor="language" className="block text-sm font-medium text-gray-400 mb-2">
       Language
     </label>
