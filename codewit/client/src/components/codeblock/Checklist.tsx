@@ -21,7 +21,7 @@ const ResultsComponent = (): JSX.Element => {
   const totalTests = checklistItems.length;
 
   return (
-    <div className="p-4 min-h-full flex flex-col items-center bg-foreground-outline-500/20 rounded-lg shadow-lg border-2 border-gray-800">
+    <div className="p-4 min-h-full flex flex-col items-center bg-foreground-outline-500/20 rounded-lg shadow-lg border-2 border-gray-800" data-testid="check-list">
       <div className="w-full mb-4 gap-3 flex items-center justify-start">
         <h1 className="text-2xl font-bold text-white">Results</h1>
         <span className="px-3 py-1 bg-gray-800 rounded-full text-sm font-medium text-gray-200">

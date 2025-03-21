@@ -1,4 +1,4 @@
-import { getSubmitButton, 
+import { 
          getTagSelect, 
          getLanguageSelect,
          getExercisePrompt,
@@ -15,7 +15,17 @@ import { getSubmitButton,
          getRosterSelect,
          getYoutubeIdInput,
          getExerciseSelect,
-         getTitleInput
+         getTitleInput,
+         interceptReadPage,
+         getDemoTitle,
+         getLikeButton,
+         getAuthorTags,
+         getRelatedDemos,
+         getHelpfulLinks,
+         getCodeEditor,
+         getResetButton,
+         getSubmitButton,
+         getCheckList
       } from "../support/app.po";
 
 
@@ -160,7 +170,7 @@ describe('Testing Home Page', () => {
 
 });
 
-describe.only('Testing Create Page Visibility', () => {
+describe('Testing Create Page', () => {
   beforeEach(() => {
     mockAdminUser();
     cy.visit('/create');
@@ -309,6 +319,65 @@ describe.only('Testing Create Page Visibility', () => {
     getSubmitButton().should('be.disabled');
     cy.contains('Cancel').should('be.visible');
   });
+});
+
+describe.only('Testing Read Page', () => {
+  beforeEach(() => {
+    mockNonAdminUser();
+    interceptReadPage();
+
+    cy.visit('/read/1');
+    cy.wait('@getReadPage');
+    cy.wait('@getUserInfo')
+  })
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  });
+
+  it('should show demo title', () => {
+    getDemoTitle().should('be.visible');
+  });
+
+  it('should show like button', () => {
+    getLikeButton().should('be.visible');
+  });
+
+  it('should show author tags', () => {
+    getAuthorTags().should('be.visible');
+  });
+  
+  it("should show related demos", () => {
+    getRelatedDemos().should('be.visible');
+    getRelatedDemos().find('summary').click();
+    getRelatedDemos().find('.overflow-x-auto').should('be.visible');
+  });
+
+  it("should show helpful links", () => {
+    getHelpfulLinks().should('be.visible');
+    getHelpfulLinks().find('summary').click();
+    getHelpfulLinks().find('.space-y-2').should('be.visible');
+  });
+
+  it("should display code editor", () => {
+    getCodeEditor().should('be.visible');
+    
+    getCodeEditor().contains('Hello').should('not.exist');
+  });
+
+  it("should show reset button", () => {
+    getResetButton().should('be.visible');
+  });
+
+  it("should show submit button", () => {
+    getSubmitButton().should('be.visible');
+  });
+
+  it("should display checklist with results and test items", () => {
+    getCheckList().should('be.visible');
+    getCheckList().contains('Results').should('be.visible');
+  });
+
 });
 
 describe('Exercise creation functionality', () => {

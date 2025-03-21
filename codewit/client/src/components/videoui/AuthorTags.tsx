@@ -18,7 +18,7 @@ console.log(tags)
       { tags 
         ?
           (tags).map((tag, index: number) => (
-            <span key={index} className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag}</span>
+            <span key={index} data-testid="author-tags" className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag}</span>
           ))
         :
           ''
