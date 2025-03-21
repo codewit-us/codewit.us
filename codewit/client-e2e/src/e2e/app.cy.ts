@@ -2,38 +2,158 @@ import { getSubmitButton,
          getTagSelect, 
          getLanguageSelect,
          getExercisePrompt,
-         getTopicSelect 
+         getTopicSelect,
+         getNavBar,
+         mockNonAdminUser,
+         mockAdminUser,
+         mockStudentCourses,
+         mockEmptyStudentCourses,
+         getHomeModule
       } from "../support/app.po";
 
-describe('Testing App & App Routes', () => {
-
+describe.only('Testing Home Page', () => {
+  
   it('should render successfully', () => {
     cy.visit('/');
     cy.get('body').should('be.visible');
   });
 
-  it('navbar shows up correctly', () => {
+  it('should display sign in message and login button that points to Google', () => {
     cy.visit('/');
-    cy.contains('home').should('be.visible');
-    cy.contains('create').should('be.visible');
+
+  
+    cy.contains('Please Sign In').should('be.visible');
+  
+    // find the form and assert it has the correct action
+    cy.get('form[action="http://localhost:3001/oauth2/google"]').should('exist');
+  
+    // find the input button and check its value
+    cy.get('input[type="submit"]')
+      .should('have.value', 'Log in')
+      .and('be.visible');
   });
 
-  it('navbar interaction to create page works correctly', () => {
+  it('displays loading screen initially', () => {
     cy.visit('/');
-    cy.contains('create').click();
-    cy.contains('Create Demo Exercise').should('be.visible');
+
+    cy.get('[data-testid="loading"]').should('exist');
   });
 
-  it('should navigate to the error page when an undefined route is accessed', () => {
-    cy.visit('/some/undefined/route');
-    cy.contains('404 ERROR').should('be.visible');
-  });
+  it('navbar should have home link, and login with google button', () => {
+      cy.visit('/');
+
+      getNavBar().click();
+      // home nav
+      cy.contains('a', 'Home')
+        .should('be.visible')
+        .and('have.attr', 'href', '/');  
+
+      // google link
+      cy.get('form[action="http://localhost:3001/oauth2/google"]').within(() => {
+        cy.get('button')
+          .should('contain.text', 'Log In with Google')
+          .and('be.visible');
+      });
+
+    });
+
+    it('error should show with bad course request', () => {
+      mockNonAdminUser();
+      cy.visit('/');
+      cy.wait('@getUserInfo');
+      cy.contains('400Error').should('be.visible');
+      cy.contains('Failed to fetch courses. Please try again later.').should('be.visible');
+    });
+
+    it('show course with module on home page', () => {
+      mockNonAdminUser();
+      mockStudentCourses('test-google-id');
+      cy.visit('/');
+      cy.wait('@getUserInfo');
+      cy.wait('@getStudentCourses');
+
+      cy.contains('Intro to JavaScript').should('be.visible');
+      cy.contains('JavaScript').should('be.visible');
+
+      cy.contains('Choose a lesson:').should('be.visible');
+      cy.contains('Variables 101').should('be.visible');
+    });
+
+    it('show course with no modules on home page', () => {
+      mockNonAdminUser();
+      mockEmptyStudentCourses('test-google-id');
+      cy.visit('/');
+      cy.wait('@getUserInfo');
+      cy.wait('@getStudentCourses');
+
+      cy.contains('No Courses Available').should('be.visible');
+      cy.contains('Please check back later for available courses.').should('be.visible');
+    });
+
+    it('show username in navbar for signed in user', () => {
+      mockNonAdminUser();
+      mockEmptyStudentCourses('test-google-id');
+      cy.visit('/');
+      cy.wait('@getUserInfo');
+      cy.wait('@getStudentCourses');
+
+      cy.contains('testuser').should('be.visible');
+    });
+
+    it('navbar should have home page and logout for non admin user', () => {
+      mockNonAdminUser();
+      mockEmptyStudentCourses('test-google-id');
+      cy.visit('/');
+      cy.wait('@getUserInfo');
+      cy.wait('@getStudentCourses');
+
+      cy.contains('testuser').should('be.visible');
+
+      getNavBar().click();
+
+      // home nav
+      cy.contains('a', 'Home')
+        .should('be.visible')
+        .and('have.attr', 'href', '/');  
+
+      cy.get('button')
+        .should('contain.text', 'Logout')
+        .and('be.visible');
+    });
+
+    it('navbar should have multiple options for admin user', () => {
+      mockAdminUser();
+      mockEmptyStudentCourses('admin-google-id');
+      cy.visit('/');
+      cy.wait('@getUserInfo');
+      cy.wait('@getStudentCourses');
+
+      cy.contains('adminuser').should('be.visible');
+
+      getNavBar().click();
+
+      // home nav
+      cy.contains('a', 'Home')
+        .should('be.visible')
+        .and('have.attr', 'href', '/');  
+
+      cy.contains('a', 'Create')
+        .should('be.visible')
+        .and('have.attr', 'href', '/create');  
+
+      cy.contains('a', 'Manage Users')
+        .should('be.visible')
+        .and('have.attr', 'href', '/usermanagement');  
+
+      cy.get('button')
+        .should('contain.text', 'Logout')
+        .and('be.visible');
+    });
 
 });
 
 
 describe('Exercise creation functionality', () => {
-
   beforeEach(() => {
     cy.visit('/create/exercise');
   });
@@ -331,7 +451,7 @@ describe('Testing Resource Form Functionality', () => {
 
 });
 
-describe.only('Testing Module Form Functionality', () => {
+describe('Testing Module Form Functionality', () => {
   
   beforeEach(() => { cy.visit('/create/module') });
 

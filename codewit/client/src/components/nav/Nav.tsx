@@ -59,6 +59,7 @@ const NavBar = ({
 
           <Button
             size="sm"
+            data-testid="navbar-toggle"
             onClick={toggleNavbar}
             className="text-accent-600 hover:text-accent-700"
           >
