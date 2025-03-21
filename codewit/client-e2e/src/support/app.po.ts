@@ -1,10 +1,13 @@
 export const getGreeting = () => cy.get('h1');
 export const getExercisePrompt = () => cy.get('[data-testid="prompt"]');
-export const getSubmitButton = () => cy.get('button[type="submit"]');
+export const getSubmitButton = () => cy.get('[data-testid="submit-button"]');
+
 export const getTagSelect = () => cy.get('[id="tag-select"]');
 export const getTopicSelect = () => cy.get('[id="single-tag-select"]');
-export const getLanguageSelect = () => cy.get('select[name="language"]');
+export const getLanguageSelect = () => cy.get('[data-testid="language-select"]');
 export const getNavBar = () => cy.get('[data-testid="navbar-toggle"]');
+export const getResourceSelect = () => cy.get('[data-testid="resource-select"]')
+
 export const getHomeModule = () => cy.get('[data-testid="module"]');
 export const mockNonAdminUser = () => {
     cy.intercept('GET', '/oauth2/google/userinfo', {

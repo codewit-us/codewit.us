@@ -8,10 +8,15 @@ import { getSubmitButton,
          mockAdminUser,
          mockStudentCourses,
          mockEmptyStudentCourses,
-         getHomeModule
+         getHomeModule,
+         getResourceSelect,
+         getModuleSelect,
+         getInstructorSelect,
+         getRosterSelect
       } from "../support/app.po";
 
-describe.only('Testing Home Page', () => {
+
+describe('Testing Home Page', () => {
   
   it('should render successfully', () => {
     cy.visit('/');
@@ -152,6 +157,153 @@ describe.only('Testing Home Page', () => {
 
 });
 
+describe.only('Testing Create Page Visibility', () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.visit('/create');
+  })
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  });
+
+  it('should show all possible creations on side', () => {
+    cy.contains('a', 'Module')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/module');
+
+    cy.contains('a', 'Course')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/course');
+      
+    cy.contains('a', 'Demo')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/demo');
+
+    cy.contains('a', 'Exercise')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/exercise');
+
+    cy.contains('a', 'Resource')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/resource');  
+  });
+
+  it('should show table modules options on create page', () => {
+    cy.contains('Module').click();
+
+    cy.contains('Topic').should('be.visible');
+    cy.contains('Language').should('be.visible');
+    cy.contains('Resources').should('be.visible');
+    cy.contains('Actions').should('be.visible');
+  });
+
+  it('should show table course options on create page', () => {
+    cy.contains("Course").click()
+
+    cy.contains("Title").should("be.visible");
+    cy.contains("Module").should("be.visible");
+    cy.contains("Instructors").should("be.visible");
+    cy.contains("Roster").should("be.visible");
+    cy.contains("Actions").should("be.visible");
+  });
+
+  it('should show table demo options on create page', () => {
+    cy.contains("Demo").click()
+
+    cy.contains("Title").should("be.visible");
+    cy.contains("Topic").should("be.visible");
+    cy.contains("Language").should("be.visible");
+    cy.contains("Actions").should("be.visible");
+  });
+
+  it('should show table exercise options on create page', () => {
+    cy.contains("Exercise").click()
+
+    cy.contains("Prompt").should("be.visible");
+    cy.contains("Topic").should("be.visible");
+    cy.contains("Language").should("be.visible");
+    cy.contains("Actions").should("be.visible");
+  });
+
+  it('should show table resources options on create page', () => {
+    cy.contains("Resource").click()
+
+    cy.contains("Title").should("be.visible");
+    cy.contains("URL").should("be.visible");
+    cy.contains("Source").should("be.visible");
+    cy.contains("Actions").should("be.visible");
+  });
+
+  it('should show exercise resource form modal with fields', () => {
+    cy.contains("Resource").click()
+    cy.contains("Create Resource").click()
+
+    cy.get('input[name="title"]').should('be.visible');
+    cy.get('input[name="url"]').should('be.visible');
+    cy.get('input[name="source"]').should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  })
+
+  it('should show exercise create form modal with fields', () => {
+    cy.visit('/create/exercise');
+  
+    cy.contains('Create Exercise').click();
+  
+    cy.get('[data-testid="prompt"]').should('exist'); 
+    cy.contains('Reference Test').scrollIntoView().should('be.visible');
+
+    getLanguageSelect().should('be.visible');
+    getTagSelect().should('be.visible');
+    cy.contains('Select Topic').should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  })
+
+  it('should show module create form modal with fields', () => {
+    cy.visit('/create/module');
+
+    cy.contains("Create Module").click();
+
+    getTopicSelect().should('be.visible');
+    getLanguageSelect().should('be.visible');
+    getResourceSelect().should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+
+  it('should show course create form modal with fields', () => {
+    cy.visit('/create/course');
+
+    cy.contains("Create Course").click();
+
+    cy.get('Title').should('be.visible');
+    getLanguageSelect().should('be.visible');
+    getModuleSelect().should('be.visible');
+    getInstructorSelect().should('be.visible');
+    getRosterSelect().should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+
+  it.only('should show demo create form modal with fields', () => {
+    cy.visit('/create/demo');
+
+    cy.contains("Create Demo").click();
+
+    cy.get('Title').should('be.visible');
+    getLanguageSelect().should('be.visible');
+    getTopicSelect().should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+});
 
 describe('Exercise creation functionality', () => {
   beforeEach(() => {

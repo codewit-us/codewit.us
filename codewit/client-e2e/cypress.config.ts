@@ -13,7 +13,7 @@ export default defineConfig({
       ciWebServerCommand: 'nx run client:serve-static',
     }),
     baseUrl: 'http://localhost:3001',
-    viewportWidth: 1000, 
-    viewportHeight: 760,  
+    viewportWidth: 1440, 
+    viewportHeight: 900,  
   },
 });
