@@ -44,6 +44,7 @@ const CodeEditor = ({
         {/* code editor */}
         <div
           ref={editorRef}
+          data-testid="code-editor"
           className="w-full flex-1 rounded-lg border-2 border-gray-800 focus-within:border-accent-400 overflow-hidden transition-colors duration-200"
         ></div>
 
@@ -58,7 +59,7 @@ const CodeEditor = ({
             // }}
           >
             <ArrowPathIcon className="w-6 h-6 mr-2 text-red-400 group-hover:text-white" />
-            <span className="text-red-400 group-hover:text-white">Reset</span>
+            <span data-testid="reset-button" className="text-red-400 group-hover:text-white">Reset</span>
           </button>
 
           <button
@@ -68,7 +69,7 @@ const CodeEditor = ({
             }
           >
             <CheckIcon className="w-6 h-6 mr-2 text-accent-400 group-hover:text-white" />
-            <span className="text-accent-400 group-hover:text-white">
+            <span data-testid="submit-button" className="text-accent-400 group-hover:text-white">
               Submit
             </span>
           </button>

@@ -37,7 +37,7 @@ const RelatedDemos = (): JSX.Element => {
   ];
 
   return (
-    <details className="font-bold rounded-lg w-full text-white flex flex-col overflow-hidden group mb-4 border border-gray-800">
+    <details data-testid="related-demos" className="font-bold rounded-lg w-full text-white flex flex-col overflow-hidden group mb-4 border border-gray-800">
       <summary className="px-3 py-2 cursor-pointer list-none flex items-center gap-2 hover:bg-accent-500/10 transition-all rounded-lg">
         <ChevronRightIcon className="w-5 h-5 transition-transform duration-200 group-open:rotate-90" />
         <span className="text-base">Related Demos</span>
