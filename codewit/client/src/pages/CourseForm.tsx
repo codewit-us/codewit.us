@@ -201,7 +201,7 @@ const CourseForm = (): JSX.Element => {
             initialLanguage={formData.language}
           />
 
-          <div>
+          <div data-testid="module-select">
             <InputLabel htmlFor="modules">Modules</InputLabel>
             <Select
               id="modules"
@@ -213,7 +213,7 @@ const CourseForm = (): JSX.Element => {
             />
           </div>
 
-          <div>
+          <div data-testid="instructor-select">
             <InputLabel htmlFor="instructors">Instructors</InputLabel>
             <Select
               id="instructors"
@@ -225,7 +225,7 @@ const CourseForm = (): JSX.Element => {
             />
           </div>
 
-          <div>
+          <div data-testid="roster-select">
             <InputLabel htmlFor="roster">Roster</InputLabel>
             <Select
               id="roster"
