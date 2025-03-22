@@ -432,11 +432,11 @@ describe('Exercise creation functionality', () => {
     getExerciseReferenceTest().click().type('console.log("Hello World");');
     getSubmitButton().click();
     cy.wait('@createExerciseError');
-    cy.contains('Error saving the erxercise').should('be.visible');
+    cy.contains('Error saving the exercise').should('be.visible');
   });
 });
 
-describe.only('Exercise Editing/Delete functionality', () => {
+describe('Exercise Editing/Delete functionality', () => {
   beforeEach(() => {
     mockAdminUser();
     cy.intercept('GET', '/exercises', {
@@ -497,7 +497,7 @@ describe.only('Exercise Editing/Delete functionality', () => {
     });
   });  
 
-  it.only('should send DELETE request to correct exercise uid', () => {
+  it('should send DELETE request to correct exercise uid', () => {
     cy.intercept('DELETE', '/exercises/1', (req) => {
       req.alias = 'deleteExercise';
     });
@@ -506,5 +506,179 @@ describe.only('Exercise Editing/Delete functionality', () => {
   
     cy.wait('@deleteExercise').its('request.url').should('include', '/exercises/1');
   });
+
+});
+
+describe('Demo creation functionality', () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/exercises', {
+      statusCode: 200,
+      body: [{
+        uid: 1,
+        prompt: 'New Exercise Prompt',
+        referenceTest: 'console.log("Hello World");',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        }
+      }]
+    }).as('getExercise');
+    cy.visit('/create/demo');
+    cy.wait('@getUserInfo');
+  });
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  });
+
+  it('prevents form submission with empty form', () => {
+    cy.contains('Create Demo').click();
+    getSubmitButton().should('be.disabled');
+  });
+
+  it('allows a user to create a new demo', () => {
+    cy.intercept('POST', '/demos', (req) => {
+      expect(req.body).to.deep.equal({
+        title: 'New Demo Title',
+        youtube_id: '8bc-VU3V7lU',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+        topic: 'operation',
+        language: 'cpp',
+        tags: ['console io'],
+        exercises: [1]
+      });
+    }).as('createDemo');
   
+    cy.contains('Create Demo').click();
+    getDemoTitle().type('New Demo Title');
+    getYoutubeIdInput().type('8bc-VU3V7lU{enter}');
+    getExerciseSelect().type('New Exercise Prompt{enter}');
+    getTagSelect().type('console io{enter}');
+    getTopicSelect().type('operation{enter}');
+  
+    getSubmitButton().click();
+  
+    cy.wait('@createDemo');
+  });
+
+  it('error shows up when posting demo', () => {
+  
+    cy.contains('Create Demo').click();
+    getDemoTitle().type('New Demo Title');
+    getYoutubeIdInput().type('8bc-VU3V7lU{enter}');
+    getExerciseSelect().type('New Exercise Prompt{enter}');
+    getTagSelect().type('console io{enter}');
+    getTopicSelect().type('operation{enter}');
+  
+    getSubmitButton().click();
+
+    cy.contains('An error occurred. Please try again.').should('be.visible');
+
+  });
+});
+
+describe('Demo Editing/Deleting functionality', () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/demos', {
+      statusCode: 200,
+      body: [
+        {
+          uid: 99,
+          title: 'New Demo Title',
+          youtube_id: '8bc-VU3V7lU',
+          youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+          topic: 'operation',
+          language: 'cpp',
+          tags: ['console io'],
+          exercises: [1],
+        },
+      ],
+    }).as('getDemos');
+
+    cy.intercept('GET', '/exercises', {
+      statusCode: 200,
+      body: [{
+        uid: 1,
+        prompt: 'New Exercise Prompt',
+        referenceTest: 'console.log("Hello World");',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        }
+      }]
+    }).as('getExercise');
+
+    cy.visit('/create/demo');
+    cy.wait('@getUserInfo');
+    cy.wait('@getDemos');
+  });
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  });
+
+  it('edit should show existing data', () => {
+    cy.contains('Edit').click();
+    cy.contains('New Demo Title').should('be.visible');
+  });
+
+  it('edit should throw error', () => {
+    cy.contains('Edit').click();
+    getSubmitButton().click();
+    cy.contains('An error occurred. Please try again.').should('be.visible');
+  });
+
+  it('edit should send updated demo and verify body', () => {
+    cy.intercept('PATCH', '/demos/99', (req) => {
+      expect(req.body).to.deep.equal({
+        uid: 99,
+        title: 'Updated Demo Title',
+        youtube_id: '8bc-VU3V7lU',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+        topic: 'operation',
+        language: 'cpp',
+        tags: ['console io', 'updated tag'],
+        exercises: [1],
+      });
+    }).as('patchDemo');
+
+    cy.contains('Edit').click();
+    cy.get('input[name="title"]').clear().type('Updated Demo Title');
+    getTagSelect().type('updated tag{enter}');
+    getSubmitButton().click();
+    cy.wait('@patchDemo');
+  });
+
+  it('delete should call endpoint with correct UID', () => {
+    cy.intercept('DELETE', '/demos/99').as('deleteDemo');
+    cy.contains('Delete').click();
+    cy.wait('@deleteDemo').its('request.url').should('include', '/demos/99');
+  });
+
+  it('edit should update the title visually on table', () => {
+    cy.intercept('PATCH', '/demos/99', {
+      statusCode: 200,
+      body: {
+        uid: 99,
+        title: 'Updated Demo Title',
+        youtube_id: '8bc-VU3V7lU',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+        topic: 'updated topic',
+        language: 'cpp',
+        tags: ['updated tag'],
+        exercises: [1],
+      }
+    }).as('patchDemoSuccess');
+
+    cy.contains('Edit').click();
+    getDemoTitle().clear().type('Updated Demo Title');
+    getSubmitButton().click();
+    cy.wait('@patchDemoSuccess');
+
+    cy.contains('Updated Demo Title').should('be.visible');
+  });
 });

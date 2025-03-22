@@ -121,12 +121,11 @@ const DemoForm = (): JSX.Element => {
           </>
         }
       >
-        <div
-          data-testid='demo-title-input'
-        >
+        <div>
           <label className="block mb-2 text-sm font-medium text-gray-400">Title</label>
           <input
             name='title'
+            data-testid='title'
             value={formData.title}
             onChange={(e) => handleInputChange("title", e.target.value)}
             className="block w-full p-2 rounded-md bg-gray-700 text-white"
