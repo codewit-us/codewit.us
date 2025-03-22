@@ -195,11 +195,11 @@ const ExerciseForms = (): JSX.Element => {
 
           <InputLabel htmlFor="referenceTest">Reference Test</InputLabel>
           <Editor
-            height="200px"
-            language={formData.selectedLanguage}
-            value={formData.referenceTest}
-            onChange={handleScriptChange}
-            theme="vs-dark"
+              height="200px"
+              language={formData.selectedLanguage}
+              value={formData.referenceTest}
+              onChange={handleScriptChange}
+              theme="vs-dark"
           />
 
           <div className="flex flex-row gap-3">

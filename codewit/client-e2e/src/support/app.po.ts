@@ -9,6 +9,7 @@ export const getResourceSelect = () => cy.get('[data-testid="resource-select"]')
 export const getYoutubeIdInput = () => cy.get('[id="youtube_id"]');
 export const getExerciseSelect = () => cy.get('div[id="exercise-select"]');
 export const getTitleInput = () => cy.get('input[name="title"]').should('be.visible');
+export const getExerciseReferenceTest = () => cy.get('.monaco-editor');
 
 export const getModuleSelect = () => cy.get('[data-testid="module-select"]');
 export const getInstructorSelect = () => cy.get('[data-testid="instructor-select"]');
