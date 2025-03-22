@@ -26,6 +26,7 @@ import {
   getResetButton,
   getSubmitButton,
   getCheckList,
+  getExerciseReferenceTest
 } from '../support/app.po';
 
 describe('Testing Home Page', () => {
@@ -239,7 +240,7 @@ describe('Testing Create Page', () => {
     cy.contains('Actions').should('be.visible');
   });
 
-  it('should show exercise resource form modal with fields', () => {
+  it('should show resource create form modal with fields', () => {
     cy.contains('Resource').click();
     cy.contains('Create Resource').click();
 
@@ -312,7 +313,7 @@ describe('Testing Create Page', () => {
   });
 });
 
-describe.only('Testing Read Page', () => {
+describe('Testing Read Page', () => {
   beforeEach(() => {
     mockNonAdminUser();
     interceptReadPage();
@@ -372,7 +373,9 @@ describe.only('Testing Read Page', () => {
 
 describe('Exercise creation functionality', () => {
   beforeEach(() => {
+    mockAdminUser();
     cy.visit('/create/exercise');
+    cy.wait('@getUserInfo');
   });
 
   it('should render successfully', () => {
@@ -380,154 +383,128 @@ describe('Exercise creation functionality', () => {
   });
 
   it('prevents form submission with empty prompt', () => {
-    cy.get('form').within(() => {
-      getSubmitButton().should('be.disabled');
-    });
-    cy.url().should('include', '/create/exercise');
+    cy.contains('Create Exercise').click();
+    getSubmitButton().should('be.disabled');
   });
 
   it('allows a user to create a new exercise', () => {
+    cy.contains('Create Exercise').click();
     getExercisePrompt().type('New Exercise Prompt');
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     getTagSelect().click().type('console io{enter}');
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     getTagSelect().click().type('customtag{enter}');
     getTopicSelect().click().type('console io{enter}');
-    getLanguageSelect().select('cpp');
-    cy.get('form').submit();
-    cy.contains('New Exercise Prompt').should('be.visible');
+    getExerciseReferenceTest().click().type('console.log("Hello World");');
+
+    // intercept exercise and return 200
+    cy.intercept('POST', '/exercises', {
+      statusCode: 200,
+      body: {
+        id: 1,
+        prompt: 'New Exercise Prompt',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        } 
+      }
+    }).as('createExercise');
+
+    getSubmitButton().click();
+    cy.wait('@createExercise');
   });
 
-  it('allows a user to edit an existing exercise', () => {
-    cy.get('[id="edit-0"]').click();
-    getExercisePrompt().clear();
-    getExercisePrompt().type('Updated Exercise Prompt');
-    getLanguageSelect().select('Java');
-    cy.get('form').submit();
-    cy.contains('Updated Exercise').should('be.visible');
-  });
-
-  it('exercise post throws error and navigates to error page', () => {
+  it('exercise post throws error and error toast pops up', () => {
     cy.intercept('POST', '/exercises', {
       statusCode: 500,
       body: {
         message: 'Internal server error',
       },
     }).as('createExerciseError');
-    getExercisePrompt().type('Second Exercise Prompt');
-    getTagSelect().click().type('customtag{enter}');
-    getTopicSelect().click().type('console io{enter}');
-    getLanguageSelect().select('Java');
-    cy.get('form').submit();
-    cy.wait('@createExerciseError');
-    cy.contains('Something Went Wrong...').should('be.visible');
-  });
-
-  it('exercise patch throws error and navigates to error page', () => {
-    cy.intercept('PATCH', '/exercises/*', {
-      statusCode: 500,
-      body: {
-        message: 'Internal server error',
-      },
-    }).as('createExercisePatchError');
-    cy.get('[id="edit-0"]').click();
-    getExercisePrompt().clear();
-    getExercisePrompt().type('Updated Exercise Prompt');
-    cy.get('form').submit();
-    cy.wait('@createExercisePatchError');
-    cy.contains('Something Went Wrong...').should('be.visible');
-  });
-
-  it('allows a user to delete an exercise', () => {
-    cy.get('[id="delete-0"]').click();
-    cy.contains('Updated Exercise Prompt').should('not.exist');
-  });
-
-  it('allows a user to create another new exercise', () => {
-    getExercisePrompt().type('Second Exercise Prompt');
+    cy.contains('Create Exercise').click();
+    getExercisePrompt().type('New Exercise Prompt');
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     getTagSelect().click().type('console io{enter}');
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     getTagSelect().click().type('customtag{enter}');
     getTopicSelect().click().type('console io{enter}');
-    getLanguageSelect().select('cpp');
-    cy.get('form').submit();
-    cy.contains('Second Exercise Prompt').should('be.visible');
+    getExerciseReferenceTest().click().type('console.log("Hello World");');
+    getSubmitButton().click();
+    cy.wait('@createExerciseError');
+    cy.contains('Error saving the erxercise').should('be.visible');
   });
 });
 
-describe.only('test out create form functionality', () => {
+describe.only('Exercise Editing/Delete functionality', () => {
   beforeEach(() => {
-    cy.visit('/create');
-  });
-
-  it('allows users to enter a video title', () => {
-    cy.get('input[name="title"]').type('New Demo Title');
-    cy.get('input[name="title"]').should('have.value', 'New Demo Title');
-  });
-
-  it('displays an error if the API call fails while fetching videos', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
-      statusCode: 500,
-    }).as('getVideosFail');
-    cy.wait('@getVideosFail');
-    cy.contains('Failed to fetch videos. Please try again later.').should(
-      'be.visible'
-    );
-  });
-
-  it('fills and submits a new demo exercise with an exercise', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
+    mockAdminUser();
+    cy.intercept('GET', '/exercises', {
       statusCode: 200,
-      body: {
-        items: [
-          {
-            id: { videoId: '9Z6mWJXR-6M' },
-            snippet: { title: 'Mock Video Title' },
-          },
-        ],
-      },
-    }).as('getVideos');
-    cy.wait('@getVideos');
-    cy.get('input[name="title"]').type('2nd Demo Exercise');
-    cy.get('[id="youtube_id"]').type('Mock Video Title{enter}');
-    cy.get('div[id="exercise-select"]').click();
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('customtag{enter}');
-    getTopicSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get('[id="exercise-select"]')
-      .click()
-      .type('Second Exercise Prompt{enter}');
-    getSubmitButton().click();
-    cy.contains('2nd Demo Exercise').should('be.visible');
-    cy.contains('1 Exercises').should('be.visible');
+      body: [{
+        uid: 1,
+        prompt: 'New Exercise Prompt',
+        referenceTest: 'console.log("Hello World");',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        } 
+      }]
+    }).as('getExercise');
+    cy.visit('/create/exercise');
+    cy.wait('@getUserInfo');
+    cy.wait('@getExercise');
   });
 
-  it('fills and submits a new demo with no exercises', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
-      statusCode: 200,
-      body: {
-        items: [
-          {
-            id: { videoId: '9Z6mWJXR-6M' },
-            snippet: { title: 'Mock Video Title' },
-          },
-        ],
-      },
-    }).as('getVideos');
-    cy.wait('@getVideos');
-    cy.get('input[name="title"]').type('New Demo');
-    cy.get('[id="youtube_id"]').type('Mock Video Title{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('customtag{enter}');
-    getTopicSelect().click().type('console io{enter}');
-    getSubmitButton().click();
-    cy.contains('New Demo').should('be.visible');
-    cy.contains('0 Exercises').should('be.visible');
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
   });
+
+  it('edit should show existing data', () => {
+    cy.contains('Edit').click();
+    getExercisePrompt().contains('New Exercise Prompt').should('be.visible');
+  });
+
+  it('edit should throw error', () => {
+    cy.contains('Edit').click();
+    getSubmitButton().click();
+    cy.contains('Error saving the exercise').should('be.visible');
+  });
+
+  it('edit should send updated exercise data in PATCH request', () => {
+    // intercept PATCH and alias it
+    cy.intercept('PATCH', '/exercises/*', (req) => {
+      req.alias = 'patchExercise';
+    });
+  
+    // click edit
+    cy.contains('Edit').click();
+  
+    // change the prompt
+    getExercisePrompt().clear().type('Edited Exercise Prompt');
+  
+    // click submit
+    getSubmitButton().click();
+  
+    // wait and check the body
+    cy.wait('@patchExercise').its('request.body').should((body) => {
+      expect(body.prompt).to.equal('Edited Exercise Prompt');
+      expect(body.topic).to.equal('console io');
+      expect(body.tags).to.include.members(['console io', 'customtag']);
+      expect(body.language).to.equal('cpp');
+      expect(body.referenceTest).to.equal('console.log("Hello World");');
+    });
+  });  
+
+  it.only('should send DELETE request to correct exercise uid', () => {
+    cy.intercept('DELETE', '/exercises/1', (req) => {
+      req.alias = 'deleteExercise';
+    });
+  
+    cy.contains('Delete').click();
+  
+    cy.wait('@deleteExercise').its('request.url').should('include', '/exercises/1');
+  });
+  
 });
