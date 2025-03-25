@@ -26,7 +26,9 @@ import {
   getResetButton,
   getSubmitButton,
   getCheckList,
-  getExerciseReferenceTest
+  getExerciseReferenceTest,
+  getUrlInput,
+  getSourceInput
 } from '../support/app.po';
 
 describe('Testing Home Page', () => {
@@ -508,6 +510,140 @@ describe('Exercise Editing/Delete functionality', () => {
   });
 
 });
+
+describe("Resource creations functionlity", () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/resources', {
+      statusCode: 200,
+      body: []
+    }).as("getResources");
+    cy.visit("/create/resource");
+    cy.wait("@getUserInfo");
+    cy.wait("@getResources")
+  })
+
+  it("should render successfully", () => {
+    cy.get('body').should('be.visible');
+  })
+
+  it('should prevent form submission with empty form', () => {
+    cy.contains('Create Resource').click();
+    getSubmitButton().should('be.disabled');
+  })
+  
+  it('should allow a user to create a new resource', () => {
+    cy.intercept('POST', '/resources', (req) => {
+      expect(req.body).to.deep.equal({
+        url: 'https://example.com/resource',
+        title: 'New Resource Title',
+        source: 'Example',
+        likes: 0
+      });
+    }).as('createResource');
+    
+    cy.contains('Create Resource').click();
+    
+    getTitleInput().type('New Resource Title');
+    getUrlInput().type('https://example.com/resource');
+    getSourceInput().type('Example');
+    
+    getSubmitButton().click();
+    
+    cy.wait('@createResource');
+  })
+})
+
+describe.only("Course creations functionality", () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/courses', {
+      statusCode: 200,
+      body: []
+    }).as('getCourse');
+    cy.visit('/create/course');
+    cy.wait('@getUserInfo');
+    cy.wait('@getCourse');
+  })
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  })
+
+  it('should prevent form submission with empty form', () => {
+    cy.contains('Create Course').click();
+    getSubmitButton().should('be.disabled');
+  })
+
+  it('should allow a user to create a new course', () => {
+    cy.intercept('POST', '/courses', (req) => {
+      expect(req.body).to.deep.equal({
+        id: 1,
+        instructor: 'test instructor',
+        language: 'cpp',
+        modules: [],
+        roster: [],
+        title: 'New Course Title'
+      })
+    }).as('createCourse');
+
+  it('should allow a user to create a new course', () => {
+    cy.intercept('POST', '/courses', (req) => {    expect(req.body).to.deep.equal({
+        title: 'New Course Title',
+        language: 'cpp',
+      })
+    }).as('createCourse');
+
+    cy.contains('Create Course').click();
+    getTitleInput().type('New Course Title');
+    getLanguageSelect().type('cpp{enter}');
+    getInstructorSelect().type('test instructor{enter}');
+    getRosterSelect().type('test student{enter}');
+    getModuleSelect().type('test module{enter}');
+    getSubmitButton().click();
+    cy.wait('@createCourse');
+  })
+  })
+})
+
+describe("Module creations functionality", () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/modules', {
+      statusCode: 200,
+      body: [] 
+    }).as('getModules');
+    cy.visit('/create/module');
+    cy.wait('@getUserInfo');
+    cy.wait('@getModules');
+  })
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  })
+
+  it('should prevent form submission with empty form', () => {
+    cy.contains('Create Module').click();
+    getSubmitButton().should('be.disabled');
+  })
+
+  it("should allow a user to creat a new moduele", () => {
+    cy.intercept('POST', '/modules', (req) => {
+      expect(req.body).to.deep.equal({
+        language: "cpp",
+        resources: [],
+        topic: "operation"
+      })
+    }).as('createModule');
+
+    cy.contains('Create Module').click();
+    getTopicSelect().type('operation{enter}');
+    getLanguageSelect().type('cpp{enter}');
+    getSubmitButton().click();
+    cy.wait('@createModule');
+  })
+})
+
 
 describe('Demo creation functionality', () => {
   beforeEach(() => {
