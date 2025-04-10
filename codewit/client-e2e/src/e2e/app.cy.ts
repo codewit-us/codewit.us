@@ -554,7 +554,7 @@ describe("Resource creations functionlity", () => {
   })
 })
 
-describe.only("Course creations functionality", () => {
+describe("Course creations functionality", () => {
   beforeEach(() => {
     mockAdminUser();
     cy.intercept('GET', '/courses', {
@@ -645,7 +645,7 @@ describe("Module creations functionality", () => {
 })
 
 
-describe('Demo creation functionality', () => {
+describe.only('Demo creation functionality', () => {
   beforeEach(() => {
     mockAdminUser();
     cy.intercept('GET', '/exercises', {
@@ -688,7 +688,7 @@ describe('Demo creation functionality', () => {
     }).as('createDemo');
   
     cy.contains('Create Demo').click();
-    getDemoTitle().type('New Demo Title');
+    getTitleInput().type('New Demo Title');
     getYoutubeIdInput().type('8bc-VU3V7lU{enter}');
     getExerciseSelect().type('New Exercise Prompt{enter}');
     getTagSelect().type('console io{enter}');
@@ -702,7 +702,7 @@ describe('Demo creation functionality', () => {
   it('error shows up when posting demo', () => {
   
     cy.contains('Create Demo').click();
-    getDemoTitle().type('New Demo Title');
+    getTitleInput().type('New Demo Title');
     getYoutubeIdInput().type('8bc-VU3V7lU{enter}');
     getExerciseSelect().type('New Exercise Prompt{enter}');
     getTagSelect().type('console io{enter}');
