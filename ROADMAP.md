@@ -216,3 +216,75 @@ This **code execution server** uses Redis-based session authentication and provi
 4. **Security & Cleanup**:
    - Execution is time-limited to prevent infinite loops.
    - Temporary files and directories are deleted after execution.
+
+## Testing
+
+The `codewit/client-e2e` directory contains our end-to-end tests using Cypress.
+
+### Running Tests
+
+- **Interactive Mode**: Run tests with Cypress Test Runner UI
+  ```bash
+  npm run test:gui   # Defined in package.json as "cd client-e2e && npx cypress open"
+  ```
+- **Headless Mode**: Run tests in command line
+  ```bash
+  npm run test       # Defined in package.json as "cd client-e2e && npx cypress run"
+  ```
+
+### Test Structure
+
+- **E2E Tests**: Located in `client-e2e/src/e2e/`
+  - `app.cy.ts` - Main test file containing core application tests
+  - Additional test files can be added following the pattern `*.cy.ts`
+
+### Test Utilities
+
+- **Fixtures**: Located in `client-e2e/src/e2e/fixtures/`
+  - Store static test data used across tests
+  - Example: Mock user data, API responses
+- **Support**: Located in `client-e2e/src/e2e/support/`
+  - Contains custom commands and global configurations
+  - Reusable test utilities and helper functions
+
+### Helpful Resources
+
+- **Cypress Documentation**:
+  - [Getting Started Guide](https://docs.cypress.io/guides/getting-started/writing-your-first-test)
+  - [Best Practices](https://docs.cypress.io/guides/references/best-practices)
+  - [API Reference](https://docs.cypress.io/api/table-of-contents)
+
+- **Testing Patterns**:
+  - [Selecting Elements](https://docs.cypress.io/guides/references/best-practices#Selecting-Elements)
+  - [Network Requests](https://docs.cypress.io/guides/guides/network-requests)
+  - [Authentication Recipes](https://docs.cypress.io/guides/testing-strategies/google-authentication)
+
+### Writing Tests
+
+When writing new tests:
+1. Place test files in `client-e2e/src/e2e/`
+2. Use TypeScript for better type checking and IDE support
+3. Follow the existing patterns in `app.cy.ts`
+4. Group related tests using `describe` blocks
+5. Use meaningful test descriptions that explain the expected behavior
+
+Example test structure:
+```typescript
+describe('Feature Name', () => {
+  beforeEach(() => {
+    // Setup code that runs before each test
+    cy.visit('/')
+  })
+
+  it('should perform expected behavior', () => {
+    // Test implementation
+  })
+})
+```
+
+### CI/CD Integration
+
+Tests are run as part of our continuous integration pipeline. Ensure all tests pass locally before pushing changes:
+```bash
+npm run test
+```
