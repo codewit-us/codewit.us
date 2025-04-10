@@ -18,7 +18,7 @@ export const getInstructorSelect = () => cy.get('[data-testid="instructor-select
 export const getRosterSelect = () => cy.get('[data-testid="roster-select"]');
 
 //read page
-export const getDemoTitle = () => cy.get('[data-testid="title"]');
+export const getDemoTitle = () => cy.get('[data-testid="demo-title"]');
 export const getLikeButton = () => cy.get('[data-testid="like-button"]');
 export const getAuthorTags = () => cy.get('[data-testid="author-tags"]');
 export const getRelatedDemos = () => cy.get('[data-testid="related-demos"]');
