@@ -7,6 +7,9 @@ import {
   Bars3Icon,
   XMarkIcon,
 } from '@heroicons/react/24/solid';
+import {
+  UserCircleIcon
+} from '@heroicons/react/24/outline';
 import { AcademicCapIcon } from '@heroicons/react/24/outline';
 import GoogleLogo from '../logo/GoogleLogo';
 
@@ -52,7 +55,13 @@ const NavBar = ({
         <div className="flex items-center gap-4">
           {name && (
             <div className="flex items-center gap-2 text-accent-500">
-              <AcademicCapIcon className="h-6 w-6" />
+            {
+              admin ? (
+                <AcademicCapIcon className="h-6 w-6" />
+              ) : (
+                <UserCircleIcon className="h-6 w-6" />
+              )
+            }
               <span className="text-[20px] font-medium">{name}</span>
             </div>
           )}
