@@ -13,6 +13,7 @@ import DemoForms from '../pages/DemoForm';
 import UserManagement from '../pages/UserManagement';
 import Error from '../components/error/Error';
 import LoadingPage from '../components/loading/LoadingPage';
+import Dashboard from '../pages/Dashboard';
 import { useState } from 'react';
 
 export function App() {
@@ -75,6 +76,25 @@ export function App() {
           <Route path="resource" element={<ResourceForm />} />
           <Route path="course" element={<CourseForm />} />
         </Route>
+        <Route
+          path="/dashboard"
+          element={
+            user && user.isAdmin ? (
+              <Dashboard
+                courseTitle={courseTitle}
+              />
+            ) : (
+              <Navigate
+                to="/error"
+                state={{
+                  message:
+                    'Oops! Page does not exist. We will return you to the main page.',
+                  statusCode: 401,
+                }}
+              />
+            )
+          }
+        />
         <Route path="/error" element={<Error />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

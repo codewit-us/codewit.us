@@ -105,6 +105,12 @@ const NavBar = ({
           {admin && (
             <>
               <Link
+                to="/dashboard"
+                className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600"
+              >
+                Dashboard
+              </Link>
+              <Link
                 to="/create"
                 className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600"
               >

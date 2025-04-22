@@ -1,9 +1,10 @@
 // codewit/client/src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
+import { User } from "@codewit/interfaces"
 import axios from 'axios';
 
 export function useAuth() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
