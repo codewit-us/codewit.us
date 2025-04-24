@@ -38,7 +38,7 @@ const CodeSubmission = (): JSX.Element => {
       <div className="w-full">
         <div className="flex ">
           <button 
-            className={`px-6 font-medium text-lg ${activeTab === 'outcome' 
+            className={`px-6 font-bold text-lg ${activeTab === 'outcome' 
               ? 'text-white bg-background-700 border-4 border-white border-b-0 border-l-0 ' 
               : 'text-gray-400 border border-white border-b-0 border-l-0'}`}
             onClick={() => setActiveTab('outcome')}
@@ -46,38 +46,24 @@ const CodeSubmission = (): JSX.Element => {
             Outcome
           </button>
            <button 
-            className={`px-6 font-medium text-lg ${activeTab === 'output' 
+            className={`px-6 font-bold text-lg ${activeTab === 'output' 
               ? 'text-white bg-background-700 border-4 border-white border-b-0' 
               : 'text-gray-400 border border-white border-b-0'}`}
             onClick={() => setActiveTab('output')}
           >
             Output
           </button>
-          <button 
-            className={`px-6 font-medium text-lg  ${activeTab === 'errors' 
-              ? 'text-white bg-background-700 border-4 border-white border-b-0' 
-              : 'text-gray-400 border border-white border-b-0'}`}
-            onClick={() => setActiveTab('errors')}
-          >
-            Errors
-          </button>
         </div> 
         
         <div className="relative h-1">
           {activeTab === 'outcome' && (
-            <div className="absolute bottom-0 right-0 h-1 border-b-4 border-white w-[calc(100%-124px)]"></div>
+            <div className="absolute bottom-0 right-0 h-1 border-b-4 border-white w-[calc(100%-127px)]"></div>
           )}
           {activeTab === 'output' && (
-            <div className="absolute bottom-0 left-0 h-1 border-b-4 border-white w-[129px]"></div>
+            <div className="absolute bottom-0 left-0 h-1 border-b-4 border-white w-[132px]"></div>
           )}
           {activeTab === 'output' && (
-            <div className="absolute bottom-0 right-0 h-1 border-b-4 border-white w-[calc(100%-234px)]"></div>
-          )}
-          {activeTab === 'errors' && (
-            <div className="absolute bottom-0 left-0 h-1 border-b-4 border-white w-[236px]"></div>
-          )}
-          {activeTab === 'errors' && (
-            <div className="absolute bottom-0 right-0 h-1 border-b-4 border-white w-[calc(100%-334px)]"></div>
+            <div className="absolute bottom-0 right-0 h-1 border-b-4 border-white w-[calc(100%-240px)]"></div>
           )}
         </div>
       </div>
@@ -85,36 +71,32 @@ const CodeSubmission = (): JSX.Element => {
       <div className="w-full pt-4">
         {activeTab === 'outcome' && (
           <div className="text-white">
-            <h3 className="text-xl mb-2">When user enters '0' or less then 'No pizza is impossible' should be displayed</h3>
+            <h3 className="text-xl font-bold mb-2">When user enters '0' or less then 'No pizza is impossible' should be displayed</h3>
             
             <h4 className="text-2xl mt-6 mb-3">Expected results</h4>
             <div className="border border-cyan-500 p-4 bg-black mb-6">
-              <pre className="text-white font-mono">Diameter of your pizza No pizza is impossible</pre>
+              <p className="text-white font-mono whitespace-pre-wrap">
+                Diameter of your pizza No pizza is impossible
+              </p>
             </div>
             
             <h4 className="text-2xl mb-3">Results from your code</h4>
-            <div className="border border-cyan-500 p-4 bg-black">
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
-              <pre className="text-white font-mono">Diameter of your pizza? Number of slices? Segmentation fault</pre>
+            <div className="border border-cyan-500 p-4 bg-black ">
+              <p className="text-white font-mono whitespace-pre-wrap">
+                Diameter of your pizza? Number of slices? Segmentation fault
+              </p>
             </div>
           </div>
         )}
         {activeTab === 'output' && (
           <div className="text-white">
-            <div className="bg-black p-4 rounded">
-              <p>Diameter of your pizza?</p>
-              <p>No pizza is impossible</p>
+            <div className="border border-cyan-500 p-4 bg-black ">
+              <p className="text-white font-mono whitespace-pre-wrap">
+                Diameter of your pizza?
+              </p>
+              <p className="text-white font-mono whitespace-pre-wrap">
+                No pizza is impossible
+              </p>
             </div>
           </div>
         )}

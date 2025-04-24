@@ -1,12 +1,14 @@
 import {
     DocumentDuplicateIcon
 } from '@heroicons/react/24/solid';
+import bulbLit from '/bulb(lit).svg';
+// import bulbUnlit from '/bulb(unlit).svg';
 
 interface DashboardProps {
     courseTitle: string;
 }
 
-const HorizonScrollBarContent = [
+const MockTopics = [
     "Variables", 
     "Objects", 
     "Decisions", 
@@ -21,7 +23,7 @@ const HorizonScrollBarContent = [
     "Recursion"
 ];
 
-const students = [
+const MockStudents = [
     { name: "Alexandria Virginia", completed: 6 },
     { name: "Bella Sophia", completed: 3 },
     { name: "Cletus Spuckler", completed: 2 },
@@ -46,14 +48,14 @@ const students = [
 
 const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
     return (
-        <div className="flex flex-col items-center h-screen bg-background-500 gap-2">
-            {/* Class Link Box */}
-            <div
-                className="bg-foreground-600 w-3/4 mt-4 rounded-md p-4"
-                style={{
-                    boxShadow: '2px 2px 0 #1a1411',
-                }}
-            >
+            // class link section
+            <div className="h-container-full overflow-auto flex flex-col bg-black items-center gap-2">
+                <div
+                    className="bg-foreground-600 w-3/4 mt-4 rounded-md p-4"
+                    // style={{
+                    //     boxShadow: '2px 2px 0 #1a1411',
+                    // }}
+                >
                 <span className="text-[16px] font-bold text-foreground-200">
                     {courseTitle ? courseTitle + ' - ' : ''}
                     Teacher Dashboard
@@ -63,12 +65,12 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                         Class Link
                     </p>
                     <input
-                        className="p-1 bg-background-500 text-foreground-200 w-1/3 border border-accent-500 text-white"
+                        className="p-1 bg-background-500 text-foreground-200 w-1/3 border border-accent-500 text-white rounded-sm"
                         type="text"
                         placeholder="https://codewit.us/class/ap-comp-sci"
                     />
                     <button 
-                        className="flex rounded-lg p-1 items-center gap-2 border border-accent-500 font-bold text-accent-500 hover:bg-accent-600/20"
+                        className="flex rounded-lg p-1 items-center gap-2 border border-accent-500 font-bold text-accent-500 hover:bg-accent-600/20 rounded-md"
                     >
                         <DocumentDuplicateIcon className="h-6 w-6 text-accent-500" />
                         Copy
@@ -76,24 +78,90 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                 </div>
             </div>
 
-            {/* Student Progress Box */}
-
             <div
-                className="bg-foreground-600 w-3/4 rounded-md p-4"
+                className="bg-foreground-600 w-3/4 rounded-md p-4 mb-10"
                 style={{
                     boxShadow: '2px 2px 0 #1a1411',
                 }}
             >
-                <h1 className="font-bold text-foreground-200 text-[16px]"> 
-                        Progress 
+
+                <h1 className="font-bold text-foreground-200 pb-10 text-[16px]"> 
+                    Progress 
                 </h1>
-                {/* Scroll Bar */}
-                <div className = "mt-6 w-full ">
-                    <span
-                        className="font-bold text-foreground-200 text-[16px]"
-                    > 
-                        Name
-                    </span>
+
+                <div className="overflow-x-auto">
+                    <div className="flex flex-col">
+                        {/* Headers */}
+                        <div className="flex pb-4">
+                            <div className="min-w-[200px] sticky left-0 bg-foreground-600 z-10">
+                                <span className="font-bold text-foreground-200 text-[16px]">
+                                    Name
+                                </span>
+                            </div>
+                            <div className="flex">
+                                {MockTopics.map((topic, index) => (
+                                    <div key={index}>
+                                        <div 
+                                            className="w-[100px] flex justify-center"
+                                            data-tooltip-target={`tooltip-${index}`}
+                                        >
+                                            <span className="font-bold text-foreground-200 text-[14px]">
+                                                {topic.length > 10 
+                                                    ? `${topic.slice(0, 10)}...`
+                                                    : topic
+                                                }
+                                            </span>
+                                        </div>
+                                        <div 
+                                            id={`tooltip-${index}`}
+                                            role="tooltip"
+                                            className="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip"
+                                        >
+                                            {topic}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-6 relative"> 
+                            {MockStudents.map((student, studentIndex) => {
+                                const progressPercent = Math.round((student.completed / MockTopics.length) * 100);
+                                return (
+                                    <div key={studentIndex} className="flex items-center hover:bg-foreground-500/20">
+                                        <span className="text-foreground-200 text-[16px] min-w-[200px] sticky left-0 bg-foreground-600 z-10">
+                                            {student.name}
+                                        </span>
+                                        <div className="relative flex items-center">
+                                            <div 
+                                                className="h-2 bg-alternate-background-500 rounded-full"
+                                                style={{ width: `${MockTopics.length * 100}px` }}
+                                            ></div>
+                                            <div 
+                                                className="absolute h-2 bg-accent-500 rounded-full" 
+                                                style={{ width: `${progressPercent}%` }}
+                                            ></div>
+                                            {student.completed > 0 && (
+                                                <div 
+                                                    className="absolute flex items-center gap-4"
+                                                    style={{ left: `${progressPercent}%`, transform: 'translateX(-20%)' }}
+                                                >
+                                                    <img
+                                                        src={bulbLit}
+                                                        className="size-6 relative z-10"
+                                                        alt="bulb lit"
+                                                    />
+                                                    <span className="text-accent-500 text-sm font-medium">
+                                                        {progressPercent}%
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
