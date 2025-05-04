@@ -104,9 +104,6 @@ module.exports = {
           '50%': { opacity: 0.8 },
         },
       },
-      animation: {
-        'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
-      },
     },
   },
   plugins: [
@@ -114,21 +111,4 @@ module.exports = {
     flowbite.plugin(),
     require('daisyui'),
   ],
-  daisyui: {
-    themes: [
-      {
-        // light: {
-        //   ...require('daisyui/src/theming/themes')['light'],
-        //   primary: '#3da2b4',
-        //   secondary: '#271a13',
-        //   accent: '#f8eedf',
-        //   neutral: '#40312a',
-        //   'base-100': '#ffffff',
-        // },
-        daisyui: {
-          themes: ['coffee'],
-        },
-      },
-    ],
-  },
 };

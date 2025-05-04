@@ -20,7 +20,7 @@ const CodeSubmission = (): JSX.Element => {
 
   const passedTests = checklistItems.filter(item => item.checked).length;
   const totalTests = checklistItems.length;
-  const [activeTab, setActiveTab] = useState('output');
+  const [activeTab, setActiveTab] = useState('outcome');
 
   return (
     <div className="p-4 min-h-full flex flex-col items-center bg-alternate-background-500 rounded-lg shadow-lg border-2 border-white" data-testid="check-list">

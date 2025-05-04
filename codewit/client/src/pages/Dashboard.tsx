@@ -49,7 +49,7 @@ const MockStudents = [
 const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
     return (
             // class link section
-            <div className="h-container-full overflow-auto flex flex-col bg-black items-center gap-2">
+            <div className="h-container-full overflow-auto flex flex-col w-full bg-black items-center gap-2">
                 <div
                     className="bg-foreground-600 w-3/4 mt-4 rounded-md p-4"
                     // style={{
@@ -92,13 +92,13 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                 <div className="overflow-x-auto">
                     <div className="flex flex-col">
                         {/* Headers */}
-                        <div className="flex pb-4">
+                        <div className="flex">
                             <div className="min-w-[200px] sticky left-0 bg-foreground-600 z-10">
                                 <span className="font-bold text-foreground-200 text-[16px]">
                                     Name
                                 </span>
                             </div>
-                            <div className="flex">
+                            <div className="flex pl-14 mb-4">
                                 {MockTopics.map((topic, index) => (
                                     <div key={index}>
                                         <div 
@@ -112,19 +112,12 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                                                 }
                                             </span>
                                         </div>
-                                        <div 
-                                            id={`tooltip-${index}`}
-                                            role="tooltip"
-                                            className="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip"
-                                        >
-                                            {topic}
-                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                         
-                        <div className="space-y-6 relative"> 
+                        <div className="space-y-4 relative"> 
                             {MockStudents.map((student, studentIndex) => {
                                 const progressPercent = Math.round((student.completed / MockTopics.length) * 100);
                                 return (
@@ -141,21 +134,21 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                                                 className="absolute h-2 bg-accent-500 rounded-full" 
                                                 style={{ width: `${progressPercent}%` }}
                                             ></div>
-                                            {student.completed > 0 && (
-                                                <div 
-                                                    className="absolute flex items-center gap-4"
-                                                    style={{ left: `${progressPercent}%`, transform: 'translateX(-20%)' }}
-                                                >
+                                            <div 
+                                                className="absolute flex items-center "
+                                                style={{ left: `${progressPercent}%`, transform: 'translateX(-14%)' }}
+                                            >
+                                                {student.completed > 0 && (
                                                     <img
                                                         src={bulbLit}
                                                         className="size-6 relative z-10"
                                                         alt="bulb lit"
                                                     />
-                                                    <span className="text-accent-500 text-sm font-medium">
-                                                        {progressPercent}%
-                                                    </span>
-                                                </div>
-                                            )}
+                                                )}
+                                                <span className="text-accent-500 text-sm font-medium ml-2 relative">
+                                                    {progressPercent}%
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 );

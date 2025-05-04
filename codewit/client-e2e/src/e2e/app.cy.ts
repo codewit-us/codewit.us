@@ -645,7 +645,7 @@ describe("Module creations functionality", () => {
 })
 
 
-describe.only('Demo creation functionality', () => {
+describe('Demo creation functionality', () => {
   beforeEach(() => {
     mockAdminUser();
     cy.intercept('GET', '/exercises', {
