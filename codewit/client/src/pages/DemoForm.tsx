@@ -8,12 +8,25 @@ import ExerciseSelect from "../components/form/ExerciseSelect";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
 import CreateButton from "../components/form/CreateButton";
+import { Demo } from "@codewit/interfaces";
 import { useFetchDemos, usePostDemo, usePatchDemo, useDeleteDemo } from "../hooks/useDemo";
 import { DemoResponse } from "@codewit/interfaces";
 import { isFormValid } from "../utils/formValidationUtils";
 import LoadingPage from "../components/loading/LoadingPage";
 
+interface DemoForm {
+  uid?: number,
+  title: string,
+  topic: string,
+  tags: string[],
+  language: string,
+  youtube_id: string,
+  youtube_thumbnail: string,
+  exercises: number[]
+}
+
 const DemoForm = (): JSX.Element => {
+
   const { data: demos, setData: setDemos } = useFetchDemos();
   const postDemo = usePostDemo();
   const patchDemo = usePatchDemo();
@@ -21,7 +34,7 @@ const DemoForm = (): JSX.Element => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<DemoForm>({
     uid: undefined as number | undefined,
     title: "",
     youtube_id: "",
@@ -54,11 +67,15 @@ const DemoForm = (): JSX.Element => {
   const handleSubmit = async () => {
     try {
       if (isEditing) {
+        // @ts-ignore
         const updatedDemo = await patchDemo(formData, formData.uid as unknown as number);
+        // @ts-ignore
         setDemos((prev) => prev.map((demo) => (demo.uid === formData.uid ? updatedDemo : demo)));
         toast.success("Demo successfully updated!");
       } else {
+        // @ts-ignore
         const newDemo = await postDemo(formData);
+        // @ts-ignore
         setDemos((prev) => [...prev, newDemo]);
         toast.success("Demo successfully created!");
       }
@@ -77,6 +94,7 @@ const DemoForm = (): JSX.Element => {
   const handleDelete = async (demo: DemoResponse) => {
     try {
       await deleteDemo(demo.uid);
+      // @ts-ignore
       setDemos((prev) => prev.filter((d) => d.uid !== demo.uid));
       toast.success("Demo successfully deleted!");
     } catch {
@@ -149,7 +167,7 @@ const DemoForm = (): JSX.Element => {
             setSelectedTags={(tags) =>
               handleInputChange(
                 "tags",
-                tags.map((tag) => tag.value)
+                tags.map((tag: { value: string; }) => tag.value)
               )
             }
             isMulti
