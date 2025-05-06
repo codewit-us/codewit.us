@@ -1,7 +1,9 @@
 import {
     DocumentDuplicateIcon
 } from '@heroicons/react/24/solid';
+import axios from 'axios';
 import bulbLit from '/bulb(lit).svg';
+import { useEffect } from 'react';
 // import bulbUnlit from '/bulb(unlit).svg';
 
 interface DashboardProps {
@@ -47,6 +49,24 @@ const MockStudents = [
 ];
 
 const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
+
+    useEffect(() => {
+
+        const userId = localStorage.getItem('userId');
+
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`/courses/teacher/${userId}`);
+                console.log(response.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        
+        fetchData();
+
+    }, []);
+
     return (
             // class link section
             <div className="h-container-full overflow-auto flex flex-col w-full bg-black items-center gap-2">

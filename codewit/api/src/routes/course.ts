@@ -4,6 +4,7 @@ import {
   deleteCourse,
   getAllCourses,
   getStudentCourses,
+  getTeacherCourses,
   getCourse,
   updateCourse,
 } from '../controllers/course';
@@ -40,6 +41,16 @@ courseRouter.get('/:uid', async (req, res) => {
 courseRouter.get('/student/:id', async (req, res) => {
   try {
     const courses = await getStudentCourses(req.params.id);
+    res.json(courses);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+courseRouter.get('/teacher/:id', async (req, res) => {
+  try {
+    const courses = await getTeacherCourses(req.params.id);
     res.json(courses);
   } catch (err) {
     console.error(err);

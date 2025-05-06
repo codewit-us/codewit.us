@@ -48,6 +48,7 @@ const ModuleForm = (): JSX.Element => {
 
   const handleResourceChange = (selectedOptions: MultiValue<SelectedTag>) => {
     const resources = selectedOptions.map((option) => option.value);
+    // @ts-ignore
     setFormData((prev) => ({ ...prev, resources }));
   };
 
@@ -61,6 +62,7 @@ const ModuleForm = (): JSX.Element => {
       ...module,
       language: module.language,
       topic: module.topic,
+      // @ts-ignore
       resources: module.resources.map((resource) => resource.uid),
     });
     setIsEditing(true);
