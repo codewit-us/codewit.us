@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import NavBar from '../components/nav/Nav';
 import Home from '../pages/Home';
@@ -14,11 +15,19 @@ import UserManagement from '../pages/UserManagement';
 import Error from '../components/error/Error';
 import LoadingPage from '../components/loading/LoadingPage';
 import Dashboard from '../pages/Dashboard';
-import { useState } from 'react';
+
 
 export function App() {
   const { user, loading, handleLogout } = useAuth();
-  const [courseTitle, setCourseTitle] = useState<string>('');
+  const [courseTitle, setCourseTitle] = useState<string>(() => {
+    return localStorage.getItem('courseTitle') || '';
+  });
+
+  useEffect(() => {
+    if (courseTitle) {
+      localStorage.setItem('courseTitle', courseTitle);
+    }
+  }, [courseTitle]);
 
   if (loading) {
     return <LoadingPage />;

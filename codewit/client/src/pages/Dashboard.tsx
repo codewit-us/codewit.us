@@ -72,9 +72,6 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
             <div className="h-container-full overflow-auto flex flex-col w-full bg-black items-center gap-2">
                 <div
                     className="bg-foreground-600 w-3/4 mt-4 rounded-md p-4"
-                    // style={{
-                    //     boxShadow: '2px 2px 0 #1a1411',
-                    // }}
                 >
                 <span className="text-[16px] font-bold text-foreground-200">
                     {courseTitle ? courseTitle + ' - ' : ''}
@@ -100,9 +97,6 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
 
             <div
                 className="bg-foreground-600 w-3/4 rounded-md p-4 mb-10"
-                style={{
-                    boxShadow: '2px 2px 0 #1a1411',
-                }}
             >
 
                 <h1 className="font-bold text-foreground-200 pb-10 text-[16px]"> 
@@ -111,7 +105,6 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
 
                 <div className="overflow-x-auto">
                     <div className="flex flex-col">
-                        {/* Headers */}
                         <div className="flex">
                             <div className="min-w-[200px] sticky left-0 bg-foreground-600 z-10">
                                 <span className="font-bold text-foreground-200 text-[16px]">
