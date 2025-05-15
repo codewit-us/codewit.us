@@ -19,9 +19,10 @@ The `codewit/client` directory contains the react app that drives the front-end.
 - App.tsx is a file that contains all of the routes of our front-end using react-router. It is located under `codewit/client/src/app/app.tsx`.
   #### Current URLS
   - `/` -> Navigates to Home Page
-  - `/read/:uid` -> Navigates to Read Page
-  - `/create` -> Navigates to Create Page Which Defaults to Create Demo
-  - `/create/exercises` -> Navigates to Create Exercise Page
+  - `/read/:uid` -> Navigates to Read Page (Shows Demo)
+  - `/create/...` -> Navigates to Create Page and various items
+  - `/usermanagement` -> Admin only page to allow users to be promoted/demoted to and from Admin
+  - `/dashboard` -> For Teacher to view their class progress
   - `*` -> Intercepts All Other URLS and displays Error Page
 
 ## Home Page
@@ -68,6 +69,13 @@ The `codewit/client` directory contains the react app that drives the front-end.
 - **Functionality**:
   - The User Management page is supposed to allow **admin** users to promote other users to admins as well
   - URL is also hidden if the user is not an admin or is not signed in.
+ 
+## Dashboard
+- **Location**: `codewit/client/src/pages/Dashboard.tsx`.
+- **Functionality**:
+  - This page is for Teacher's only to view their current classes Progress
+  - Currently WIP, since we don't have any progress checkers, but we also need a middleware to check if a user is an instructor, since it's currently an Admin locked page.
+
 
 ## Back-end
 
@@ -288,3 +296,7 @@ Tests are run as part of our continuous integration pipeline. Ensure all tests p
 ```bash
 npm run test
 ```
+
+### Things To Do
+1. Like button on Frontend is still not integrated with backend since the backend does not return if user has liked video
+2. Teacher only navigation for Dashboard
