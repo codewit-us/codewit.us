@@ -12,7 +12,6 @@ import {
 } from '@heroicons/react/24/solid';
 import bulbLit from '/bulb(lit).svg';
 import bulbUnlit from '/bulb(unlit).svg';
-import React from 'react';
 
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center py-20">
@@ -31,7 +30,7 @@ const UnauthorizedState = () => (
       <input
         type="submit"
         value="Log in"
-        className="mt-4 px-5 py-2.5 flex items-center text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-4 focus:ring-blue-300"
+        className="mt-4 px-5 py-2.5 flex items-center text-sm font-medium text-white bg-accent-500 rounded-lg hover:bg-accent-600 focus:ring-4 focus:ring-accent-300"
       />
     </form>
   </div>

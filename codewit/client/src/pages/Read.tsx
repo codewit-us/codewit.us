@@ -8,7 +8,7 @@ import {
   Demo as DemoType,
   ExerciseResponse,
 } from '@codewit/interfaces';
-import Checklist from '../components/codeblock/Checklist';
+import CodeSubmission from '../components/codeblock/CodeSubmission';
 import Loading from '../components/loading/LoadingPage';
 import HelpfulLinks from '../components/videoui/HelpfulLinks';
 import Exercises from '../components/codeblock/Exercises';
@@ -36,9 +36,10 @@ const Read = (): JSX.Element => {
     error: boolean;
   };
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
-  const [relatedDemosOpen, setRelatedDemosOpen] = useState<boolean>(false);
-  const [helpfulLinksOpen, setHelpfulLinksOpen] = useState<boolean>(false);
-  const showBorder: boolean = relatedDemosOpen || helpfulLinksOpen;
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  // const [relatedDemosOpen, setRelatedDemosOpen] = useState<boolean>(false);
+  // const [helpfulLinksOpen, setHelpfulLinksOpen] = useState<boolean>(false);
+  // const showBorder: boolean = relatedDemosOpen || helpfulLinksOpen;
 
   if (loading) {
     return <Loading />;
@@ -64,6 +65,7 @@ const Read = (): JSX.Element => {
     };
 
     try {
+      setIsSubmitting(true);
       await axios.post('/attempts', submission);
       const isSuccess = true;
       if (isSuccess) {
@@ -73,6 +75,8 @@ const Read = (): JSX.Element => {
       }
     } catch (e) {
       console.error('Error submitting code:', e);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -85,7 +89,7 @@ const Read = (): JSX.Element => {
   };
 
   return (
-    <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-zinc-900">
+    <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-black">
 
       {/* left side */}
       <Resizable
@@ -162,11 +166,14 @@ const Read = (): JSX.Element => {
               ),
             }}
           >
-            <CodeBlock onSubmit={handleSubmission} />
+            <CodeBlock 
+              onSubmit={handleSubmission}
+              isSubmitting={isSubmitting}
+            />
           </Resizable>
 
           <div className="flex-1 overflow-y-auto mt-2">
-            <Checklist />
+            <CodeSubmission />
           </div>
         </div>
       </div>

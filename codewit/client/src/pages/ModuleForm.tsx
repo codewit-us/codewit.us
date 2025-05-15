@@ -29,6 +29,8 @@ const ModuleForm = (): JSX.Element => {
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Module>({
+    demos: [],
+    uid: undefined,
     language: "cpp",
     topic: "",
     resources: [],
@@ -46,19 +48,21 @@ const ModuleForm = (): JSX.Element => {
 
   const handleResourceChange = (selectedOptions: MultiValue<SelectedTag>) => {
     const resources = selectedOptions.map((option) => option.value);
+    // @ts-ignore
     setFormData((prev) => ({ ...prev, resources }));
   };
 
   const handleTopicSelect = (topics: SelectedTag | SelectedTag[]) => {
     const topic = Array.isArray(topics) ? topics[0].value : topics.value;
-    setFormData((prev) => ({ ...prev, topic }));
+    setFormData((prev) => ({ ...prev, topic: String(topic) }));
   };
 
   const handleEdit = (module: Module) => {
     setFormData({
       ...module,
-      language: module.language.name || module.language,
+      language: module.language,
       topic: module.topic,
+      // @ts-ignore
       resources: module.resources.map((resource) => resource.uid),
     });
     setIsEditing(true);
@@ -67,7 +71,11 @@ const ModuleForm = (): JSX.Element => {
 
   const handleDelete = async (module: Module) => {
     try {
-      await deleteModule(module.uid);
+      if (module.uid !== undefined) {
+        await deleteModule(module.uid);
+      } else {
+        toast.error("Module UID is undefined. Cannot delete module.");
+      }
       setExistingModules((prev) =>
         prev.filter((mod) => mod.uid !== module.uid)
       );
@@ -102,7 +110,7 @@ const ModuleForm = (): JSX.Element => {
   };
 
   const resetForm = () => {
-    setFormData({ language: "cpp", topic: "", resources: [] });
+    setFormData({ demos: [], uid: undefined, language: "cpp", topic: "", resources: [] });
     setIsEditing(false);
   };
 

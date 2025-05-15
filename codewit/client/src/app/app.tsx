@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import NavBar from '../components/nav/Nav';
 import Home from '../pages/Home';
@@ -13,11 +14,20 @@ import DemoForms from '../pages/DemoForm';
 import UserManagement from '../pages/UserManagement';
 import Error from '../components/error/Error';
 import LoadingPage from '../components/loading/LoadingPage';
-import { useState } from 'react';
+import Dashboard from '../pages/Dashboard';
+
 
 export function App() {
   const { user, loading, handleLogout } = useAuth();
-  const [courseTitle, setCourseTitle] = useState<string>('');
+  const [courseTitle, setCourseTitle] = useState<string>(() => {
+    return localStorage.getItem('courseTitle') || '';
+  });
+
+  useEffect(() => {
+    if (courseTitle) {
+      localStorage.setItem('courseTitle', courseTitle);
+    }
+  }, [courseTitle]);
 
   if (loading) {
     return <LoadingPage />;
@@ -75,6 +85,25 @@ export function App() {
           <Route path="resource" element={<ResourceForm />} />
           <Route path="course" element={<CourseForm />} />
         </Route>
+        <Route
+          path="/dashboard"
+          element={
+            user && user.isAdmin ? (
+              <Dashboard
+                courseTitle={courseTitle}
+              />
+            ) : (
+              <Navigate
+                to="/error"
+                state={{
+                  message:
+                    'Oops! Page does not exist. We will return you to the main page.',
+                  statusCode: 401,
+                }}
+              />
+            )
+          }
+        />
         <Route path="/error" element={<Error />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -9,15 +9,12 @@ interface Exercise {
 }
 
 interface ExerciseResponse {
+  prompt: string;
+  topic: string;
+  tags: string[];
+  language: string;
   referenceTest: string;
   uid: number;
-  topic: string;
-  prompt: string;
-  updatedAt: string;
-  createdAt: string;
-  language: string | {name:string;};
-  tags: Tag[];
-  testing_script: string;
 }
 
 interface ExerciseFormData{
@@ -61,18 +58,14 @@ interface SelectedTag {
 }
 
 interface DemoResponse {
-  likes: number;
-  uid: number;
-  title: string;
-  topic: string;
-  youtube_id: string;
-  youtube_thumbnail: string;
-  updatedAt: string;
-  createdAt: string;
-  exercises: Exercise[];
-  tags: string[];
-  language: string;
-  languageUid: string;
+  uid: number,
+  title: string,
+  topic: string,
+  tags: string[],
+  language: string,
+  youtube_id: string,
+  youtube_thumbnail: string,
+  exercises: number[]
 }
 
 interface DemoFormData {
@@ -104,11 +97,16 @@ interface Course {
     username: string;
     email: string;
   }>;
+  roster: Array<{
+    uid: number;
+    username: string;
+    email: string;
+  }>;
 }
 
 interface Module {
   demos: any;
-  uid: number;
+  uid: number | undefined;
   topic: string;
   language: string;
   resources: Resource[];
