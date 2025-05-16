@@ -102,7 +102,7 @@ const CourseForm = (): JSX.Element => {
       };
 
       if (isEditing) {
-        const updatedCourse = await patchCourse(payload, formData.id as number);
+        const updatedCourse = await patchCourse(payload, formData.id as unknown as number);
         setCourses((prev) => prev.map((course) => (course.id === formData.id ? updatedCourse : course)));
         toast.success("Course successfully updated!");
       } else {
@@ -163,6 +163,7 @@ const CourseForm = (): JSX.Element => {
             <button
               onClick={handleSubmit}
               disabled={!isValid}
+              data-testid="submit-button"
               className={`px-4 py-2 rounded-md ${
                 isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
               }`}
@@ -200,37 +201,40 @@ const CourseForm = (): JSX.Element => {
             initialLanguage={formData.language}
           />
 
-          <div>
+          <div data-testid="module-select">
             <InputLabel htmlFor="modules">Modules</InputLabel>
             <Select
               id="modules"
               isMulti
               options={moduleOptions}
               styles={SelectStyles}
+              // @ts-ignore
               value={moduleOptions.filter((option) => formData.modules.includes(option.value))}
               onChange={(selectedOption) => handleSelectChange(selectedOption, "modules")}
             />
           </div>
 
-          <div>
+          <div data-testid="instructor-select">
             <InputLabel htmlFor="instructors">Instructors</InputLabel>
             <Select
               id="instructors"
               isMulti
               options={userOptions}
               styles={SelectStyles}
+              // @ts-ignore
               value={userOptions.filter((option) => formData.instructors.includes(option.value))}
               onChange={(selectedOption) => handleSelectChange(selectedOption, "instructors")}
             />
           </div>
 
-          <div>
+          <div data-testid="roster-select">
             <InputLabel htmlFor="roster">Roster</InputLabel>
             <Select
               id="roster"
               isMulti
               options={userOptions}
               styles={SelectStyles}
+              // @ts-ignore
               value={userOptions.filter((option) => formData.roster.includes(option.value))}
               onChange={(selectedOption) => handleSelectChange(selectedOption, "roster")}
             />

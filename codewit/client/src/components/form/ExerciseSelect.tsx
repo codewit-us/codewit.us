@@ -8,7 +8,7 @@ import { ExerciseResponse } from '@codewit/interfaces';
 
 interface ExerciseSelectProps {
   onSelectExercises: (exercises: string[]) => void;
-  initialExercises: string[];
+  initialExercises: number[];
 }
 
 interface Option {
@@ -23,7 +23,7 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
 
   useEffect(() => {
     if (initialExercises && initialExercises.length > 0) {
-      const initialSelection = exercises.filter(exercise => initialExercises.includes(exercise.value));
+      const initialSelection = exercises.filter(exercise => initialExercises.includes(Number(exercise.value)));
       setSelectedOptions(initialSelection);
     }
   }, [initialExercises, exercises]);

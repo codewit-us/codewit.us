@@ -71,7 +71,7 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
   }
 
   return (
-    <div className="rounded-md border border-gray-700 bg-gray-900 text-gray-400">
+    <div className="rounded-md border border-gray-700 bg-gray-900 text-gray-400 h-full">
       <div className="overflow-y-auto h-[80vh] rounded-t-md">
         <Table
           hoverable

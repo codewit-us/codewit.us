@@ -1,41 +1,383 @@
-import { getSubmitButton, 
-         getTagSelect, 
-         getLanguageSelect,
-         getExercisePrompt,
-         getTopicSelect 
-      } from "../support/app.po";
+import {
+  getTagSelect,
+  getLanguageSelect,
+  getExercisePrompt,
+  getTopicSelect,
+  getNavBar,
+  mockNonAdminUser,
+  mockAdminUser,
+  mockStudentCourses,
+  mockEmptyStudentCourses,
+  getHomeModule,
+  getResourceSelect,
+  getModuleSelect,
+  getInstructorSelect,
+  getRosterSelect,
+  getYoutubeIdInput,
+  getExerciseSelect,
+  getTitleInput,
+  interceptReadPage,
+  getDemoTitle,
+  getLikeButton,
+  getAuthorTags,
+  getRelatedDemos,
+  getHelpfulLinks,
+  getCodeEditor,
+  getResetButton,
+  getSubmitButton,
+  getCheckList,
+  getExerciseReferenceTest,
+  getUrlInput,
+  getSourceInput
+} from '../support/app.po';
 
-describe('Testing App & App Routes', () => {
-
+describe('Testing Home Page', () => {
   it('should render successfully', () => {
     cy.visit('/');
     cy.get('body').should('be.visible');
   });
 
-  it('navbar shows up correctly', () => {
+  it('should display sign in message and login button that points to Google', () => {
     cy.visit('/');
-    cy.contains('home').should('be.visible');
-    cy.contains('create').should('be.visible');
+
+    cy.contains('Please Sign In').should('be.visible');
+
+    // find the form and assert it has the correct action
+    cy.get('form[action="http://localhost:3001/oauth2/google"]').should(
+      'exist'
+    );
+
+    // find the input button and check its value
+    cy.get('input[type="submit"]')
+      .should('have.value', 'Log in')
+      .and('be.visible');
   });
 
-  it('navbar interaction to create page works correctly', () => {
+  it('displays loading screen initially', () => {
     cy.visit('/');
-    cy.contains('create').click();
-    cy.contains('Create Demo Exercise').should('be.visible');
+
+    cy.get('[data-testid="loading"]').should('exist');
   });
 
-  it('should navigate to the error page when an undefined route is accessed', () => {
-    cy.visit('/some/undefined/route');
-    cy.contains('404 ERROR').should('be.visible');
+  it('navbar should have home link, and login with google button', () => {
+    cy.visit('/');
+
+    getNavBar().click();
+    // home nav
+    cy.contains('a', 'Home').should('be.visible').and('have.attr', 'href', '/');
+
+    // google link
+    cy.get('form[action="http://localhost:3001/oauth2/google"]').within(() => {
+      cy.get('button')
+        .should('contain.text', 'Log In with Google')
+        .and('be.visible');
+    });
   });
 
+  it('error should show with bad course request', () => {
+    mockNonAdminUser();
+    cy.visit('/');
+    cy.wait('@getUserInfo');
+    cy.contains('400Error').should('be.visible');
+    cy.contains('Failed to fetch courses. Please try again later.').should(
+      'be.visible'
+    );
+  });
+
+  it('show course with module on home page', () => {
+    mockNonAdminUser();
+    mockStudentCourses('test-google-id');
+    cy.visit('/');
+    cy.wait('@getUserInfo');
+    cy.wait('@getStudentCourses');
+
+    cy.contains('Intro to JavaScript').should('be.visible');
+    cy.contains('JavaScript').should('be.visible');
+
+    cy.contains('Choose a lesson:').should('be.visible');
+    cy.contains('Variables 101').should('be.visible');
+  });
+
+  it('show course with no modules on home page', () => {
+    mockNonAdminUser();
+    mockEmptyStudentCourses('test-google-id');
+    cy.visit('/');
+    cy.wait('@getUserInfo');
+    cy.wait('@getStudentCourses');
+
+    cy.contains('No Courses Available').should('be.visible');
+    cy.contains('Please check back later for available courses.').should(
+      'be.visible'
+    );
+  });
+
+  it('show username in navbar for signed in user', () => {
+    mockNonAdminUser();
+    mockEmptyStudentCourses('test-google-id');
+    cy.visit('/');
+    cy.wait('@getUserInfo');
+    cy.wait('@getStudentCourses');
+
+    cy.contains('testuser').should('be.visible');
+  });
+
+  it('navbar should have home page and logout for non admin user', () => {
+    mockNonAdminUser();
+    mockEmptyStudentCourses('test-google-id');
+    cy.visit('/');
+    cy.wait('@getUserInfo');
+    cy.wait('@getStudentCourses');
+
+    cy.contains('testuser').should('be.visible');
+
+    getNavBar().click();
+
+    // home nav
+    cy.contains('a', 'Home').should('be.visible').and('have.attr', 'href', '/');
+
+    cy.get('button').should('contain.text', 'Logout').and('be.visible');
+  });
+
+  it('navbar should have multiple options for admin user', () => {
+    mockAdminUser();
+    mockEmptyStudentCourses('admin-google-id');
+    cy.visit('/');
+    cy.wait('@getUserInfo');
+    cy.wait('@getStudentCourses');
+
+    cy.contains('adminuser').should('be.visible');
+
+    getNavBar().click();
+
+    // home nav
+    cy.contains('a', 'Home').should('be.visible').and('have.attr', 'href', '/');
+
+    cy.contains('a', 'Create')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create');
+
+    cy.contains('a', 'Manage Users')
+      .should('be.visible')
+      .and('have.attr', 'href', '/usermanagement');
+
+    cy.get('button').should('contain.text', 'Logout').and('be.visible');
+  });
 });
 
+describe('Testing Create Page', () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.visit('/create');
+  });
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  });
+
+  it('should show all possible creations on side', () => {
+    cy.contains('a', 'Module')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/module');
+
+    cy.contains('a', 'Course')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/course');
+
+    cy.contains('a', 'Demo')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/demo');
+
+    cy.contains('a', 'Exercise')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/exercise');
+
+    cy.contains('a', 'Resource')
+      .should('be.visible')
+      .and('have.attr', 'href', '/create/resource');
+  });
+
+  it('should show table modules options on create page', () => {
+    cy.contains('Module').click();
+
+    cy.contains('Topic').should('be.visible');
+    cy.contains('Language').should('be.visible');
+    cy.contains('Resources').should('be.visible');
+    cy.contains('Actions').should('be.visible');
+  });
+
+  it('should show table course options on create page', () => {
+    cy.contains('Course').click();
+
+    cy.contains('Title').should('be.visible');
+    cy.contains('Module').should('be.visible');
+    cy.contains('Instructors').should('be.visible');
+    cy.contains('Roster').should('be.visible');
+    cy.contains('Actions').should('be.visible');
+  });
+
+  it('should show table demo options on create page', () => {
+    cy.contains('Demo').click();
+
+    cy.contains('Title').should('be.visible');
+    cy.contains('Topic').should('be.visible');
+    cy.contains('Language').should('be.visible');
+    cy.contains('Actions').should('be.visible');
+  });
+
+  it('should show table exercise options on create page', () => {
+    cy.contains('Exercise').click();
+
+    cy.contains('Prompt').should('be.visible');
+    cy.contains('Topic').should('be.visible');
+    cy.contains('Language').should('be.visible');
+    cy.contains('Actions').should('be.visible');
+  });
+
+  it('should show table resources options on create page', () => {
+    cy.contains('Resource').click();
+
+    cy.contains('Title').should('be.visible');
+    cy.contains('URL').should('be.visible');
+    cy.contains('Source').should('be.visible');
+    cy.contains('Actions').should('be.visible');
+  });
+
+  it('should show resource create form modal with fields', () => {
+    cy.contains('Resource').click();
+    cy.contains('Create Resource').click();
+
+    cy.get('input[name="title"]').should('be.visible');
+    cy.get('input[name="url"]').should('be.visible');
+    cy.get('input[name="source"]').should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+
+  it('should show exercise create form modal with fields', () => {
+    cy.visit('/create/exercise');
+
+    cy.contains('Create Exercise').click();
+
+    cy.get('[data-testid="prompt"]').should('exist');
+    cy.contains('Reference Test').scrollIntoView().should('be.visible');
+
+    getLanguageSelect().should('be.visible');
+    getTagSelect().should('be.visible');
+    cy.contains('Select Topic').should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+
+  it('should show module create form modal with fields', () => {
+    cy.visit('/create/module');
+
+    cy.contains('Create Module').click();
+
+    getTopicSelect().should('be.visible');
+    getLanguageSelect().should('be.visible');
+    getResourceSelect().should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+
+  it('should show course create form modal with fields', () => {
+    cy.visit('/create/course');
+
+    cy.contains('Create Course').click();
+
+    getTitleInput().should('be.visible');
+    getLanguageSelect().should('be.visible');
+    getModuleSelect().should('be.visible');
+    getInstructorSelect().should('be.visible');
+    getRosterSelect().should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+
+  it('should show demo create form modal with fields', () => {
+    cy.visit('/create/demo');
+
+    cy.contains('Create Demo').click();
+
+    getLanguageSelect().should('be.visible');
+    getTopicSelect().should('be.visible');
+    getTagSelect().should('be.visible');
+    getYoutubeIdInput().should('be.visible');
+    getTitleInput().should('be.visible');
+    getExerciseSelect().should('be.visible');
+
+    getSubmitButton().should('be.disabled');
+    cy.contains('Cancel').should('be.visible');
+  });
+});
+
+describe('Testing Read Page', () => {
+  beforeEach(() => {
+    mockNonAdminUser();
+    interceptReadPage();
+
+    cy.visit('/read/1');
+    cy.wait('@getReadPage');
+    cy.wait('@getUserInfo');
+  });
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  });
+
+  it('should show demo title', () => {
+    getDemoTitle().should('be.visible');
+  });
+
+  it('should show like button', () => {
+    getLikeButton().should('be.visible');
+  });
+
+  it('should show author tags', () => {
+    getAuthorTags().should('be.visible');
+  });
+
+  it('should show related demos', () => {
+    getRelatedDemos().should('be.visible');
+    getRelatedDemos().find('summary').click();
+    getRelatedDemos().find('.overflow-x-auto').should('be.visible');
+  });
+
+  it('should show helpful links', () => {
+    getHelpfulLinks().should('be.visible');
+    getHelpfulLinks().find('summary').click();
+    getHelpfulLinks().find('.space-y-2').should('be.visible');
+  });
+
+  it('should display code editor', () => {
+    getCodeEditor().should('be.visible');
+
+    getCodeEditor().contains('Hello').should('not.exist');
+  });
+
+  it('should show reset button', () => {
+    getResetButton().should('be.visible');
+  });
+
+  it('should show submit button', () => {
+    getSubmitButton().should('be.visible');
+  });
+
+  it('should display checklist with results and test items', () => {
+    getCheckList().should('be.visible');
+    getCheckList().contains('Results').should('be.visible');
+  });
+});
 
 describe('Exercise creation functionality', () => {
-
   beforeEach(() => {
+    mockAdminUser();
     cy.visit('/create/exercise');
+    cy.wait('@getUserInfo');
   });
 
   it('should render successfully', () => {
@@ -43,357 +385,436 @@ describe('Exercise creation functionality', () => {
   });
 
   it('prevents form submission with empty prompt', () => {
-    cy.get('form').within(() => {
-      getSubmitButton().should('be.disabled');
-    });
-    cy.url().should('include', '/create/exercise');
+    cy.contains('Create Exercise').click();
+    getSubmitButton().should('be.disabled');
   });
 
   it('allows a user to create a new exercise', () => {
+    cy.contains('Create Exercise').click();
     getExercisePrompt().type('New Exercise Prompt');
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     getTagSelect().click().type('console io{enter}');
     // eslint-disable-next-line cypress/unsafe-to-chain-command
     getTagSelect().click().type('customtag{enter}');
     getTopicSelect().click().type('console io{enter}');
-    getLanguageSelect().select('cpp');
-    cy.get('form').submit();
-    cy.contains('New Exercise Prompt').should('be.visible');
-  });
+    getExerciseReferenceTest().click().type('console.log("Hello World");');
 
-  it('allows a user to edit an existing exercise', () => {
-    cy.get('[id="edit-0"]').click();
-    getExercisePrompt().clear();
-    getExercisePrompt().type('Updated Exercise Prompt');
-    getLanguageSelect().select('Java');
-    cy.get('form').submit();
-    cy.contains('Updated Exercise').should('be.visible');
-  });
-
-  it('exercise post throws error and navigates to error page', () => {
+    // intercept exercise and return 200
     cy.intercept('POST', '/exercises', {
-      statusCode: 500, 
+      statusCode: 200,
+      body: {
+        id: 1,
+        prompt: 'New Exercise Prompt',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        } 
+      }
+    }).as('createExercise');
+
+    getSubmitButton().click();
+    cy.wait('@createExercise');
+  });
+
+  it('exercise post throws error and error toast pops up', () => {
+    cy.intercept('POST', '/exercises', {
+      statusCode: 500,
       body: {
         message: 'Internal server error',
       },
     }).as('createExerciseError');
-    getExercisePrompt().type('Second Exercise Prompt');
+    cy.contains('Create Exercise').click();
+    getExercisePrompt().type('New Exercise Prompt');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
+    getTagSelect().click().type('console io{enter}');
+    // eslint-disable-next-line cypress/unsafe-to-chain-command
     getTagSelect().click().type('customtag{enter}');
     getTopicSelect().click().type('console io{enter}');
-    getLanguageSelect().select('Java');
-    cy.get('form').submit();
+    getExerciseReferenceTest().click().type('console.log("Hello World");');
+    getSubmitButton().click();
     cy.wait('@createExerciseError');
-    cy.contains('Something Went Wrong...').should('be.visible');
+    cy.contains('Error saving the exercise').should('be.visible');
+  });
+});
+
+describe('Exercise Editing/Delete functionality', () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/exercises', {
+      statusCode: 200,
+      body: [{
+        uid: 1,
+        prompt: 'New Exercise Prompt',
+        referenceTest: 'console.log("Hello World");',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        } 
+      }]
+    }).as('getExercise');
+    cy.visit('/create/exercise');
+    cy.wait('@getUserInfo');
+    cy.wait('@getExercise');
   });
 
-  it('exercise patch throws error and navigates to error page', () => {
-    cy.intercept('PATCH', '/exercises/*', {
-      statusCode: 500, 
-      body: {
-        message: 'Internal server error',
-      },
-    }).as('createExercisePatchError');
-    cy.get('[id="edit-0"]').click();
-    getExercisePrompt().clear();
-    getExercisePrompt().type('Updated Exercise Prompt');
-    cy.get('form').submit();
-    cy.wait('@createExercisePatchError');
-    cy.contains('Something Went Wrong...').should('be.visible');
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
   });
 
-  it('allows a user to delete an exercise', () => {
-    cy.get('[id="delete-0"]').click();
-    cy.contains('Updated Exercise Prompt').should('not.exist');
+  it('edit should show existing data', () => {
+    cy.contains('Edit').click();
+    getExercisePrompt().contains('New Exercise Prompt').should('be.visible');
   });
 
-  it('allows a user to create another new exercise', () => {
-    getExercisePrompt().type('Second Exercise Prompt');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('customtag{enter}');
-    getTopicSelect().click().type('console io{enter}');
-    getLanguageSelect().select('cpp');
-    cy.get('form').submit();
-    cy.contains('Second Exercise Prompt').should('be.visible');
+  it('edit should throw error', () => {
+    cy.contains('Edit').click();
+    getSubmitButton().click();
+    cy.contains('Error saving the exercise').should('be.visible');
+  });
+
+  it('edit should send updated exercise data in PATCH request', () => {
+    // intercept PATCH and alias it
+    cy.intercept('PATCH', '/exercises/*', (req) => {
+      req.alias = 'patchExercise';
+    });
+  
+    // click edit
+    cy.contains('Edit').click();
+  
+    // change the prompt
+    getExercisePrompt().clear().type('Edited Exercise Prompt');
+  
+    // click submit
+    getSubmitButton().click();
+  
+    // wait and check the body
+    cy.wait('@patchExercise').its('request.body').should((body) => {
+      expect(body.prompt).to.equal('Edited Exercise Prompt');
+      expect(body.topic).to.equal('console io');
+      expect(body.tags).to.include.members(['console io', 'customtag']);
+      expect(body.language).to.equal('cpp');
+      expect(body.referenceTest).to.equal('console.log("Hello World");');
+    });
+  });  
+
+  it('should send DELETE request to correct exercise uid', () => {
+    cy.intercept('DELETE', '/exercises/1', (req) => {
+      req.alias = 'deleteExercise';
+    });
+  
+    cy.contains('Delete').click();
+  
+    cy.wait('@deleteExercise').its('request.url').should('include', '/exercises/1');
   });
 
 });
 
-describe('test out create form functionality', () => {
+describe("Resource creations functionlity", () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/resources', {
+      statusCode: 200,
+      body: []
+    }).as("getResources");
+    cy.visit("/create/resource");
+    cy.wait("@getUserInfo");
+    cy.wait("@getResources")
+  })
 
-  beforeEach(() => { cy.visit('/create') });
+  it("should render successfully", () => {
+    cy.get('body').should('be.visible');
+  })
 
-  it('allows users to enter a video title', () => {
-    cy.get('input[name="title"]').type('New Demo Title');
-    cy.get('input[name="title"]').should('have.value', 'New Demo Title');
-  });
-
-  it('displays an error if the API call fails while fetching videos', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
-      statusCode: 500,
-    }).as('getVideosFail');
-    cy.wait('@getVideosFail');
-    cy.contains('Failed to fetch videos. Please try again later.').should('be.visible');
-  });
-
+  it('should prevent form submission with empty form', () => {
+    cy.contains('Create Resource').click();
+    getSubmitButton().should('be.disabled');
+  })
   
-  it('fills and submits a new demo exercise with an exercise', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
-      statusCode: 200,
-      body: {
-        items: [
-          {
-            id: { videoId: '9Z6mWJXR-6M' },
-            snippet: { title: 'Mock Video Title' },
-          },
-        ],
-      },
-    }).as('getVideos');
-    cy.wait('@getVideos');
-    cy.get('input[name="title"]').type('2nd Demo Exercise');
-    cy.get('[id="youtube_id"]').type('Mock Video Title{enter}');
-    cy.get('div[id="exercise-select"]').click();
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('customtag{enter}');
-    getTopicSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get('[id="exercise-select"]').click().type('Second Exercise Prompt{enter}');
+  it('should allow a user to create a new resource', () => {
+    cy.intercept('POST', '/resources', (req) => {
+      expect(req.body).to.deep.equal({
+        url: 'https://example.com/resource',
+        title: 'New Resource Title',
+        source: 'Example',
+        likes: 0
+      });
+    }).as('createResource');
+    
+    cy.contains('Create Resource').click();
+    
+    getTitleInput().type('New Resource Title');
+    getUrlInput().type('https://example.com/resource');
+    getSourceInput().type('Example');
+    
     getSubmitButton().click();
-    cy.contains('2nd Demo Exercise').should('be.visible');
-    cy.contains('1 Exercises').should('be.visible');
+    
+    cy.wait('@createResource');
+  })
+})
+
+describe("Course creations functionality", () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/courses', {
+      statusCode: 200,
+      body: []
+    }).as('getCourse');
+    cy.visit('/create/course');
+    cy.wait('@getUserInfo');
+    cy.wait('@getCourse');
+  })
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  })
+
+  it('should prevent form submission with empty form', () => {
+    cy.contains('Create Course').click();
+    getSubmitButton().should('be.disabled');
+  })
+
+  it('should allow a user to create a new course', () => {
+    cy.intercept('POST', '/courses', (req) => {
+      expect(req.body).to.deep.equal({
+        id: 1,
+        instructor: 'test instructor',
+        language: 'cpp',
+        modules: [],
+        roster: [],
+        title: 'New Course Title'
+      })
+    }).as('createCourse');
+
+  it('should allow a user to create a new course', () => {
+    cy.intercept('POST', '/courses', (req) => {    expect(req.body).to.deep.equal({
+        title: 'New Course Title',
+        language: 'cpp',
+      })
+    }).as('createCourse');
+
+    cy.contains('Create Course').click();
+    getTitleInput().type('New Course Title');
+    getLanguageSelect().type('cpp{enter}');
+    getInstructorSelect().type('test instructor{enter}');
+    getRosterSelect().type('test student{enter}');
+    getModuleSelect().type('test module{enter}');
+    getSubmitButton().click();
+    cy.wait('@createCourse');
+  })
+  })
+})
+
+describe("Module creations functionality", () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/modules', {
+      statusCode: 200,
+      body: [] 
+    }).as('getModules');
+    cy.visit('/create/module');
+    cy.wait('@getUserInfo');
+    cy.wait('@getModules');
+  })
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  })
+
+  it('should prevent form submission with empty form', () => {
+    cy.contains('Create Module').click();
+    getSubmitButton().should('be.disabled');
+  })
+
+  it("should allow a user to creat a new moduele", () => {
+    cy.intercept('POST', '/modules', (req) => {
+      expect(req.body).to.deep.equal({
+        language: "cpp",
+        resources: [],
+        topic: "operation"
+      })
+    }).as('createModule');
+
+    cy.contains('Create Module').click();
+    getTopicSelect().type('operation{enter}');
+    getLanguageSelect().type('cpp{enter}');
+    getSubmitButton().click();
+    cy.wait('@createModule');
+  })
+})
+
+
+describe('Demo creation functionality', () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/exercises', {
+      statusCode: 200,
+      body: [{
+        uid: 1,
+        prompt: 'New Exercise Prompt',
+        referenceTest: 'console.log("Hello World");',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        }
+      }]
+    }).as('getExercise');
+    cy.visit('/create/demo');
+    cy.wait('@getUserInfo');
   });
 
-  it('fills and submits a new demo with no exercises', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
-      statusCode: 200,
-      body: {
-        items: [
-          {
-            id: { videoId: '9Z6mWJXR-6M' },
-            snippet: { title: 'Mock Video Title' },
-          },
-        ],
-      },
-    }).as('getVideos');
-    cy.wait('@getVideos');
-    cy.get('input[name="title"]').type('New Demo');
-    cy.get('[id="youtube_id"]').type('Mock Video Title{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    getTagSelect().click().type('customtag{enter}');
-    getTopicSelect().click().type('console io{enter}');
-    getSubmitButton().click();
-    cy.contains('New Demo').should('be.visible');
-    cy.contains('0 Exercises').should('be.visible');
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
   });
 
+  it('prevents form submission with empty form', () => {
+    cy.contains('Create Demo').click();
+    getSubmitButton().should('be.disabled');
+  });
+
+  it('allows a user to create a new demo', () => {
+    cy.intercept('POST', '/demos', (req) => {
+      expect(req.body).to.deep.equal({
+        title: 'New Demo Title',
+        youtube_id: '8bc-VU3V7lU',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+        topic: 'operation',
+        language: 'cpp',
+        tags: ['console io'],
+        exercises: [1]
+      });
+    }).as('createDemo');
+  
+    cy.contains('Create Demo').click();
+    getTitleInput().type('New Demo Title');
+    getYoutubeIdInput().type('8bc-VU3V7lU{enter}');
+    getExerciseSelect().type('New Exercise Prompt{enter}');
+    getTagSelect().type('console io{enter}');
+    getTopicSelect().type('operation{enter}');
+  
+    getSubmitButton().click();
+  
+    cy.wait('@createDemo');
+  });
+
+  it('error shows up when posting demo', () => {
+  
+    cy.contains('Create Demo').click();
+    getTitleInput().type('New Demo Title');
+    getYoutubeIdInput().type('8bc-VU3V7lU{enter}');
+    getExerciseSelect().type('New Exercise Prompt{enter}');
+    getTagSelect().type('console io{enter}');
+    getTopicSelect().type('operation{enter}');
+  
+    getSubmitButton().click();
+
+    cy.contains('An error occurred. Please try again.').should('be.visible');
+
+  });
 });
 
-describe('Testing Home Page & Create/Read Page Functionality', () => {
-  
-  beforeEach(() => { cy.visit('/') });
+describe('Demo Editing/Deleting functionality', () => {
+  beforeEach(() => {
+    mockAdminUser();
+    cy.intercept('GET', '/demos', {
+      statusCode: 200,
+      body: [
+        {
+          uid: 99,
+          title: 'New Demo Title',
+          youtube_id: '8bc-VU3V7lU',
+          youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+          topic: 'operation',
+          language: 'cpp',
+          tags: ['console io'],
+          exercises: [1],
+        },
+      ],
+    }).as('getDemos');
 
-  it('sucessfully edits a demo exercise', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
+    cy.intercept('GET', '/exercises', {
+      statusCode: 200,
+      body: [{
+        uid: 1,
+        prompt: 'New Exercise Prompt',
+        referenceTest: 'console.log("Hello World");',
+        tags: ['console io', 'customtag'],
+        topic: 'console io',
+        language: {
+          name: 'cpp'
+        }
+      }]
+    }).as('getExercise');
+
+    cy.visit('/create/demo');
+    cy.wait('@getUserInfo');
+    cy.wait('@getDemos');
+  });
+
+  it('should render successfully', () => {
+    cy.get('body').should('be.visible');
+  });
+
+  it('edit should show existing data', () => {
+    cy.contains('Edit').click();
+    cy.contains('New Demo Title').should('be.visible');
+  });
+
+  it('edit should throw error', () => {
+    cy.contains('Edit').click();
+    getSubmitButton().click();
+    cy.contains('An error occurred. Please try again.').should('be.visible');
+  });
+
+  it('edit should send updated demo and verify body', () => {
+    cy.intercept('PATCH', '/demos/99', (req) => {
+      expect(req.body).to.deep.equal({
+        uid: 99,
+        title: 'Updated Demo Title',
+        youtube_id: '8bc-VU3V7lU',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+        topic: 'operation',
+        language: 'cpp',
+        tags: ['console io', 'updated tag'],
+        exercises: [1],
+      });
+    }).as('patchDemo');
+
+    cy.contains('Edit').click();
+    cy.get('input[name="title"]').clear().type('Updated Demo Title');
+    getTagSelect().type('updated tag{enter}');
+    getSubmitButton().click();
+    cy.wait('@patchDemo');
+  });
+
+  it('delete should call endpoint with correct UID', () => {
+    cy.intercept('DELETE', '/demos/99').as('deleteDemo');
+    cy.contains('Delete').click();
+    cy.wait('@deleteDemo').its('request.url').should('include', '/demos/99');
+  });
+
+  it('edit should update the title visually on table', () => {
+    cy.intercept('PATCH', '/demos/99', {
       statusCode: 200,
       body: {
-        items: [
-          {
-            id: { videoId: '9Z6mWJXR-6M' },
-            snippet: { title: 'Mock Video Title' },
-          },
-        ],
-      },
-    }).as('getVideos');
-    cy.get('[data-testid="edit"]').first().click();
-    cy.wait('@getVideos');
-    cy.get('input[name="title"]').clear();
-    cy.get('input[name="title"]').type('New Edited Name Exercise');
+        uid: 99,
+        title: 'Updated Demo Title',
+        youtube_id: '8bc-VU3V7lU',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+        topic: 'updated topic',
+        language: 'cpp',
+        tags: ['updated tag'],
+        exercises: [1],
+      }
+    }).as('patchDemoSuccess');
+
+    cy.contains('Edit').click();
+    getDemoTitle().clear().type('Updated Demo Title');
     getSubmitButton().click();
-    cy.contains('New Edited Name Exercise').should('be.visible');
+    cy.wait('@patchDemoSuccess');
+
+    cy.contains('Updated Demo Title').should('be.visible');
   });
-
-  it('stops user from submitting form with empty edited title', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
-      statusCode: 200,
-      body: {
-        items: [
-          {
-            id: { videoId: '9Z6mWJXR-6M' },
-            snippet: { title: 'Mock Video Title' },
-          },
-        ],
-      },
-    }).as('getVideos');
-    cy.get('[data-testid="edit"]').first().click();
-    cy.wait('@getVideos');
-    cy.get('input[name="title"]').clear();
-    getSubmitButton().should('be.disabled');
-  });
-  
-  it('edits a demo and removes an exercise', () => {
-    cy.intercept('GET', 'https://www.googleapis.com/youtube/v3/search*', {
-      statusCode: 200,
-      body: {
-        items: [
-          {
-            id: { videoId: '9Z6mWJXR-6M' },
-            snippet: { title: 'Mock Video Title' },
-          },
-        ],
-      },
-    }).as('getVideos');
-    cy.get('[data-testid="edit"]').eq(1).click();
-    cy.wait('@getVideos');
-    cy.get('div[aria-label="Remove Second Exercise Prompt"]').click();
-    getSubmitButton().click();
-    cy.contains('0 Exercises').should('be.visible');
-  });
-
-  it('clicking video takes to read page', () => {
-    cy.contains('New Edited Name Exercise').click();
-    cy.contains('New Edited Name Exercise').should('be.visible');
-  });
-  
-  it('deletes a demo exercise', () => {
-    cy.get('[data-testid="delete"]').first().click();
-    cy.contains('New Demo').should('not.exist');
-  });
-
-});
-
-
-describe('Testing Resource Form Functionality', () => {
-  
-  beforeEach(() => { cy.visit('/create/resource') });
-
-  it('checks submit button is disabled on page load', () => {
-    getSubmitButton().should('be.disabled');
-  });
-
-  it('allows user to enter a resource title', () => {
-    cy.get('input[name="title"]').type('New Resource Title');
-    cy.get('input[name="title"]').should('have.value', 'New Resource Title');
-    getSubmitButton().should('be.disabled');
-  });
-
-  it('allows user to enter a url', () => {
-    cy.get('input[name="url"]').type('www.website.com');
-    cy.get('input[name="url"]').should('have.value', 'www.website.com');
-    getSubmitButton().should('be.disabled');
-  });
-
-  it('allows user to enter a source', () => {
-    cy.get('input[name="source"]').type('geeks4geeks');
-    cy.get('input[name="source"]').should('have.value', 'geeks4geeks');
-    getSubmitButton().should('be.disabled');
-  });
-
-  it('allows users to submit a new resource', () => {
-    cy.get('input[name="title"]').type('New Resource Title');
-    cy.get('input[name="url"]').type('www.website.com');
-    cy.get('input[name="source"]').type('geeks4geeks');
-    getSubmitButton().click();
-    cy.contains('New Resource Title').should('be.visible');
-  });
-
-  it('edit button properly works and repopulates data', () => {
-    cy.get('[id="edit-0"]').click();
-    cy.get('input[name="title"]').should('have.value', 'New Resource Title');
-    cy.get('input[name="url"]').should('have.value', 'www.website.com');
-    cy.get('input[name="source"]').should('have.value', 'geeks4geeks');
-  });
-
-  it('submit edited resource', () => {
-    cy.get('[id="edit-0"]').click();
-    cy.get('input[name="title"]').clear();
-    cy.get('input[name="title"]').type('Updated Resource Title');
-    getSubmitButton().click();
-    cy.contains('Updated Resource Title').should('be.visible');
-  });
-
-  it('allows users to submit another new resource', () => {
-    cy.get('input[name="title"]').type('Another Resource Title');
-    cy.get('input[name="url"]').type('www.website.com');
-    cy.get('input[name="source"]').type('geeks4geeks');
-    getSubmitButton().click();
-    cy.contains('Another Resource Title').should('be.visible');
-  });
-
-  it('allows users to delete a resource', () => {
-    cy.get('[id="delete-0"]').click();
-    cy.contains('Updated Resource Title').should('not.exist');
-  });
-
-});
-
-describe.only('Testing Module Form Functionality', () => {
-  
-  beforeEach(() => { cy.visit('/create/module') });
-
-  it('checks submit button is disabled on page load', () => {
-    getSubmitButton().should('be.disabled');
-  });
-
-  it('allow users to select a topic', () => {
-    getTopicSelect().click().type('console io{enter}');
-    cy.contains('console io').should('be.visible');
-  });
-
-  it('allow users to select resources', () => {
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get('div[id="resource-select"]').click().type('Another Resource Title{enter}');
-    cy.contains('Another Resource Title').should('be.visible');
-    getSubmitButton().should('be.disabled');
-  });
-
-  it('allow users to select language', () => {
-    getLanguageSelect().select('Python');
-    getLanguageSelect().should('have.value', 'Python');
-    getSubmitButton().should('be.disabled');
-  });
-  
-  it('module submits properly', () => {
-    getTopicSelect().click().type('console io{enter}');
-    // eslint-disable-next-line cypress/unsafe-to-chain-command
-    cy.get('div[id="resource-select"]').click().type('Another Resource Title{enter}');
-    getLanguageSelect().select('C++');
-    getSubmitButton().click();
-    // see if edit button exists, since modules dont' have a title
-    cy.contains('Edit').should('be.visible');
-  });
-
-  it('demo should be linked to module', () => {
-    cy.get('[id="edit-0"]').click();
-    cy.contains('Linked Demos').should('be.visible');
-    cy.contains('New Edited Name Exercise').should('be.visible');
-  });
-
-  it('edit button properly works and repopulates data', () => {
-    cy.get('[id="edit-0"]').click();
-    cy.contains('Another Resource Title').should('be.visible');
-    getLanguageSelect().should('have.value', 'cpp');
-    cy.contains('Linked Demos').should('be.visible');
-  });
-
-  it('create and submit another module', () => {
-    getTopicSelect().click().type('console io{enter}');
-    getSubmitButton().click();
-    // see if edit button exists, since modules dont' have a title
-    cy.contains('Edit').should('be.visible');
-    cy.get('[id="edit-0"]').click();
-    cy.contains('Another Resource Title').should('be.visible');
-    getLanguageSelect().should('have.value', 'cpp');
-  });
-
-  it('delete module', () => {
-    cy.get('[id="delete-0"]').click();
-    cy.get('[id="edit-0"]').click();
-    cy.contains('New Edited Name Exercise').should('be.visible');
-  });
-
 });

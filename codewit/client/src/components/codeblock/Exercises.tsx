@@ -14,7 +14,7 @@ const Exercises = ({ exercises, idx }: ExercisesProps): JSX.Element => {
   return (
     <div className="w-full">
       <div key={idx}>
-        <h3 className="font-semibold text-lg bg-accent-700 text-white py-2 px-3 rounded-t">
+        <h3 className="font-semibold text-lg bg-accent-700 text-white py-2 px-3 rounded-lg">
           Exercise {idx + 1}
         </h3>
         {/* <MDEditor.Markdown source={exercises[idx]?.prompt} className="bg-accent-700 p-2"/> */}

@@ -191,6 +191,24 @@ async function getAllCourses(): Promise<CourseResponse[]> {
   return formatCourseResponse(courses);
 }
 
+async function getTeacherCourses(teacherId: string): Promise<CourseResponse[]> {
+
+  const courses = await Course.findAll({
+    include: [
+      Language, 
+      {
+        association: Course.associations.modules,
+        include: [Language, Resource], 
+        through: { attributes: ['ordering'] },
+      },
+      { association: Course.associations.instructors, where: { googleId: teacherId } },
+      { association: Course.associations.roster },
+    ],
+    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+  });
+
+  return formatCourseResponse(courses);
+}
 
 async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
@@ -211,4 +229,4 @@ async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
 }
 
 
-export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses, getStudentCourses };
+export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses, getStudentCourses, getTeacherCourses };

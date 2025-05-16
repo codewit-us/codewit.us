@@ -20,6 +20,7 @@ import { isFormValid } from "../utils/formValidationUtils";
 
 const ExerciseForms = (): JSX.Element => {
   const { data: exercises, setData: setExercises } = useFetchExercises();
+  console.log(exercises);
   const postExercise = usePostExercise();
   const patchExercise = usePatchExercise();
   const deleteExercise = useDeleteExercise();
@@ -41,7 +42,7 @@ const ExerciseForms = (): JSX.Element => {
     const exerciseData = {
       prompt: formData.prompt.trim(),
       topic: formData.topic,
-      tags: formData.selectedTags.map((tag) => tag.value),
+      tags: formData.selectedTags.map((tag) => String(tag.value)),
       language: formData.selectedLanguage,
       referenceTest: formData.referenceTest,
     };
@@ -55,6 +56,7 @@ const ExerciseForms = (): JSX.Element => {
         );
         toast.success("Exercise successfully updated!");
       } else {
+        console.log(exerciseData);
         response = await postExercise(exerciseData);
         setExercises((prev) => [...prev, response]);
         toast.success("Exercise successfully created!");
@@ -81,13 +83,10 @@ const ExerciseForms = (): JSX.Element => {
       prompt: exercise.prompt,
       topic: exercise.topic,
       selectedTags: exercise.tags.map((tag) => ({
-        label: typeof tag === "string" ? tag : tag.name,
-        value: typeof tag === "string" ? tag : tag.name,
+        label: tag,
+        value: Number(tag),
       })),
-      selectedLanguage:
-        typeof exercise.language === "string"
-          ? exercise.language
-          : exercise.language.name,
+      selectedLanguage: exercise.language || "cpp",
       referenceTest: exercise.referenceTest || "",
       isEditing: true,
       editingUid: exercise.uid,
@@ -164,6 +163,7 @@ const ExerciseForms = (): JSX.Element => {
           <>
             <button
               onClick={handleSubmit}
+              data-testid="submit-button"
               disabled={!isValid}
               className={`px-4 py-2 rounded-md ${
                 isValid ? "bg-blue-500 text-white" : "bg-gray-500 text-gray-300 cursor-not-allowed"
@@ -194,16 +194,16 @@ const ExerciseForms = (): JSX.Element => {
 
           <InputLabel htmlFor="referenceTest">Reference Test</InputLabel>
           <Editor
-            height="200px"
-            language={formData.selectedLanguage}
-            value={formData.referenceTest}
-            onChange={handleScriptChange}
-            theme="vs-dark"
+              height="200px"
+              language={formData.selectedLanguage}
+              value={formData.referenceTest}
+              onChange={handleScriptChange}
+              theme="vs-dark"
           />
 
           <div className="flex flex-row gap-3">
             <TagSelect
-              selectedTags={formData.selectedTags}
+              selectedTags={formData.selectedTags.map((tag) => ({ ...tag, value: String(tag.value) }))}
               setSelectedTags={handleTagSelect}
               isMulti
             />

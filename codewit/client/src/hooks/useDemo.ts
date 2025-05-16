@@ -1,5 +1,6 @@
 // codewit/client/src/hooks/useDemo.ts
 import { useState, useEffect } from 'react';
+import { DemoResponse, Demo } from '@codewit/interfaces';
 import axios from 'axios';
 
 const baseUrl = '/demos';
@@ -61,13 +62,13 @@ const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
 // Hook for patching a demo
 export const usePatchDemo = () => {
   const { operation } = useAxiosCRUD('patch');
-  return (demoData: any, uid: number) => operation(`${baseUrl}/${uid}`, demoData);
+  return (demoData: DemoResponse, uid: number) => operation(`${baseUrl}/${uid}`, demoData);
 };
 
 // Hook for posting a new demo
 export const usePostDemo = () => {
   const { operation } = useAxiosCRUD('post');
-  return (demoData: any) => operation(baseUrl, demoData);
+  return (demoData: DemoResponse) => operation(baseUrl, demoData);
 };
 
 // Hook for deleting a demo

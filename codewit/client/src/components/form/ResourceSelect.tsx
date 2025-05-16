@@ -1,11 +1,11 @@
 // codewit/client/src/components/form/ResourceSelect.tsx
 import Select, { MultiValue } from 'react-select';
-import { SelectedTag } from '@codewit/interfaces';
+import { SelectedTag, Resource } from '@codewit/interfaces';
 import { SelectStyles } from '../../utils/styles';
 
 interface ResourceSelectProps {
   resourceOptions: SelectedTag[];
-  selectedResources: string[];
+  selectedResources: Resource[];
   handleResourceChange: (selectedOptions: MultiValue<SelectedTag>) => void;
 }
 
@@ -15,7 +15,10 @@ const ResourceSelect = ({
   handleResourceChange 
 }: ResourceSelectProps) => {
   return (
-    <div className="w-full">
+    <div 
+      className="w-full"
+      data-testid="resource-select"  
+    >
       <label 
         htmlFor="resource-select" 
         className="block text-sm font-medium text-gray-400 mb-2"

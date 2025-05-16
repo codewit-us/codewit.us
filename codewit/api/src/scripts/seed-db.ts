@@ -11,6 +11,44 @@ program
 const options = program.opts();
 const email = options.email || '';
 
+// student names for the roster
+const studentNames = [
+  "Alexandria Virginia",
+  "Bella Sophia",
+  "Cletus Spuckler",
+  "Duffman",
+  "Edna Krabappel",
+  "Fat Tony",
+  "Groundskeeper Willie",
+  "Homer Simpson",
+  "Itchy",
+  "Jimbo Jones",
+  "Krusty The Clown",
+  "Lisa Simpson",
+  "Marge Simpson",
+  "Nelson Muntz",
+  "Otto Mann",
+  "Patty Bouvier",
+  "Queen Reina",
+  "Ralph Wiggum",
+  "Snake Jailbird",
+  "Troy McClure",
+];
+
+
+const nameToEmail = (fullName: string): string => {
+  return fullName.toLowerCase().replace(/[^a-z]/g, '') + '@gmail.com';
+}
+
+const generateRandomId = () => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 10; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
+
 const seedData = async () => {
   // see if the user exists
   let user = await User.findOne({ where: { email } });
@@ -22,6 +60,18 @@ const seedData = async () => {
       isAdmin: true,
     });
   }
+
+  const studentUsers = await Promise.all(studentNames.map(async (name) => {
+    const email = nameToEmail(name);
+    const [student] = await User.findOrCreate({
+      where: { email },
+      defaults: {
+        username: name,
+        isAdmin: false,
+      },
+    });
+    return student;
+  }));
 
   const moduleTopics = [
     'variable', 'object', 'decision', 'boolean expression', 'while loop',
@@ -131,13 +181,14 @@ const seedData = async () => {
 
   // add user as both instructor and roster member
   await course.addInstructor(user);
-  await course.setRoster([user]);
+  await course.setRoster([...studentUsers, user]);
 
   console.log('Created course:', course.title);
   console.log('Created modules:', moduleTopics.length);
   console.log('Created demos:', moduleTopics.length * 3);
   console.log('Created exercises:', moduleTopics.length * 3);
   console.log('Created resources:', resources.length + moduleTopics.length * 2);
+  console.log('Created users:', studentUsers.length + 1); // +1 for the instructor
 };
 
 (async () => {
