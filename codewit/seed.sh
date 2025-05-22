@@ -8,6 +8,9 @@ BE_CONTAINER_NAME="codewit-app"
 EMAILS=()
 EMAIL_REGEX='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
+# Custom port to change from default 5432 in case user already has PostgreSQL instance running on that port
+CUSTOM_PORT=""
+
 # check and set environment variables in .env if they are missing
 function check_env_vars {
   echo -e "\nChecking and setting environment variables in .env..."
@@ -104,8 +107,16 @@ function seed_emails {
   done  
 
   # run the npm command with .env for the seed-admins script
-  npm run seed-admins -- --admin "${EMAILS[*]}"
+
+  if [ -n "$CUSTOM_PORT" ]; then
+    echo "Running with custom port" 
+    DB_PORT="$CUSTOM_PORT" npm run seed-admins -- --admin "${EMAILS[*]}"
+  else
+    echo "Running without custom port"
+    npm run seed-admins -- --admin "${EMAILS[*]}"
+  fi
 }
+
 
 # seed database with data
 function seed_data {
@@ -119,7 +130,14 @@ function seed_data {
 
   echo -e "Seeding database with general data and email: \n 🌱: ${EMAILS[0]}"
   # TODO: seed general data into db using the provided single email
-  npm run seed-data -- --email "${EMAILS[0]}"
+    
+  if [ -n "$CUSTOM_PORT" ]; then
+    echo "Running with custom port" 
+    DB_PORT="$CUSTOM_PORT" npm run seed-data -- --email "${EMAILS[0]}"
+  else
+    echo "Running without custom port"
+    npm run seed-data -- --email "${EMAILS[0]}"
+  fi
 }
 
 # display help information
@@ -130,7 +148,8 @@ function display_help {
   echo "  -e \"email(s)\"   Seed the database with the provided emails."
   echo "  -d \"email\"      Seed the database with general data. Requires exactly one email."
   echo "  -b \"email(s)\"   Seed the database with both emails and general data, using the first email for data."
-  echo "  -h              Display this help message."
+  echo "  -p PORT           Override DB_PORT just for this run (default: 5432)."
+  echo "  -h                Display this help message."
   echo ""
   echo "Examples:"
   echo "  $0 -e email1@example.com email2@example.com"
@@ -152,8 +171,11 @@ function main {
     exit 1
   fi
 
-  while getopts ":e:dbh" option; do
+  while getopts ":e:dbh:p:" option; do
     case $option in
+      p)
+        CUSTOM_PORT="$OPTARG"
+        ;;
       e)
         SEED_EMAILS=true
         EMAILS+=("$OPTARG")
@@ -185,6 +207,11 @@ function main {
   # capture remaining arguments as additional emails if -e or -b is specified
   if [ "$SEED_EMAILS" = true ] || [ "$SEED_DATA" = true ]; then
     EMAILS+=("$@")
+  fi
+
+  if [ -n "$CUSTOM_PORT" ]; then
+    export PG_HOST_PORT="$CUSTOM_PORT"
+    echo " Using custom Postgres host port: $PG_HOST_PORT"
   fi
 
   # check environment variables
