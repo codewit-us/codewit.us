@@ -88,6 +88,14 @@ To seed the database with both admin emails and general data (using the first em
 ```sh
 ./seed.sh -b abc@example.com def@example.com
 ```
+
+#### Optional: Use a Custom Postgres Port
+
+If your machine already has a local Postgres instance running on the default port (`5432`), you can specify a different port when running the seed script using the `-p` flag:
+
+```sh
+./seed.sh -p 5440 -e abc@example.com
+
 For more details on all available options, you can use the -h flag to display the help information, which lists each command and provides usage examples.
 
 ## Contributing
