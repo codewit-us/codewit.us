@@ -11,10 +11,11 @@ export interface EvaluationPayload {
 }
 
 export interface EvaluationResponse {
-  TestsRun: number;
-  Passed: number;
-  Failed: number;
-  Error: string;
+  tests_run: number;
+  passed: number;
+  failed: number;
+  error: string;
+  state: string;
 }
 
 export const executeCodeEvaluation = async (

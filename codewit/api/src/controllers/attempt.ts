@@ -1,5 +1,9 @@
-import { Attempt, Exercise, sequelize, User } from '../models';
+import { Attempt, DemoExercises, Exercise, ModuleDemos, sequelize, User } from '../models';
+import { UserDemoCompletion } from '../models/userDemoCompletion';
+import { UserExerciseCompletion } from '../models/userExerciseCompletion';
+import { UserModuleCompletion } from '../models/userModuleCompletion';
 import { EvaluationPayload, executeCodeEvaluation } from '../utils/codeEvalService';
+import { Language as LanguageEnum } from '@codewit/language';
 
 async function createAttempt(
   exerciseId: number,
@@ -49,27 +53,111 @@ async function createAttempt(
 
 
     // Evaluate Code
+    const lang = await exercise.getLanguage();
+    const languageValue = lang?.name as LanguageEnum;
     const evaluationPayload: EvaluationPayload = {
-      language: 'java', // Replace with dynamic logic
+      language: languageValue,
       code,
-      runTests: true,
+      runTests: typeof exercise.referenceTest === 'string' && exercise.referenceTest.length > 0,
       testCode: exercise.referenceTest,
     };
 
     try {
       const response = await executeCodeEvaluation(evaluationPayload, cookies);
 
-      const { TestsRun, Passed } = response;
+      const { tests_run: TestsRun, passed: Passed } = response;
 
       if (TestsRun > 0) {
         const completionPercentage = Math.round((Passed / TestsRun) * 100);
         attempt.completionPercentage = completionPercentage;
-        attempt.error = response.Error;
-        
-
+        attempt.error = response.error;
         console.log(`Completion Percentage: ${completionPercentage}%`);
+
+        // 1. Update UserExerciseCompletion
+        const completion = Passed / TestsRun;
+
+        await UserExerciseCompletion.upsert({
+          userUid: user.uid,
+          exerciseUid: exercise.uid,
+          completion,
+        }, { transaction });
+
+
+        // 2. Update all demo completions that include this exercise
+        const demoExerciseLinks = await DemoExercises.findAll({
+          where: { exerciseUid: exercise.uid },
+          transaction,
+        });
+
+        for (const link of demoExerciseLinks) {
+          const demoUid = link.demoUid;
+
+          const exerciseLinks = await DemoExercises.findAll({
+            where: { demoUid },
+            transaction,
+          });
+
+          const completions = await Promise.all(
+            exerciseLinks.map(async (ex) => {
+              const record = await UserExerciseCompletion.findOne({
+                where: {
+                  userUid: user.uid,
+                  exerciseUid: ex.exerciseUid,
+                },
+                transaction,
+              });
+              return record?.completion ?? 0;
+            })
+          );
+
+          const demoCompletion = completions.length
+            ? completions.reduce((a, b) => a + b, 0) / completions.length
+            : 0;
+
+          await UserDemoCompletion.upsert({
+            userUid: user.uid,
+            demoUid,
+            completion: demoCompletion,
+          }, { transaction });
+
+
+          // 3. Update module completion (max of demo completions)
+          const moduleDemoLinks = await ModuleDemos.findAll({
+            where: { demoUid },
+            transaction,
+          });
+
+          for (const mdl of moduleDemoLinks) {
+            const moduleUid = mdl.moduleUid;
+
+            const allDemoLinks = await ModuleDemos.findAll({
+              where: { moduleUid },
+              transaction,
+            });
+
+            const demoCompletions = await Promise.all(
+              allDemoLinks.map(async (d) => {
+                const rec = await UserDemoCompletion.findOne({
+                  where: { userUid: user.uid, demoUid: d.demoUid },
+                  transaction,
+                });
+                return rec?.completion ?? 0;
+              })
+            );
+
+            const maxCompletion = demoCompletions.length ? Math.max(...demoCompletions) : 0;
+
+            await UserModuleCompletion.upsert({
+              userUid: user.uid,
+              moduleUid,
+              completion: maxCompletion,
+            }, { transaction });
+          }
+
+        }
+
       } else {
-        attempt.error = response.Error;
+        attempt.error = response.error;
         console.warn('Invalid response data for completion percentage calculation:', response);
       }
     } catch (error) {

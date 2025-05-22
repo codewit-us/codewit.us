@@ -8,6 +8,11 @@ import { Module } from './module';
 import { Resource } from './resource';
 import { User } from './user';
 import { Attempt } from './attempt';
+import { UserDemoCompletion } from './userDemoCompletion';
+import { UserExerciseCompletion } from './userExerciseCompletion';
+import { UserModuleCompletion } from './userModuleCompletion';
+import { DemoExercises } from './demoExercises';
+import { ModuleDemos } from './moduleDemos';
 
 require('dotenv').config();
 
@@ -42,10 +47,15 @@ const sequelize = new Sequelize({
   Course,
   User,
   Attempt,
+  UserDemoCompletion,
+  UserExerciseCompletion,
+  UserModuleCompletion,
+  DemoExercises,
+  ModuleDemos
 ].forEach((model) => model.initialize(sequelize));
 
-Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
-Exercise.belongsToMany(Demo, { through: 'DemoExercises' });
+Demo.belongsToMany(Exercise, { through: DemoExercises });
+Exercise.belongsToMany(Demo, { through: DemoExercises });
 
 const DemoTags = sequelize.define(
   'DemoTags',
@@ -75,8 +85,8 @@ Tag.belongsToMany(Exercise, { through: ExerciseTags });
 Exercise.belongsTo(Language);
 Language.hasMany(Exercise);
 
-Demo.belongsToMany(Module, { through: 'ModuleDemos' });
-Module.belongsToMany(Demo, { through: 'ModuleDemos' });
+Demo.belongsToMany(Module, { through: ModuleDemos });
+Module.belongsToMany(Demo, { through: ModuleDemos });
 
 Resource.belongsToMany(Module, { through: 'ModuleResources' });
 Module.belongsToMany(Resource, { through: 'ModuleResources' });
@@ -124,10 +134,12 @@ export {
   Exercise,
   Tag,
   DemoTags,
+  DemoExercises,
   ExerciseTags,
   Language,
   Course,
   Module,
+  ModuleDemos,
   CourseModules,
   Resource,
   User,
