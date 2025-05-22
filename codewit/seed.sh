@@ -9,7 +9,7 @@ EMAILS=()
 EMAIL_REGEX='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
 # Custom port to change from default 5432 in case user already has PostgreSQL instance running on that port
-CUSTOM_PORT=""
+CUSTOM_DB_PORT=""
 
 # check and set environment variables in .env if they are missing
 function check_env_vars {
@@ -108,11 +108,9 @@ function seed_emails {
 
   # run the npm command with .env for the seed-admins script
 
-  if [ -n "$CUSTOM_PORT" ]; then
-    echo "Running with custom port" 
-    DB_PORT="$CUSTOM_PORT" npm run seed-admins -- --admin "${EMAILS[*]}"
+  if [ -n "$CUSTOM_DB_PORT" ]; then
+    DB_PORT="$CUSTOM_DB_PORT" npm run seed-admins -- --admin "${EMAILS[*]}"
   else
-    echo "Running without custom port"
     npm run seed-admins -- --admin "${EMAILS[*]}"
   fi
 }
@@ -131,11 +129,9 @@ function seed_data {
   echo -e "Seeding database with general data and email: \n 🌱: ${EMAILS[0]}"
   # TODO: seed general data into db using the provided single email
     
-  if [ -n "$CUSTOM_PORT" ]; then
-    echo "Running with custom port" 
-    DB_PORT="$CUSTOM_PORT" npm run seed-data -- --email "${EMAILS[0]}"
+  if [ -n "$CUSTOM_DB_PORT" ]; then
+    DB_PORT="$CUSTOM_DB_PORT" npm run seed-data -- --email "${EMAILS[0]}"
   else
-    echo "Running without custom port"
     npm run seed-data -- --email "${EMAILS[0]}"
   fi
 }
@@ -174,7 +170,7 @@ function main {
   while getopts ":e:dbh:p:" option; do
     case $option in
       p)
-        CUSTOM_PORT="$OPTARG"
+        CUSTOM_DB_PORT="$OPTARG"
         ;;
       e)
         SEED_EMAILS=true
@@ -209,8 +205,8 @@ function main {
     EMAILS+=("$@")
   fi
 
-  if [ -n "$CUSTOM_PORT" ]; then
-    export PG_HOST_PORT="$CUSTOM_PORT"
+  if [ -n "$CUSTOM_DB_PORT" ]; then
+    export PG_HOST_PORT="$CUSTOM_DB_PORT"
     echo " Using custom Postgres host port: $PG_HOST_PORT"
   fi
 

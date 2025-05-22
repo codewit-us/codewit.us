@@ -77,6 +77,7 @@ To seed emails as admins using `seed.sh` execute the following:
 ```sh
 ./seed.sh -e abc@example.com def@example.com
 ```
+
 To seed the database with general data, using a single emial for roster setup, run:
 
 ```sh
@@ -95,6 +96,7 @@ If your machine already has a local Postgres instance running on the default por
 
 ```sh
 ./seed.sh -p 5440 -e abc@example.com
+```
 
 For more details on all available options, you can use the -h flag to display the help information, which lists each command and provides usage examples.
 
