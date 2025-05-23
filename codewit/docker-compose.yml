@@ -2,7 +2,7 @@ services:
   codewitus_db:
     image: postgres:16-bookworm
     ports:
-      - 5432:5432
+      - "${PG_HOST_PORT:-5432}:5432"
     environment:
       - POSTGRES_PASSWORD=12345
       - POSTGRES_USER=codewitus_user
