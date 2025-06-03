@@ -1,8 +1,8 @@
 // codewit/client/src/utils/UserManagement.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MagnifyingGlassIcon, ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { User } from '@codewit/interfaces';
-import { useSearchUser, useSetAdmin } from '../hooks/useUsers';
+import { useFetchUsers, useSearchUser, useSetAdmin } from '../hooks/useUsers';
 
 interface ModalProps {
   user: User;
@@ -28,14 +28,83 @@ const UserManagement: React.FC = () => {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [page, setPage] = useState(0);
+  const scrollBoxRef = useRef<HTMLDivElement | null>(null);
+  const lastFlipRef = useRef(0);
 
   const searchUser = useSearchUser();
   const setAdmin = useSetAdmin();
+  const { data: allUsers, loading } = useFetchUsers();
+  const pageSize = 10;
+  const deltaRef = useRef(0);
+  const goToPage = (n: number) => {
+    setPage(n);
+    deltaRef.current = 0;
+    lastFlipRef.current = Date.now();
+  };
+
+  
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    const box = scrollBoxRef.current;
+    if (!box) return;
+
+    const now = Date.now();
+    if (now - lastFlipRef.current < 120) return;
+    deltaRef.current += e.deltaY;
+    if (Math.abs(deltaRef.current) < box.clientHeight * 4) return;
+    lastFlipRef.current = now;
+
+    const dir = Math.sign(deltaRef.current);
+    deltaRef.current = 0;
+
+    const atTop    = box.scrollTop === 0;
+    const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 5;
+
+    // SCROLL DOWN ⬇ – at bottom –> next page
+    if (dir > 0 && atBottom) {
+      const more = (page + 1) * pageSize < filteredUsers.length;
+      if (more) {
+        goToPage(page + 1);
+        requestAnimationFrame(() => box.scrollTop = 0);
+      }
+    }
+
+    // SCROLL UP ⬆ – at top –> prev page
+    if (dir < 0 && atTop) {
+      if (page > 0) {
+        goToPage(page - 1);
+        requestAnimationFrame(() => {
+          const el = scrollBoxRef.current;
+          if (el) el.scrollTop = el.scrollHeight;
+        });
+      }
+    }
+  }, [page]);
+
+  useEffect(() => {
+    if (allUsers.length) {
+      setFilteredUsers(allUsers); 
+      setPage(0);
+    }
+  }, [allUsers]);
 
   const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      // Empty search = reset to full list
+      setFilteredUsers(allUsers);
+      return; 
+    }
+
+    if (loading) return;
+    
     try {
       const response = await searchUser(searchQuery);
-      setFilteredUsers([response]);
+      if (Array.isArray(response)) {
+        setFilteredUsers(response);
+      } else {
+        setFilteredUsers([response]);
+      }
+      setPage(0);
     } catch (error: any) {
       if (error.response && error.response.status === 404) {
         setFilteredUsers([]);
@@ -77,50 +146,102 @@ const UserManagement: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <button
-            className="bg-accent-500 hover:bg-accent-600 text-white p-2 px-3 rounded-r-md"
+            className="bg-accent-500 hover:bg-accent-600 text-white p-2 px-3 rounded-r-md disabled:opacity-50"
             onClick={handleSearch}
+            disabled={loading}
           >
             <MagnifyingGlassIcon className="h-5 w-5" />
           </button>
         </div>
       </div>
+
+      {loading && (
+        <div className="flex items-center justify-center my-8 text-blue-400 font-medium">
+          {/* spinner */}
+          <svg
+            className="h-6 w-6 animate-spin"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <circle cx="12" cy="12" r="10" strokeWidth="4" opacity=".25" />
+            <path
+              d="M22 12a10 10 0 0 1-10 10"
+              strokeWidth="4"
+              strokeLinecap="round"
+              opacity=".75"
+            />
+          </svg>
+          <span className="ml-3">Loading users…</span>
+        </div>
+      )}
+      
       <div className="w-full max-w-7xl bg-gray-800 shadow overflow-hidden rounded-lg">
-        <table className="min-w-full">
-          <thead className="bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
-                Role
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-gray-800 divide-y divide-gray-700">
-            {filteredUsers.map((user) => (
-              <tr key={user.email}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                  {user.email}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-300">
-                  {user.isAdmin ? 'Admin' : 'User'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    className={`inline-flex items-center w-40 px-3 py-1 border-transparent rounded-md shadow-sm text-sm leading-4 font-medium text-white ${user.isAdmin ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
-                    onClick={() => toggleAdminStatus(user)}
-                  >
-                    {user.isAdmin ? <ShieldExclamationIcon className="h-5 w-5 mr-2" /> : <ShieldCheckIcon className="h-5 w-5 mr-2" />}
-                    {user.isAdmin ? 'Remove Admin' : 'Make Admin'}
-                  </button>
-                </td>
+        <div
+          ref={scrollBoxRef}
+          onWheel={handleWheel}
+          className="max-h-[34rem] overflow-y-auto"
+        >
+          <table className="min-w-full table-fixed w-full">
+            <thead className="bg-gray-700">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>     
+            <tbody className="bg-gray-800 divide-y divide-gray-700">
+              {filteredUsers
+                .slice(page * pageSize, (page + 1) * pageSize)
+                .map((user) => (
+                <tr key={user.email}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                    {user.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-300">
+                    {user.isAdmin ? 'Admin' : 'User'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      className={`inline-flex items-center w-40 px-3 py-1 border-transparent rounded-md shadow-sm text-sm leading-4 font-medium text-white ${user.isAdmin ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                      onClick={() => toggleAdminStatus(user)}
+                    >
+                      {user.isAdmin ? <ShieldExclamationIcon className="h-5 w-5 mr-2" /> : <ShieldCheckIcon className="h-5 w-5 mr-2" />}
+                      {user.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="w-full max-w-7xl flex justify-between items-center mt-4 px-2">
+        <p className="text-sm text-gray-400">
+          Page {page + 1} of {Math.ceil(filteredUsers.length / pageSize)}
+        </p>
+        <div className="flex gap-2">
+          <button
+            disabled={page === 0}
+            onClick={() => goToPage(page - 1)}
+            className="px-3 py-1 bg-gray-600 text-white rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <button
+            disabled={(page + 1) * pageSize >= filteredUsers.length}
+            onClick={() => goToPage(page + 1)}
+            className="px-3 py-1 bg-gray-600 text-white rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       </div>
       {showModal && currentUser && (
         <Modal user={currentUser} onClose={() => setShowModal(false)} onSave={saveAdminStatus} />
