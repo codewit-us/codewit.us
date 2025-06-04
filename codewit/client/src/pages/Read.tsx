@@ -26,15 +26,8 @@ import {
 
 const Read = (): JSX.Element => {
   const { uid } = useParams<{ uid: string }>();
-  const {
-    data: demo,
-    loading,
-    error,
-  } = useFetchSingleDemo(uid!) as unknown as {
-    data: DemoResponse;
-    loading: boolean;
-    error: boolean;
-  };
+  const { data: demo, loading, error, } = useFetchSingleDemo(uid!);
+
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   // const [relatedDemosOpen, setRelatedDemosOpen] = useState<boolean>(false);
@@ -50,28 +43,37 @@ const Read = (): JSX.Element => {
   }
 
   const handleSubmission = async (code: string) => {
-    if (!demo) return;
+    if (!demo) {
+      return;
+    }
+
+    if (demo.exercises.length === 0) {
+      console.log("number of exercises is 0, nothing to send");
+
+      return;
+    }
 
     const userId = localStorage.getItem('userId');
-    const currentExercise = demo.exercises[
-      currentExerciseIndex
-    ] as unknown as ExerciseResponse;
+    const currentExercise = demo.exercises[currentExerciseIndex];
 
     const submission = {
       timestamp: new Date().toISOString(),
       userId: userId,
-      exerciseId: currentExercise.uid || currentExerciseIndex,
+      exerciseId: currentExercise,
       code: code,
     };
 
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-      await axios.post('/attempts', submission);
+      let res = await axios.post('/attempts', submission);
+
       const isSuccess = true;
+
       if (isSuccess) {
-        setCurrentExerciseIndex((prevIndex) =>
-          prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex
-        );
+        setCurrentExerciseIndex((prevIndex) => {
+          return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
+        });
       }
     } catch (e) {
       console.error('Error submitting code:', e);
@@ -166,7 +168,7 @@ const Read = (): JSX.Element => {
               ),
             }}
           >
-            <CodeBlock 
+            <CodeBlock
               onSubmit={handleSubmission}
               isSubmitting={isSubmitting}
             />
