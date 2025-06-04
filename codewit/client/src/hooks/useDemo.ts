@@ -5,34 +5,48 @@ import axios from 'axios';
 
 const baseUrl = '/demos';
 
+interface AxiosFetch<T> {
+    data: T,
+    setData: (value: T | ((prev: T) => T)) => void,
+    loading: boolean,
+    error: boolean,
+}
+
 // General hook to handle fetching data with axios
-const useAxiosFetch = (initialUrl: string, initialData = []) => {
+function useAxiosFetch(initialUrl: string, initialData = []): AxiosFetch {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
+  const fetchData = async () => {
+    if (loading) {
+      return;
+    }
+
     setLoading(true);
     setError(false);
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(initialUrl);
-        setData(response.data);
-      } catch (error) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
+
+    try {
+      const response = await axios.get(initialUrl);
+
+      setData(response.data);
+    } catch (error) {
+      setError(true);
+    }
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchData();
-  }, [initialUrl]); 
+  }, [initialUrl]);
 
   return { data, setData, loading, error };
 };
 
 // Hook to fetch multiple demos
 export const useFetchDemos = () => {
-  return useAxiosFetch(baseUrl, []);
+  return useAxiosFetch<DemoResponse>(baseUrl);
 };
 
 // Hook to fetch a single demo
