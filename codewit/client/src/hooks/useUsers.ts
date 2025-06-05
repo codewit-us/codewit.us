@@ -11,17 +11,17 @@ const useAxiosFetch = (initialUrl: string, initialData: User[] = []) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await axios.get(initialUrl);
-        setData(response.data);
-      } catch (error) {
+     try {
+        const { data } = await axios.get(initialUrl);
+        setData(data);
+      } catch (err) {
         setError(true);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [initialUrl]);
+  }, [initialUrl]); 
 
   return { data, setData, loading, error };
 };
