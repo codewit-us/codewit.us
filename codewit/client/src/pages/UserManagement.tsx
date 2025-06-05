@@ -1,5 +1,5 @@
 // codewit/client/src/utils/UserManagement.tsx
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MagnifyingGlassIcon, ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { User } from '@codewit/interfaces';
 import { useFetchUsers, useSearchUser, useSetAdmin } from '../hooks/useUsers';
@@ -29,57 +29,15 @@ const UserManagement: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [page, setPage] = useState(0);
-  const scrollBoxRef = useRef<HTMLDivElement | null>(null);
-  const lastFlipRef = useRef(0);
+  
 
   const searchUser = useSearchUser();
   const setAdmin = useSetAdmin();
   const { data: allUsers, loading } = useFetchUsers();
   const pageSize = 10;
-  const deltaRef = useRef(0);
   const goToPage = (n: number) => {
     setPage(n);
-    deltaRef.current = 0;
-    lastFlipRef.current = Date.now();
   };
-
-  
-  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
-    const box = scrollBoxRef.current;
-    if (!box) return;
-
-    const now = Date.now();
-    if (now - lastFlipRef.current < 120) return;
-    deltaRef.current += e.deltaY;
-    if (Math.abs(deltaRef.current) < box.clientHeight * 4) return;
-    lastFlipRef.current = now;
-
-    const dir = Math.sign(deltaRef.current);
-    deltaRef.current = 0;
-
-    const atTop    = box.scrollTop === 0;
-    const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 5;
-
-    // SCROLL DOWN ⬇ – at bottom –> next page
-    if (dir > 0 && atBottom) {
-      const more = (page + 1) * pageSize < filteredUsers.length;
-      if (more) {
-        goToPage(page + 1);
-        requestAnimationFrame(() => box.scrollTop = 0);
-      }
-    }
-
-    // SCROLL UP ⬆ – at top –> prev page
-    if (dir < 0 && atTop) {
-      if (page > 0) {
-        goToPage(page - 1);
-        requestAnimationFrame(() => {
-          const el = scrollBoxRef.current;
-          if (el) el.scrollTop = el.scrollHeight;
-        });
-      }
-    }
-  }, [page]);
 
   useEffect(() => {
     if (allUsers.length) {
@@ -135,7 +93,9 @@ const UserManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full h-container-full bg-zinc-900 p-6">
+    <div 
+      className="flex flex-col items-center w-full h-container-full bg-zinc-900 p-6 overflow-y-auto"
+    >
       <div className="mb-6 w-full max-w-7xl">
         <div className="flex">
           <input
@@ -157,7 +117,6 @@ const UserManagement: React.FC = () => {
 
       {loading && (
         <div className="flex items-center justify-center my-8 text-blue-400 font-medium">
-          {/* spinner */}
           <svg
             className="h-6 w-6 animate-spin"
             viewBox="0 0 24 24"
@@ -176,12 +135,8 @@ const UserManagement: React.FC = () => {
         </div>
       )}
       
-      <div className="w-full max-w-7xl bg-gray-800 shadow overflow-hidden rounded-lg">
-        <div
-          ref={scrollBoxRef}
-          onWheel={handleWheel}
-          className="max-h-[34rem] overflow-y-auto"
-        >
+      <div className="w-full max-w-7xl bg-gray-800 shadow rounded-lg">
+        <div>
           <table className="min-w-full table-fixed w-full">
             <thead className="bg-gray-700">
               <tr>
