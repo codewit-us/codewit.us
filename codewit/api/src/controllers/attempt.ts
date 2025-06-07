@@ -1,3 +1,4 @@
+import { response } from 'express';
 import { Attempt, DemoExercises, Exercise, ModuleDemos, sequelize, User } from '../models';
 import { UserDemoCompletion } from '../models/userDemoCompletion';
 import { UserExerciseCompletion } from '../models/userExerciseCompletion';
@@ -64,17 +65,16 @@ async function createAttempt(
 
     try {
       const response = await executeCodeEvaluation(evaluationPayload, cookies);
+      const { tests_run, passed, error: eval_error } = response;
 
-      const { tests_run: TestsRun, passed: Passed } = response;
-
-      if (TestsRun > 0) {
-        const completionPercentage = Math.round((Passed / TestsRun) * 100);
+      if (tests_run > 0) {
+        const completionPercentage = Math.round((passed / tests_run) * 100);
         attempt.completionPercentage = completionPercentage;
-        attempt.error = response.error;
+        attempt.error = eval_error;
         console.log(`Completion Percentage: ${completionPercentage}%`);
 
         // 1. Update UserExerciseCompletion
-        const completion = Passed / TestsRun;
+        const completion = passed / tests_run;
 
         await UserExerciseCompletion.upsert({
           userUid: user.uid,
@@ -153,15 +153,14 @@ async function createAttempt(
               completion: maxCompletion,
             }, { transaction });
           }
-
         }
 
       } else {
-        attempt.error = response.error;
-        console.warn('Invalid response data for completion percentage calculation:', response);
+        attempt.error = eval_error;
+        console.warn('Invalid response data for completion percentage calculation:', tests_run, passed, eval_error);
       }
-    } catch (error) {
-      console.error('Code evaluation failed:', error.message);
+    } catch (err) {
+      console.error('Code evaluation failed:', err.message);
       throw new Error('Code evaluation failed');
     }
 

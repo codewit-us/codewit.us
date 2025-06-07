@@ -35,6 +35,115 @@ const studentNames = [
   "Troy McClure",
 ];
 
+const capitalize = (word: string) => {
+  return word.charAt(0).toUpperCase() + word.slice(1).replace(/\s+/g, '');
+};
+
+const generateReferenceTest = (topic: string) => {
+  const suiteName = `${capitalize(topic)}TestSuite`;
+
+  let tests = '';
+
+  switch (topic.toLowerCase()) {
+    case 'variable':
+      tests = `
+    void testVariableAssignment() {
+        TS_ASSERT_EQUALS(getVariable(), 5);
+    }
+    void testVariableUpdate() {
+        TS_ASSERT_EQUALS(updateVariable(10), 15);
+    }`;
+      break;
+
+    case 'array':
+      tests = `
+    void testArrayFirstElement() {
+        TS_ASSERT_EQUALS(getArrayFirstElement(), 1);
+    }
+    void testArraySum() {
+        TS_ASSERT_EQUALS(sumArray(), 6);
+    }`;
+      break;
+
+    case 'recursion':
+      tests = `
+    void testFactorialOf3() {
+        TS_ASSERT_EQUALS(factorial(3), 6);
+    }
+    void testFactorialOf5() {
+        TS_ASSERT_EQUALS(factorial(5), 120);
+    }`;
+      break;
+
+    case 'boolean expression':
+      tests = `
+    void testBooleanAnd() {
+        TS_ASSERT_EQUALS(booleanAnd(true, false), false);
+    }
+    void testBooleanOr() {
+        TS_ASSERT_EQUALS(booleanOr(true, false), true);
+    }`;
+      break;
+
+    case 'for loop':
+      tests = `
+    void testForLoopSum() {
+        TS_ASSERT_EQUALS(forLoopSum(5), 15);
+    }`;
+      break;
+
+    case 'while loop':
+      tests = `
+    void testWhileLoopDecrement() {
+        TS_ASSERT_EQUALS(whileLoopDecrement(5), 0);
+    }`;
+      break;
+
+    case 'object':
+      tests = `
+    void testPointCoordinates() {
+        TS_ASSERT_EQUALS(getPointX(), 3);
+        TS_ASSERT_EQUALS(getPointY(), 4);
+    }`;
+      break;
+
+    case 'modularity':
+      tests = `
+    void testAddFunction() {
+        TS_ASSERT_EQUALS(add(2, 3), 5);
+    }`;
+      break;
+
+    case 'multidimensional array':
+      tests = `
+    void testMatrixElement() {
+        TS_ASSERT_EQUALS(getMatrixElement(), 4);
+    }`;
+      break;
+
+    case 'array list':
+      tests = `
+    void testVectorPushBack() {
+        TS_ASSERT_EQUALS(getVectorFirstElement(), 10);
+    }`;
+      break;
+
+    default:
+      tests = `
+    void testPlaceholder() {
+        TS_ASSERT(true);
+    }`;
+      break;
+  }
+
+  return `
+#include <cxxtest/TestSuite.h>
+
+class ${suiteName} : public CxxTest::TestSuite {
+public:${tests}
+};
+`.trim();
+};
 
 const nameToEmail = (fullName: string): string => {
   return fullName.toLowerCase().replace(/[^a-z]/g, '') + '@gmail.com';
@@ -87,6 +196,10 @@ const seedData = async () => {
     });
   }));
 
+  const [cppLanguage] = await Language.findOrCreate({
+    where: { name: 'cpp' },
+  });
+
   // create modules with demos and exercises
   const modules = await Promise.all(moduleTopics.map(async (topic, index) => {
     // create 3 demos for each module
@@ -99,10 +212,7 @@ const seedData = async () => {
       });
 
       // add language to demo
-      const [language] = await Language.findOrCreate({
-        where: { name: 'cpp' },
-      });
-      await demo.setLanguage(language);
+      await demo.setLanguage(cppLanguage.uid);
 
       // add tags to demo
       await demo.addTag(
@@ -116,7 +226,8 @@ const seedData = async () => {
       const exercise = await Exercise.create({
         prompt: `Complete the ${topic} exercise ${num}`,
         topic: topic,
-        referenceTest: 'test.assertEquals(solution(), expected);'
+        referenceTest: generateReferenceTest(topic),
+        languageUid: cppLanguage.uid
       });
 
       // add tags to the exercise
@@ -137,10 +248,7 @@ const seedData = async () => {
     });
 
     // set language for module
-    const [language] = await Language.findOrCreate({
-      where: { name: 'cpp' }
-    });
-    await module.setLanguage(language);
+    await module.setLanguage(cppLanguage.uid);
 
     // associate demos with module
     await module.setDemos(demos);
@@ -167,10 +275,7 @@ const seedData = async () => {
   });
 
   // set course language
-  const [language] = await Language.findOrCreate({
-    where: { name: 'cpp' }
-  });
-  await course.setLanguage(language);
+  await course.setLanguage(cppLanguage.uid);
 
   // add modules to course
   await Promise.all(modules.map(async (module, idx) => {

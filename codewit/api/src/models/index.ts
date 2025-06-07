@@ -82,8 +82,8 @@ const ExerciseTags = sequelize.define(
 Exercise.belongsToMany(Tag, { through: ExerciseTags });
 Tag.belongsToMany(Exercise, { through: ExerciseTags });
 
-Exercise.belongsTo(Language);
-Language.hasMany(Exercise);
+Exercise.belongsTo(Language, { foreignKey: 'languageUid' });
+Language.hasMany(Exercise, { foreignKey: 'languageUid' });
 
 Demo.belongsToMany(Module, { through: ModuleDemos });
 Module.belongsToMany(Demo, { through: ModuleDemos });
@@ -128,6 +128,24 @@ User.belongsToMany(Resource, {
 
 Attempt.belongsTo(Exercise);
 Attempt.belongsTo(User);
+
+// UserDemoCompletion Associations
+User.hasMany(UserDemoCompletion, { foreignKey: 'userUid' });
+Demo.hasMany(UserDemoCompletion, { foreignKey: 'demoUid' });
+UserDemoCompletion.belongsTo(User, { foreignKey: 'userUid' });
+UserDemoCompletion.belongsTo(Demo, { foreignKey: 'demoUid' });
+
+// UserExerciseCompletion Associations
+User.hasMany(UserExerciseCompletion, { foreignKey: 'userUid' });
+Exercise.hasMany(UserExerciseCompletion, { foreignKey: 'exerciseUid' });
+UserExerciseCompletion.belongsTo(User, { foreignKey: 'userUid' });
+UserExerciseCompletion.belongsTo(Exercise, { foreignKey: 'exerciseUid' });
+
+// UserModuleCompletion Associations
+User.hasMany(UserModuleCompletion, { foreignKey: 'userUid' });
+Module.hasMany(UserModuleCompletion, { foreignKey: 'moduleUid' });
+UserModuleCompletion.belongsTo(User, { foreignKey: 'userUid' });
+UserModuleCompletion.belongsTo(Module, { foreignKey: 'moduleUid' });
 
 export {
   Demo,
