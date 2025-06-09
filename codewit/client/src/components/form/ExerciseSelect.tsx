@@ -68,6 +68,9 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
         options={exercises}
         className="text-sm bg-blue text-white border-none w-full rounded-lg"
         styles={SelectStyles}
+        menuPortalTarget={document.body}
+        menuPosition="fixed"
+        menuPlacement="auto"  
       />
     </div>
   );

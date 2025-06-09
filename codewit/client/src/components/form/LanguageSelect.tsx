@@ -29,6 +29,10 @@ const LanguageSelect = ({handleChange, initialLanguage }: LanguageSelectProps) =
       value={options.find(option => option.value === initialLanguage) || options[0]}
       isSearchable={false}
       styles={SelectStyles}
+      menuPortalTarget={document.body}
+      menuPosition="fixed"
+      menuPlacement="auto"
+      menuShouldScrollIntoView={false}
     />
   </div>
 );
