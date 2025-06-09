@@ -16,6 +16,9 @@ const styles = {
   menu: (provided: any) => ({
     ...provided,
     backgroundColor: 'rgb(55, 65, 81)',
+    maxHeight: '300px',
+    overflowY: 'auto',
+    zIndex: 9999,
   }),
   option: (provided: any, state: any) => ({
     ...provided,
@@ -53,6 +56,10 @@ const styles = {
   input: (provided: any) => ({
     ...provided,
     color: 'white',
+  }),
+  menuPortal: (base: any) => ({
+    ...base,
+    zIndex: 9999
   }),
 };
 

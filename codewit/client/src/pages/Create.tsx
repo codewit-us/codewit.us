@@ -37,7 +37,7 @@ const Create = (): JSX.Element => {
           </Link>
         </div>
       </div>
-      <div className="flex-1 h-full overflow-y-auto bg-foreground-800">
+      <div className="flex-1 h-full overflow-visible bg-foreground-800">
         <Outlet />
       </div>
     </div>

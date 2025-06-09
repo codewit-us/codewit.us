@@ -29,8 +29,7 @@ const ReusableModal: React.FC<ReusableModalProps> = ({
         </Modal.Header>
 
         <Modal.Body
-          className="p-6 bg-gray-800 space-y-6 overflow-y-auto"
-          style={{ maxHeight: "70vh" }} 
+          className="p-6 bg-gray-800 space-y-6 overflow-visible"
         >
           {children}
         </Modal.Body>

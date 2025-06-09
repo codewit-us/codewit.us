@@ -65,6 +65,9 @@ const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.
           options={videos}
           className="text-sm bg-blue text-white border-none w-full rounded-lg"
           styles={SelectStyles}
+          menuPortalTarget={document.body}
+          menuPosition="fixed"
+          menuPlacement="auto"
         />
       )}
     </div>
