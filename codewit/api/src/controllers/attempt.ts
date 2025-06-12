@@ -1,4 +1,3 @@
-import { response } from 'express';
 import { Attempt, DemoExercises, Exercise, ModuleDemos, sequelize, User } from '../models';
 import { UserDemoCompletion } from '../models/userDemoCompletion';
 import { UserExerciseCompletion } from '../models/userExerciseCompletion';
@@ -55,7 +54,8 @@ async function createAttempt(
 
     // Evaluate Code
     const lang = await exercise.getLanguage();
-    const languageValue = lang?.name as LanguageEnum;
+    if (!lang) throw new Error('Exercise doesnot have a language associated with it.');
+    const languageValue = lang.name as LanguageEnum;
     const evaluationPayload: EvaluationPayload = {
       language: languageValue,
       code,
