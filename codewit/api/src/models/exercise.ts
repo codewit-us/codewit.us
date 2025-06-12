@@ -27,6 +27,7 @@ class Exercise extends Model<
   declare prompt: string;
   declare topic: string;
   declare referenceTest: string;
+  declare languageUid: number;
 
   declare language?: NonAttribute<Language>;
   declare tags?: NonAttribute<Tag[]>;
@@ -63,13 +64,22 @@ class Exercise extends Model<
           allowNull: false,
         },
         referenceTest: {
-          type: DataTypes.STRING,
+          type: DataTypes.TEXT,
           allowNull: false,
+        },
+        languageUid: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: 'languages',
+            key: 'uid',
+          },
         },
       },
       {
         sequelize,
         modelName: 'exercise',
+        tableName: 'exercises',
       }
     );
   }
