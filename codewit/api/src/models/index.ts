@@ -8,6 +8,11 @@ import { Module } from './module';
 import { Resource } from './resource';
 import { User } from './user';
 import { Attempt } from './attempt';
+import { UserDemoCompletion } from './userDemoCompletion';
+import { UserExerciseCompletion } from './userExerciseCompletion';
+import { UserModuleCompletion } from './userModuleCompletion';
+import { DemoExercises } from './demoExercises';
+import { ModuleDemos } from './moduleDemos';
 
 require('dotenv').config();
 
@@ -42,10 +47,15 @@ const sequelize = new Sequelize({
   Course,
   User,
   Attempt,
+  UserDemoCompletion,
+  UserExerciseCompletion,
+  UserModuleCompletion,
+  DemoExercises,
+  ModuleDemos
 ].forEach((model) => model.initialize(sequelize));
 
-Demo.belongsToMany(Exercise, { through: 'DemoExercises' });
-Exercise.belongsToMany(Demo, { through: 'DemoExercises' });
+Demo.belongsToMany(Exercise, { through: DemoExercises });
+Exercise.belongsToMany(Demo, { through: DemoExercises });
 
 const DemoTags = sequelize.define(
   'DemoTags',
@@ -72,11 +82,11 @@ const ExerciseTags = sequelize.define(
 Exercise.belongsToMany(Tag, { through: ExerciseTags });
 Tag.belongsToMany(Exercise, { through: ExerciseTags });
 
-Exercise.belongsTo(Language);
-Language.hasMany(Exercise);
+Exercise.belongsTo(Language, { foreignKey: 'languageUid' });
+Language.hasMany(Exercise, { foreignKey: 'languageUid' });
 
-Demo.belongsToMany(Module, { through: 'ModuleDemos' });
-Module.belongsToMany(Demo, { through: 'ModuleDemos' });
+Demo.belongsToMany(Module, { through: ModuleDemos });
+Module.belongsToMany(Demo, { through: ModuleDemos });
 
 Resource.belongsToMany(Module, { through: 'ModuleResources' });
 Module.belongsToMany(Resource, { through: 'ModuleResources' });
@@ -119,15 +129,35 @@ User.belongsToMany(Resource, {
 Attempt.belongsTo(Exercise);
 Attempt.belongsTo(User);
 
+// UserDemoCompletion Associations
+User.hasMany(UserDemoCompletion, { foreignKey: 'userUid' });
+Demo.hasMany(UserDemoCompletion, { foreignKey: 'demoUid' });
+UserDemoCompletion.belongsTo(User, { foreignKey: 'userUid' });
+UserDemoCompletion.belongsTo(Demo, { foreignKey: 'demoUid' });
+
+// UserExerciseCompletion Associations
+User.hasMany(UserExerciseCompletion, { foreignKey: 'userUid' });
+Exercise.hasMany(UserExerciseCompletion, { foreignKey: 'exerciseUid' });
+UserExerciseCompletion.belongsTo(User, { foreignKey: 'userUid' });
+UserExerciseCompletion.belongsTo(Exercise, { foreignKey: 'exerciseUid' });
+
+// UserModuleCompletion Associations
+User.hasMany(UserModuleCompletion, { foreignKey: 'userUid' });
+Module.hasMany(UserModuleCompletion, { foreignKey: 'moduleUid' });
+UserModuleCompletion.belongsTo(User, { foreignKey: 'userUid' });
+UserModuleCompletion.belongsTo(Module, { foreignKey: 'moduleUid' });
+
 export {
   Demo,
   Exercise,
   Tag,
   DemoTags,
+  DemoExercises,
   ExerciseTags,
   Language,
   Course,
   Module,
+  ModuleDemos,
   CourseModules,
   Resource,
   User,

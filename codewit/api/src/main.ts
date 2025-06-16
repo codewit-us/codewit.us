@@ -58,6 +58,10 @@ app.use('/courses', checkAuth, courseRouter);
 app.use('/attempts', checkAuth, attemptRouter);
 
 app.listen(PORT, HOST, async () => {
-  await sequelize.sync({ force: false });
-  console.log(`[ ready ] http://${HOST}:${PORT}`);
+  try {
+      await sequelize.sync({ force: false, alter: false });
+      console.log(`[ ready ] http://${HOST}:${PORT}`); 
+  } catch (error) {
+    console.error('Sequelize sync error:', error);
+  }
 });
