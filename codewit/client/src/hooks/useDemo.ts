@@ -6,52 +6,70 @@ import axios from 'axios';
 const baseUrl = '/demos';
 
 interface AxiosFetch<T> {
-    data: T,
-    setData: (value: T | ((prev: T) => T)) => void,
-    loading: boolean,
-    error: boolean,
+  data: T,
+  setData: (value: T | ((prev: T) => T)) => void,
+  loading: boolean,
+  error: boolean,
 }
 
 // General hook to handle fetching data with axios
-function useAxiosFetch(initialUrl: string, initialData = []): AxiosFetch {
+//
+// this will assume that the first mount is the initial loading of the data
+// and will indicate that it is loading before sending the actual request to
+// the server.
+function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch<T> {
   const [data, setData] = useState(initialData);
-  const [loading, setLoading] = useState(true);
+  const [active_requests, setActiveRequests] = useState(0);
   const [error, setError] = useState(false);
+  const [initial_loading, setInitialLoading] = useState(true);
 
-  const fetchData = async () => {
-    if (loading) {
-      return;
-    }
+  const fetchData = async (controller: AbortController) => {
+    setActiveRequests(v => (v + 1));
 
-    setLoading(true);
-    setError(false);
+    let canceled = false;
 
     try {
-      const response = await axios.get(initialUrl);
+      const response = await axios.get(initialUrl, {
+        signal: controller.signal
+      });
 
       setData(response.data);
     } catch (error) {
-      setError(true);
+      if (error.code === "ERR_CANCELED") {
+        canceled = true;
+      } else {
+        setError(true);
+      }
     }
 
-    setLoading(false);
+    setActiveRequests(v => (v - 1));
+
+    if (!canceled) {
+      setInitialLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchData();
+    let controller = new AbortController();
+
+    fetchData(controller);
+
+    return () => {
+      controller.abort();
+    };
   }, [initialUrl]);
 
-  return { data, setData, loading, error };
+  return { data, setData, loading: initial_loading || active_requests > 0, error };
 };
 
 // Hook to fetch multiple demos
-export const useFetchDemos = () => {
-  return useAxiosFetch<DemoResponse>(baseUrl);
+export function useFetchDemos() {
+  return useAxiosFetch<DemoResponse[]>(baseUrl, []);
 };
 
 // Hook to fetch a single demo
-export const useFetchSingleDemo = (uid: string) => {
-  return useAxiosFetch(`${baseUrl}/${uid}`);
+export function useFetchSingleDemo(uid: string) {
+  return useAxiosFetch<DemoResponse | null>(`${baseUrl}/${uid}`, null);
 };
 
 // General hook to handle CRUD operations

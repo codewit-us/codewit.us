@@ -26,21 +26,13 @@ import {
 
 const Read = (): JSX.Element => {
   const { uid } = useParams<{ uid: string }>();
-  const { data: demo, loading, error, } = useFetchSingleDemo(uid!);
+  const { data: demo, loading, error } = useFetchSingleDemo(uid!);
 
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   // const [relatedDemosOpen, setRelatedDemosOpen] = useState<boolean>(false);
   // const [helpfulLinksOpen, setHelpfulLinksOpen] = useState<boolean>(false);
   // const showBorder: boolean = relatedDemosOpen || helpfulLinksOpen;
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (error || !demo) {
-    return <NotFound />;
-  }
 
   const handleSubmission = async (code: string) => {
     if (!demo) {
@@ -71,6 +63,9 @@ const Read = (): JSX.Element => {
       const isSuccess = true;
 
       if (isSuccess) {
+        // 2025/06/17 NOTE: this will need to be updated to do something when
+        // they have reached the end of the exercises available for the current
+        // demo
         setCurrentExerciseIndex((prevIndex) => {
           return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
         });
@@ -89,6 +84,14 @@ const Read = (): JSX.Element => {
       console.error('Error liking the video:', error);
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (error || !demo) {
+    return <NotFound />;
+  }
 
   return (
     <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-black">
