@@ -54,11 +54,11 @@ const CodeEditor = ({
         <div className="inline-flex gap-1 pt-2 pb-3">
           <button
             className="group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 border-accent-500 rounded-lg focus:outline-none w-1/3"
-            // onClick={() => {
-            //   if (editorInstanceRef.current) {
-            //     editorInstanceRef.current.setValue('');
-            //   }
-            // }}
+            onClick={() => {
+              if (editorInstanceRef.current) {
+                editorInstanceRef.current.setValue('');
+              }
+            }}
           >
             <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
             <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
