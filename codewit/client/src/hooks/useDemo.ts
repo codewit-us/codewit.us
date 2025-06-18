@@ -28,6 +28,8 @@ function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch<T> {
 
     let canceled = false;
 
+    setError(false);
+
     try {
       const response = await axios.get(initialUrl, {
         signal: controller.signal
