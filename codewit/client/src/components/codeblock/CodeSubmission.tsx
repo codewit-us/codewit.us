@@ -21,6 +21,7 @@ type EvalProps = {
     execution_time_exceeded?: boolean;
     memory_exceeded?: boolean;
     rawout?: string;
+    error?: string;
   } | null;
 };
 
@@ -47,15 +48,15 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
     execution_time_exceeded = false,
     memory_exceeded = false,
     rawout = '',
+    error = '',
   } = evaluation;
 
-  const errorMessage = useMemo(() => {
-    if (compilation_error) return compilation_error;
-    if (runtime_error) return runtime_error;
-    if (execution_time_exceeded) return 'Execution time exceeded';
-    if (memory_exceeded) return 'Memory limit exceeded';
-    return null;
-  }, [compilation_error, runtime_error, execution_time_exceeded, memory_exceeded]);
+  let errorMessage = null;
+  if (compilation_error) errorMessage = compilation_error;
+  else if (runtime_error) errorMessage = runtime_error;
+  else if (execution_time_exceeded) errorMessage = 'Execution time exceeded';
+  else if (memory_exceeded) errorMessage = 'Memory limit exceeded';
+  else if (state === 'error') errorMessage = 'Evaluation failed ' + error;
 
   const hasFailures = failure_details.length > 0;
   const hasOutput = rawout.trim().length > 0;
@@ -93,7 +94,7 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
           </div>
         )}
         {allPassed && <span className="text-green-400 font-semibold">All tests passed!</span>}
-        {errorMessage && <span className="text-red-400 font-semibold">{errorMessage}</span>}
+        {errorMessage && <pre className="text-red-400 font-semibold overflow-x-auto whitespace-pre p-2">{errorMessage}</pre>}
       </div>
 
       <div className="w-full flex justify-start border-b border-white">

@@ -61,27 +61,30 @@ const Read = (): JSX.Element => {
 
     try {
       const response = await axios.post('/attempts', submission);
-
-      const isSuccess = true;
-
-      if (isSuccess) {
         // 2025/06/17 NOTE: this will need to be updated to do something when
         // they have reached the end of the exercises available for the current
         // demo
         setCurrentExerciseIndex((prevIndex) => {
           return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
         });
-        setIsSubmitting(true);
+
         if (response.data) {
           setLastAttemptResult(response.data as AttemptWithEval);
         }
-      }
       // Optionally move to next exercise only on full pass, or keep as-is
       // setCurrentExerciseIndex((prevIndex) =>
       //   prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex
       // );
     } catch (e) {
       console.error('Error submitting code:', e);
+
+      setLastAttemptResult({
+        attempt: null,
+        evaluation: {
+          state: 'error',
+          error: 'Unexpected error occurred ' + e?.message,
+        }
+      } as AttemptWithEval);
     } finally {
       setIsSubmitting(false);
     }
