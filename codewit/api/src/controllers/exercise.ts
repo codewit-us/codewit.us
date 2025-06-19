@@ -27,9 +27,14 @@ async function createExercise(
   language?: string
 ): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
+    const [languageInstance] = await Language.findOrCreate({
+      where: { name: language },
+      transaction,
+    });
+
     const exercise = await Exercise.create(
-      { prompt, topic, referenceTest },
-      { include: [Tag, Language], transaction }
+      { prompt, topic, referenceTest, languageUid: languageInstance.uid },
+      { transaction }
     );
 
     if (tags) {
@@ -45,14 +50,6 @@ async function createExercise(
           });
         })
       );
-    }
-
-    if (language) {
-      const [newLanguage] = await Language.findOrCreate({
-        where: { name: language },
-        transaction,
-      });
-      await exercise.setLanguage(newLanguage, { transaction });
     }
 
     await exercise.reload({
