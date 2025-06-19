@@ -2,15 +2,17 @@ import { Attempt, DemoExercises, Exercise, ModuleDemos, sequelize, User } from '
 import { UserDemoCompletion } from '../models/userDemoCompletion';
 import { UserExerciseCompletion } from '../models/userExerciseCompletion';
 import { UserModuleCompletion } from '../models/userModuleCompletion';
-import { EvaluationPayload, executeCodeEvaluation } from '../utils/codeEvalService';
+import { AttemptWithEval } from '../typings/response.types';
+import { EvaluationPayload, EvaluationResponse, executeCodeEvaluation } from '../utils/codeEvalService';
 import { Language as LanguageEnum } from '@codewit/language';
+
 
 async function createAttempt(
   exerciseId: number,
   userId: number,
   code: string,
   cookies: string
-): Promise<Attempt | null> {
+): Promise<AttemptWithEval | null> {
   return sequelize.transaction(async (transaction) => {
     await sequelize.query('LOCK TABLE "attempts" IN SHARE ROW EXCLUSIVE MODE', {
       transaction,
@@ -63,8 +65,11 @@ async function createAttempt(
       testCode: exercise.referenceTest,
     };
 
+    let evalResponse: EvaluationResponse | null = null;
     try {
       const response = await executeCodeEvaluation(evaluationPayload, cookies);
+      evalResponse = response;
+      console.log('Code evaluation response:', response);
       const { tests_run, passed, error: eval_error } = response;
 
       if (tests_run > 0) {
@@ -165,7 +170,8 @@ async function createAttempt(
     }
 
     await attempt.save({ transaction });
-    return attempt;
+    if (!evalResponse) return null;
+    return { attempt, evaluation: evalResponse };
   });
 }
 

@@ -1,3 +1,6 @@
+import { Attempt } from "../models";
+import { EvaluationResponse } from "../utils/codeEvalService";
+
 export interface ModuleResponse {
     uid: number;
     topic: string;
@@ -57,4 +60,9 @@ export interface DemoResponse {
     youtube_id: string,
     youtube_thumbnail: string,
     exercises: number[]
+}
+
+export interface AttemptWithEval {
+    attempt: Attempt;
+    evaluation: EvaluationResponse;
 }
