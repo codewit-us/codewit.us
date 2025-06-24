@@ -47,7 +47,7 @@ interface DemoPostResponse {
 interface Tag {
   value: any;
   uid?: number;
-  name: string; 
+  name: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -121,6 +121,43 @@ interface User {
   isAdmin: boolean;
 }
 
+export interface StudentDemo {
+  uid: number,
+  title: string,
+  youtube_id: string,
+  youtube_thumbnail: string,
+}
+
+export interface StudentModule {
+  uid: number,
+  topic: string,
+  language: string,
+  resources: StudentResource[];
+  demos: StudentDemo[],
+}
+
+export interface StudentResource {
+  uid: number,
+  likes: number,
+  url: string,
+  title: string,
+  source: string,
+}
+
+export interface StudentUser {
+  uid: number;
+  username: string;
+  email: string;
+}
+
+export interface StudentCourse {
+  id: string,
+  title: string,
+  language: string,
+  modules: StudentModule[],
+  instructors: StudentUser[],
+}
+
 // Interface to Youtube API Response
 
 interface YouTubeSearchResult {
@@ -152,8 +189,8 @@ interface Thumbnail {
   height: number;
 }
 
-export type { 
-  Exercise, 
+export type {
+  Exercise,
   ExerciseResponse,
   ExerciseFormData,
   Demo,
@@ -162,7 +199,7 @@ export type {
   DemoPostResponse,
   DemoResponse,
   DemoFormData,
-  YouTubeSearchResult, 
+  YouTubeSearchResult,
   Thumbnail,
   Resource,
   Course,

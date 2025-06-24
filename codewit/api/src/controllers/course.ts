@@ -4,6 +4,8 @@ import {
   colors,
   animals,
 } from 'unique-names-generator';
+import { StudentCourse } from "@codewit/interfaces";
+
 import { Course, CourseModules, Language, Module, Demo, Resource, sequelize } from '../models';
 import { CourseResponse } from '../typings/response.types';
 import { formatCourseResponse } from '../utils/responseFormatter';
@@ -135,7 +137,7 @@ async function updateCourse(
     await course.save({ transaction });
     await course.reload({
       include: [
-        Language, 
+        Language,
         Module,
         { association: Course.associations.instructors },
         { association: Course.associations.roster },
@@ -177,10 +179,10 @@ async function getCourse(uid: string): Promise<CourseResponse | null> {
 async function getAllCourses(): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language, 
+      Language,
       {
         association: Course.associations.modules,
-        include: [Language, Resource], 
+        include: [Language, Resource],
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },
@@ -195,10 +197,10 @@ async function getTeacherCourses(teacherId: string): Promise<CourseResponse[]> {
 
   const courses = await Course.findAll({
     include: [
-      Language, 
+      Language,
       {
         association: Course.associations.modules,
-        include: [Language, Resource], 
+        include: [Language, Resource],
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors, where: { googleId: teacherId } },
@@ -213,10 +215,10 @@ async function getTeacherCourses(teacherId: string): Promise<CourseResponse[]> {
 async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language, 
+      Language,
       {
         association: Course.associations.modules,
-        include: [Language, Resource, Demo], 
+        include: [Language, Resource, Demo],
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },
@@ -228,5 +230,74 @@ async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   return formatCourseResponse(courses, true);
 }
 
+export async function getStudentCourse(course_id: string): Promise<StudentCourse | null> {
+  const course = await Course.findOne({
+    where: { id: course_id },
+    include: [
+      Language,
+      {
+        association: Course.associations.modules,
+        include: [Language, Resource, Demo],
+        through: { attributes: ['ordering'] },
+      },
+      { association: Course.associations.instructors },
+    ],
+  });
+
+  if (course == null) {
+    return null;
+  }
+
+  let modules = [];
+  let instructors = [];
+
+  for (let course_module of course.modules) {
+    let demos = [];
+    let resources = [];
+
+    for (let module_demo of course_module.demos) {
+      demos.push({
+        uid: module_demo.uid,
+        title: module_demo.title,
+        youtube_id: module_demo.youtube_id,
+        youtube_thumbnail: module_demo.youtube_thumbnail,
+      });
+    }
+
+    for (let module_resource of course_module.resources) {
+      resources.push({
+        uid: module_resource.uid,
+        url: module_resource.url,
+        title: module_resource.title,
+        source: module_resource.source,
+        likes: module_resource.likes,
+      });
+    }
+
+    modules.push({
+      uid: course_module.uid,
+      topic: course_module.topic,
+      language: course_module.language.name,
+      demos,
+      resources,
+    });
+  }
+
+  for (let course_instructor of course.instructors) {
+    instructors.push({
+      uid: course_instructor.uid,
+      username: course_instructor.username,
+      email: course_instructor.email,
+    });
+  }
+
+  return {
+    id: course.id,
+    title: course.title,
+    language: course.language.name,
+    modules,
+    instructors,
+  };
+}
 
 export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses, getStudentCourses, getTeacherCourses };

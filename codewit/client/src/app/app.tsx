@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import NavBar from '../components/nav/Nav';
 import Home from '../pages/Home';
+import CourseView from "../pages/CourseView";
 import Read from '../pages/Read';
 import Create from '../pages/Create';
 import NotFound from '../components/notfound/NotFound';
@@ -42,7 +43,8 @@ export function App() {
         courseTitle={courseTitle}
       />
       <Routes>
-        <Route path="/" element={<Home onCourseChange={setCourseTitle} />} />
+        <Route path="/" element={<Home/>} />
+        <Route path="/:course_id" element={<CourseView onCourseChange={setCourseTitle}/>}/>
         <Route path="/read/:uid" element={<Read />} />
         <Route
           path="/usermanagement"
