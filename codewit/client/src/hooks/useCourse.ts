@@ -14,6 +14,7 @@ const useAxiosFetch = (initialUrl: string, initialData: Course[] = []) => {
     const fetchData = async () => {
       try {
         const response = await axios.get(initialUrl);
+
         setData(response.data);
       } catch (error) {
         setError(true);
@@ -25,39 +26,6 @@ const useAxiosFetch = (initialUrl: string, initialData: Course[] = []) => {
   }, [initialUrl]);
 
   return { data, setData, loading, error };
-};
-
-// Fetch Student Courses
-export const useFetchStudentCourses = () => {
-  const { user, loading: authLoading } = useAuth(); 
-  const [data, setData] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    if (authLoading) return;
-
-    const fetchStudentCourses = async () => {
-      if (!user || !user.googleId) {
-        setLoading(false); 
-        return;
-      }
-
-      try {
-        const response = await axios.get(`/courses/student/${user.googleId}`);
-        setData(response.data);
-      } catch (err) {
-        setError(true);
-        console.error('Failed to fetch student courses:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStudentCourses();
-  }, [user, authLoading]);
-
-  return { data, loading, error };
 };
 
 // Hook to fetch all courses

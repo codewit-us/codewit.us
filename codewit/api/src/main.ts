@@ -13,8 +13,9 @@ import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT, REDIS_HOST, REDIS_PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
-import { RedisStore } from "connect-redis"
-import { createClient } from "redis"
+import { catchError, asyncHandle } from "./middleware/catch";
+import { RedisStore } from "connect-redis";
+import { createClient } from "redis";
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use(passport.session());
 app.use(express.json());
 
 app.use('/oauth2', authrouter);
+
 app.use('/users', checkAuth, userRouter);
 app.use('/demos', checkAuth, demoRouter);
 app.use('/exercises', checkAuth, exerciseRouter);
@@ -57,10 +59,12 @@ app.use('/resources', checkAuth, resourceRouter);
 app.use('/courses', checkAuth, courseRouter);
 app.use('/attempts', checkAuth, attemptRouter);
 
+app.use(catchError);
+
 app.listen(PORT, HOST, async () => {
   try {
-      await sequelize.sync({ force: false, alter: false });
-      console.log(`[ ready ] http://${HOST}:${PORT}`); 
+    await sequelize.sync({ force: false, alter: false });
+    console.log(`[ ready ] http://${HOST}:${PORT}`);
   } catch (error) {
     console.error('Sequelize sync error:', error);
   }
