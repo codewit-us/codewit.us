@@ -78,7 +78,7 @@ async function createDemo(
       );
     }
 
-    if (exercises) {
+    if (exercises && exercises.length > 0) {
       await demo.addExercises(exercises, { transaction });
     }
 
@@ -140,7 +140,12 @@ async function updateDemo(
     if (topic) demo.topic = topic;
 
     if (exercises) {
-      await demo.addExercises(exercises, { transaction });
+      const currentExercises = await demo.getExercises({ transaction });
+      const currentIds = currentExercises.map(e => e.uid);
+      const toAdd = exercises.filter(id => !currentIds.includes(id));
+      const toRemove = currentIds.filter(id => !exercises.includes(id));
+      if (toAdd.length > 0) await demo.addExercises(toAdd, { transaction });
+      if (toRemove.length > 0) await demo.removeExercises(toRemove, { transaction });
     }
 
     await demo.save({ transaction });
