@@ -10,6 +10,7 @@ const createDemoSchema = z.object({
     .refine((t) => validateTopic(t), { message: 'Invalid topic' }),
   language: z.string().optional(),
   tags: z.string().array().optional(),
+  exercises: z.number().array().optional(),
 });
 
 const updateDemoSchema = z.object({
@@ -22,6 +23,7 @@ const updateDemoSchema = z.object({
     .optional(),
   language: z.string().optional(),
   tags: z.string().array().optional(),
+  exercises: z.number().array().optional(),
 });
 
 const addExercisesToDemoSchema = z.object({

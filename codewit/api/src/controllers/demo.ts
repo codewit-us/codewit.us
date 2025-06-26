@@ -33,7 +33,8 @@ async function createDemo(
   youtube_thumbnail: string,
   topic: string,
   tags?: string[],
-  language?: string
+  language?: string,
+  exercises?: number[],
 ): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.create(
@@ -77,6 +78,10 @@ async function createDemo(
       );
     }
 
+    if (exercises && exercises.length > 0) {
+      await demo.addExercises(exercises, { transaction });
+    }
+
     await demo.reload({
       include: [Exercise, Tag, Language],
       order: [[Tag, DemoTags, 'ordering', 'ASC']],
@@ -94,7 +99,8 @@ async function updateDemo(
   youtube_thumbnail?: string,
   tags?: string[],
   language?: string,
-  topic?: string
+  topic?: string,
+  exercises?: number[],
 ): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.findByPk(uid, {
@@ -132,6 +138,15 @@ async function updateDemo(
     if (youtube_id) demo.youtube_id = youtube_id;
     if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
     if (topic) demo.topic = topic;
+
+    if (exercises) {
+      const currentExercises = await demo.getExercises({ transaction });
+      const currentIds = currentExercises.map(e => e.uid);
+      const toAdd = exercises.filter(id => !currentIds.includes(id));
+      const toRemove = currentIds.filter(id => !exercises.includes(id));
+      if (toAdd.length > 0) await demo.addExercises(toAdd, { transaction });
+      if (toRemove.length > 0) await demo.removeExercises(toRemove, { transaction });
+    }
 
     await demo.save({ transaction });
 
