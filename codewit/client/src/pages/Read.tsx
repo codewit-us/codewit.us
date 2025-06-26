@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import NotFound from '../components/notfound/NotFound';
 import CodeBlock from '../components/codeblock/Codeblock';
+import { AttemptWithEval } from '../interfaces/evaluation';
 import {
   DemoResponse,
   Demo as DemoType,
@@ -25,6 +26,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 const Read = (): JSX.Element => {
+  const [lastAttemptResult, setLastAttemptResult] = useState<AttemptWithEval | null>(null);
   const { uid } = useParams<{ uid: string }>();
   const { data: demo, loading, error } = useFetchSingleDemo(uid!);
 
@@ -58,20 +60,33 @@ const Read = (): JSX.Element => {
     setIsSubmitting(true);
 
     try {
-      let res = await axios.post('/attempts', submission);
-
-      const isSuccess = true;
-
-      if (isSuccess) {
+      const response = await axios.post('/attempts', submission);
         // 2025/06/17 NOTE: this will need to be updated to do something when
         // they have reached the end of the exercises available for the current
         // demo
-        setCurrentExerciseIndex((prevIndex) => {
-          return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
-        });
-      }
+        if(response.data.evaluation.state === 'passed') {
+          setCurrentExerciseIndex((prevIndex) => {
+            return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
+          });
+        }
+
+        if (response.data) {
+          setLastAttemptResult(response.data as AttemptWithEval);
+        }
+      // Optionally move to next exercise only on full pass, or keep as-is
+      // setCurrentExerciseIndex((prevIndex) =>
+      //   prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex
+      // );
     } catch (e) {
       console.error('Error submitting code:', e);
+
+      setLastAttemptResult({
+        attempt: null,
+        evaluation: {
+          state: 'error',
+          error: 'Unexpected error occurred ' + e?.message,
+        }
+      } as AttemptWithEval);
     } finally {
       setIsSubmitting(false);
     }
@@ -178,7 +193,9 @@ const Read = (): JSX.Element => {
           </Resizable>
 
           <div className="flex-1 overflow-y-auto mt-2">
-            <CodeSubmission />
+            {lastAttemptResult && (
+              <CodeSubmission evaluation={lastAttemptResult.evaluation || null} />
+            )}
           </div>
         </div>
       </div>

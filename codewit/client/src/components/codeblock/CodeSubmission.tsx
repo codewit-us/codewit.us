@@ -1,113 +1,166 @@
-// import ChecklistItem from './ChecklistItem';
-// import Progress from './Progress';
-import { TestResult } from '@codewit/interfaces';
-import { BiSolidRightArrow, BiSolidLeftArrow } from "react-icons/bi";
-import { useState } from 'react';
+import { BiSolidRightArrow, BiSolidLeftArrow } from 'react-icons/bi';
+import { useState, useMemo } from 'react';
 
-const CodeSubmission = (): JSX.Element => {
-  const checklistItems = [
-    { checked: true, text: 'Ordered List' },
-    { checked: true, text: 'Reversed List' },
-    { checked: true, text: 'Scrambled List' },
-    { checked: true, text: 'Single Item List' },
-    { checked: false, text: 'Empty List' },
-    { checked: false, text: 'Duplicates' },
-    { checked: true, text: 'Missing Data' },
-    { checked: true, text: 'Negative Numbers' },
-    { checked: false, text: 'Divide By Zero' },
-    { checked: false, text: 'Large List' }
-  ];
+type FailureDetail = {
+  test_case: string;
+  expected?: string;
+  received?: string;
+  error_message: string;
+  rawout?: string;
+};
 
-  const passedTests = checklistItems.filter(item => item.checked).length;
-  const totalTests = checklistItems.length;
-  const [activeTab, setActiveTab] = useState('outcome');
+type EvalProps = {
+  evaluation: {
+    state: string;
+    tests_run: number;
+    passed: number;
+    failed: number;
+    failure_details?: FailureDetail[];
+    compilation_error?: string;
+    runtime_error?: string;
+    execution_time_exceeded?: boolean;
+    memory_exceeded?: boolean;
+    rawout?: string;
+    error?: string;
+  } | null;
+};
+
+const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
+  const [activeTab, setActiveTab] = useState<'outcome' | 'output'>('outcome');
+  const [issueIdx, setIssueIdx] = useState(0);
+
+  if (!evaluation) {
+    return (
+      <div className="p-6 min-h-full flex flex-col items-start bg-alternate-background-500 rounded-lg shadow-lg border-2 border-white">
+        <h1 className="text-2xl font-bold text-white">Results</h1>
+        <p className="text-white mt-4">Submit code to see evaluation results.</p>
+      </div>
+    );
+  }
+
+  const {
+    state,
+    tests_run,
+    passed,
+    failure_details = [],
+    compilation_error = '',
+    runtime_error = '',
+    execution_time_exceeded = false,
+    memory_exceeded = false,
+    rawout = '',
+    error = '',
+  } = evaluation;
+
+  let errorMessage = null;
+  if (compilation_error) errorMessage = compilation_error;
+  else if (runtime_error) errorMessage = runtime_error;
+  else if (execution_time_exceeded) errorMessage = 'Execution time exceeded';
+  else if (memory_exceeded) errorMessage = 'Memory limit exceeded';
+  else if (state === 'error') errorMessage = 'Evaluation failed ' + error;
+
+  const hasFailures = failure_details.length > 0;
+  const hasOutput = rawout.trim().length > 0;
+  const allPassed = !errorMessage && !hasFailures && state === 'passed';
+  const activeIssue = failure_details[issueIdx] || null;
+  const showOutcomeTab = !errorMessage;
 
   return (
-    <div className="p-4 min-h-full flex flex-col items-center bg-alternate-background-500 rounded-lg shadow-lg border-2 border-white" data-testid="check-list">
-      <div className="w-full mb-4 gap-3 items-center justify-start">
-				<h1 className="text-2xl font-bold text-white">Results</h1>
-				<div className="flex items-center gap-2 ">
-					<h2 className="flex text-lg justify-start text-white">Issues</h2>
-					<div className="flex items-center justify-end">
-            <BiSolidLeftArrow className='text-accent-400'/>
-            <BiSolidRightArrow className='text-accent-400'/>
-					</div>
-				</div>
+    <div className="p-6 min-h-full flex flex-col items-start bg-alternate-background-500 rounded-lg shadow-lg border-2 border-white" data-testid="check-list">
+      <div className="w-full mb-4">
+        <h1 className="text-2xl font-bold text-white">Results</h1>
+        {tests_run > 0 && (
+          <div className="mt-1 text-white text-base font-medium">
+            Checked: {passed} of {tests_run} test cases produced correct results
+          </div>
+        )}
+        {!errorMessage && hasFailures && (
+          <div className="flex items-center gap-2 mt-2">
+            <h2 className="text-lg text-white">Issues</h2>
+            <button
+              disabled={issueIdx === 0}
+              onClick={() => setIssueIdx(i => Math.max(0, i - 1))}
+              className="p-1"
+            >
+              <BiSolidLeftArrow className="text-accent-400" />
+            </button>
+            <span className="text-white text-sm">{issueIdx + 1} / {failure_details.length}</span>
+            <button
+              disabled={issueIdx === failure_details.length - 1}
+              onClick={() => setIssueIdx(i => Math.min(failure_details.length - 1, i + 1))}
+              className="p-1"
+            >
+              <BiSolidRightArrow className="text-accent-400" />
+            </button>
+          </div>
+        )}
+        {allPassed && <span className="text-green-400 font-semibold">All tests passed!</span>}
+        {errorMessage && <pre className="text-red-400 font-semibold overflow-x-auto whitespace-pre p-2">{errorMessage}</pre>}
       </div>
 
-      <div className="w-full">
-        <div className="flex ">
-          <button 
-            className={`px-6 font-bold text-lg ${activeTab === 'outcome' 
-              ? 'text-white bg-background-700 border-4 border-white border-b-0 border-l-0 ' 
-              : 'text-gray-400 border border-white border-b-0 border-l-0'}`}
+      <div className="w-full flex justify-start border-b border-white">
+        {showOutcomeTab && (
+          <button
+            className={`px-6 py-2 font-bold text-lg ${
+              activeTab === 'outcome'
+                ? 'text-white bg-background-700 border-4 border-white border-b-0'
+                : 'text-gray-400 border border-white border-b-0'
+            }`}
             onClick={() => setActiveTab('outcome')}
           >
             Outcome
           </button>
-           <button 
-            className={`px-6 font-bold text-lg ${activeTab === 'output' 
-              ? 'text-white bg-background-700 border-4 border-white border-b-0' 
-              : 'text-gray-400 border border-white border-b-0'}`}
+        )}
+        {hasOutput && (
+          <button
+            className={`px-6 py-2 font-bold text-lg ${
+              activeTab === 'output'
+                ? 'text-white bg-background-700 border-4 border-white border-b-0'
+                : 'text-gray-400 border border-white border-b-0'
+            }`}
             onClick={() => setActiveTab('output')}
           >
             Output
           </button>
-        </div> 
-        
-        <div className="relative h-1">
-          {activeTab === 'outcome' && (
-            <div className="absolute bottom-0 right-0 h-1 border-b-4 border-white w-[calc(100%-127px)]"></div>
-          )}
-          {activeTab === 'output' && (
-            <div className="absolute bottom-0 left-0 h-1 border-b-4 border-white w-[132px]"></div>
-          )}
-          {activeTab === 'output' && (
-            <div className="absolute bottom-0 right-0 h-1 border-b-4 border-white w-[calc(100%-240px)]"></div>
-          )}
-        </div>
+        )}
       </div>
 
-      <div className="w-full pt-4">
-        {activeTab === 'outcome' && (
-          <div className="text-white">
-            <h3 className="text-xl font-bold mb-2">When user enters '0' or less then 'No pizza is impossible' should be displayed</h3>
-            
-            <h4 className="text-2xl mt-6 mb-3">Expected results</h4>
-            <div className="border border-cyan-500 p-4 bg-black mb-6">
-              <p className="text-white font-mono whitespace-pre-wrap">
-                Diameter of your pizza No pizza is impossible
-              </p>
+      <div className="w-full pt-4 text-white">
+        {activeTab === 'outcome' && showOutcomeTab ? (
+          <>
+            {errorMessage && (
+              <div className="border border-red-500 p-4 bg-black mb-4">
+                <span className="font-bold text-red-400">{errorMessage}</span>
+              </div>
+            )}
+            {!errorMessage && hasFailures && activeIssue && (
+              <div className="border border-cyan-500 p-4 bg-black mb-4">
+                <span className="font-bold text-red-400">{activeIssue.error_message}</span>
+                {activeIssue.expected && (
+                  <div className="mt-2 border border-cyan-500 p-2">
+                    <span className="text-cyan-300 font-semibold">Expected:</span>
+                    <pre className="font-mono bg-black mt-1 whitespace-pre-wrap">{activeIssue.expected}</pre>
+                  </div>
+                )}
+                {activeIssue.received && (
+                  <div className="mt-2 border border-cyan-500 p-2">
+                    <span className="text-cyan-300 font-semibold">Actual:</span>
+                    <pre className="font-mono bg-black mt-1 whitespace-pre-wrap">{activeIssue.received}</pre>
+                  </div>
+                )}
+              </div>
+            )}
+            {!errorMessage && !hasFailures && (
+              <div className="border border-cyan-500 p-4 bg-black mb-4">
+                <span className="text-gray-300">No test cases to show.</span>
+              </div>
+            )}
+          </>
+        ) : (
+          activeTab === 'output' && hasOutput && (
+            <div className="border border-cyan-500 p-4 bg-black">
+              <pre className="font-mono whitespace-pre-wrap">{rawout}</pre>
             </div>
-            
-            <h4 className="text-2xl mb-3">Results from your code</h4>
-            <div className="border border-cyan-500 p-4 bg-black ">
-              <p className="text-white font-mono whitespace-pre-wrap">
-                Diameter of your pizza? Number of slices? Segmentation fault
-              </p>
-            </div>
-          </div>
-        )}
-        {activeTab === 'output' && (
-          <div className="text-white">
-            <div className="border border-cyan-500 p-4 bg-black ">
-              <p className="text-white font-mono whitespace-pre-wrap">
-                Diameter of your pizza?
-              </p>
-              <p className="text-white font-mono whitespace-pre-wrap">
-                No pizza is impossible
-              </p>
-            </div>
-          </div>
-        )}
-        {activeTab === 'errors' && (
-          <div className="text-white">
-            <div className="bg-black p-4 rounded">
-              <p>Diameter of your pizza?</p>
-              <p>Number of slices?</p>
-              <p>Segmentation fault</p>
-            </div>
-          </div>
+          )
         )}
       </div>
     </div>

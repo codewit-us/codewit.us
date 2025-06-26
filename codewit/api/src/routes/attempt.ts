@@ -21,16 +21,16 @@ attemptRouter.post('/', checkAuth, async (req, res) => {
         .json({ message: fromZodError(validatedBody.error).toString() });
     }
 
-    const attempt = await createAttempt(
+    const result = await createAttempt(
       validatedBody.data.exerciseId,
       req.user.uid,
       validatedBody.data.code,
       req.headers.cookie
     );
-    if (!attempt)
+    if (!result)
       return res.status(404).json({ message: 'Exercise/User not found' });
 
-    res.json(attempt);
+    res.json({ attempt: result.attempt, evaluation: result.evaluation });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
