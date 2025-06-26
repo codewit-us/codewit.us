@@ -64,9 +64,11 @@ const Read = (): JSX.Element => {
         // 2025/06/17 NOTE: this will need to be updated to do something when
         // they have reached the end of the exercises available for the current
         // demo
-        setCurrentExerciseIndex((prevIndex) => {
-          return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
-        });
+        if(response.data.evaluation.state === 'passed') {
+          setCurrentExerciseIndex((prevIndex) => {
+            return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
+          });
+        }
 
         if (response.data) {
           setLastAttemptResult(response.data as AttemptWithEval);
