@@ -2,7 +2,11 @@
 import React, { useState } from "react";
 import MDEditor from "@uiw/react-markdown-editor";
 import { Editor } from "@monaco-editor/react";
-import { ExerciseResponse, SelectedTag } from "@codewit/interfaces";
+import { 
+  ExerciseInput,
+  ExerciseResponse,
+  SelectedTag 
+} from "@codewit/interfaces";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
 import CreateButton from "../components/form/CreateButton";
@@ -18,23 +22,35 @@ import {
 import InputLabel from "../components/form/InputLabel";
 import { isFormValid } from "../utils/formValidationUtils";
 
+interface ExerciseFormState extends ExerciseInput {
+  /** UI helper: language in <select> before saving */
+  selectedLanguage: string;
+  /** UI helper: tags in react-select before saving */
+  selectedTags: SelectedTag[];
+  /* local flags */
+  isEditing: boolean;
+  editingUid: number;
+}
+
 const ExerciseForms = (): JSX.Element => {
   const { data: exercises, setData: setExercises } = useFetchExercises();
   console.log(exercises);
   const postExercise = usePostExercise();
   const patchExercise = usePatchExercise();
   const deleteExercise = useDeleteExercise();
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ExerciseFormState>({
     prompt: "",
     topic: "",
-    selectedLanguage: "cpp",
-    selectedTags: [] as SelectedTag[],
+    language: "cpp",          // <— maps 1-to-1 when you POST
+    tags: [],                 // <— dto field
     referenceTest: "",
+    selectedLanguage: "cpp",
+    selectedTags: [],
     isEditing: false,
     editingUid: -1,
-  });
+   });
+  
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleSubmit = async () => {
     const { editingUid, isEditing } = formData;
@@ -50,7 +66,12 @@ const ExerciseForms = (): JSX.Element => {
     try {
       let response: ExerciseResponse;
       if (isEditing && editingUid !== -1) {
-        response = await patchExercise(exerciseData, editingUid);
+        // still full Exercise on PATCH
+        response = await patchExercise(          
+        // add uid for server
+        { ...exerciseData, uid: editingUid },  
+          editingUid
+        );
         setExercises((prev) =>
           prev.map((ex) => (ex.uid === editingUid ? response : ex))
         );
@@ -82,14 +103,13 @@ const ExerciseForms = (): JSX.Element => {
     setFormData({
       prompt: exercise.prompt,
       topic: exercise.topic,
-      selectedTags: exercise.tags.map((tag) => ({
-        label: tag,
-        value: Number(tag),
-      })),
+      selectedTags: exercise.tags.map((tag) => ({ label: tag, value: Number(tag) })),
       selectedLanguage: exercise.language || "cpp",
       referenceTest: exercise.referenceTest || "",
       isEditing: true,
       editingUid: exercise.uid,
+      tags: exercise.tags,
+      language: exercise.language,
     });
     setModalOpen(true);
   };
@@ -116,7 +136,9 @@ const ExerciseForms = (): JSX.Element => {
     setFormData((prev) => ({ ...prev, topic }));
   };
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleLanguageChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
     setFormData((prev) => ({ ...prev, selectedLanguage: e.target.value }));
   };
 
@@ -124,6 +146,8 @@ const ExerciseForms = (): JSX.Element => {
     setFormData({
       prompt: "",
       topic: "",
+      language: "cpp",
+      tags: [],
       selectedLanguage: "cpp",
       selectedTags: [],
       referenceTest: "",

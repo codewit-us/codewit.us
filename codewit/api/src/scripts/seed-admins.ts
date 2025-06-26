@@ -11,25 +11,31 @@ program
 
 const options = program.opts();
 const admins = options.admin || [];
+// 1st e-mail
+const primaryAdmin = admins.length > 0 ? admins[0] : null;
+// all the rest
+const studentEmails = admins.slice(1);
 
 async function seedAdmins() {
-  for (const email of admins) {
-    const user = await User.findOne({
-      where: {
-        email,
-      },
+  
+  // Make sure the first e-mail exists AND is admin
+  if (primaryAdmin) {
+    const [user] = await User.findOrCreate({
+      where: { email: primaryAdmin },
+      defaults: { isAdmin: true },
     });
 
-    if (!user) {
-      await User.create({
-        email,
-        isAdmin: true,
-      });
-    }
-
-    if (user && !user.isAdmin) {
+    if (!user.isAdmin) {
       await user.update({ isAdmin: true });
     }
+  }
+
+  // Create ALL remaining e-mails as *non-admin* users
+  for (const email of studentEmails) {
+    const [user] = await User.findOrCreate({
+      where: { email },
+      defaults: { isAdmin: false },
+    });
   }
 }
 

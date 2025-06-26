@@ -5,6 +5,7 @@ import {
   deleteExercise,
   getAllExercises,
   getExerciseById,
+  getExercisesByIds,
   updateExercise,
 } from '../controllers/exercise';
 import {
@@ -34,6 +35,26 @@ exerciseRouter.get('/:uid', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Exercise not found' });
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+exerciseRouter.get('/', async (req, res) => {
+  try {
+    const idsParam = req.query.ids as string | undefined;
+
+    // no ?ids=   ➜ old behaviour (all exercises)
+    if (!idsParam) {
+      const exercises = await getAllExercises();
+      return res.json(exercises);
+    }
+
+    // ?ids=34,37 ➜ batch fetch
+    const ids = idsParam.split(',').map(Number).filter(Boolean);
+    const exercises = await getExercisesByIds(ids);
+    res.json(exercises);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

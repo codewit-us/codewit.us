@@ -1,7 +1,7 @@
 // codewit/client/src/hooks/useExercise.ts
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ExerciseResponse, Exercise } from '@codewit/interfaces';
+import { ExerciseResponse, Exercise, ExerciseInput } from '@codewit/interfaces';
 
 // Hook to handle fetching data with axios
 const useAxiosFetch = (initialUrl: string, initialData: ExerciseResponse[] = []) => {
@@ -51,7 +51,7 @@ const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
 // Hook to post a new exercise
 export const usePostExercise = () => {
   const { operation } = useAxiosCRUD('post');
-  return (exerciseData: Exercise) => operation('/exercises', exerciseData);
+  return (exerciseData: ExerciseInput) => operation('/exercises', exerciseData);
 };
 
 // Hook to patch an exercise
@@ -64,4 +64,11 @@ export const usePatchExercise = () => {
 export const useDeleteExercise = () => {
   const { operation } = useAxiosCRUD('delete');
   return (uid: number) => operation(`/exercises/${uid}`);
+};
+
+export const fetchExercisesByIds = async (ids: number[]) => {
+  const results = await Promise.all(
+    ids.map(id => axios.get<ExerciseResponse>(`/exercises/${id}`))
+  );
+  return results.map(r => r.data);
 };

@@ -1,18 +1,20 @@
 // codewit/client/src/pages/Read.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import NotFound from '../components/notfound/NotFound';
 import CodeBlock from '../components/codeblock/Codeblock';
 import { AttemptWithEval } from '../interfaces/evaluation';
 import {
   DemoResponse,
-  Demo as DemoType,
+  Demo,
   ExerciseResponse,
 } from '@codewit/interfaces';
 import CodeSubmission from '../components/codeblock/CodeSubmission';
+import { AttemptResult } from 'lib/shared/interfaces';
 import Loading from '../components/loading/LoadingPage';
 import HelpfulLinks from '../components/videoui/HelpfulLinks';
 import Exercises from '../components/codeblock/Exercises';
+import useExercisesByIds from '../hooks/useExercisesByIds';
 import axios from 'axios';
 import { Resizable } from 're-resizable';
 import VideoPlayer from '../components/videoui/VideoPlayer';
@@ -20,78 +22,112 @@ import VideoHeader from '../components/videoui/VideoHeader';
 import AuthorTags from '../components/videoui/AuthorTags';
 import RelatedDemos from '../components/videoui/RelatedDemos';
 import { useFetchSingleDemo } from '../hooks/useDemo';
+import { useFetchStudentCourses } from '../hooks/useCourse';
 import {
   EllipsisVerticalIcon,
   EllipsisHorizontalIcon,
 } from '@heroicons/react/24/solid';
+import type { EvaluationResponse } from '../interfaces/evaluation';
+
 
 const Read = (): JSX.Element => {
   const [lastAttemptResult, setLastAttemptResult] = useState<AttemptWithEval | null>(null);
   const { uid } = useParams<{ uid: string }>();
-  const { data: demo, loading, error } = useFetchSingleDemo(uid!);
 
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  // const [relatedDemosOpen, setRelatedDemosOpen] = useState<boolean>(false);
-  // const [helpfulLinksOpen, setHelpfulLinksOpen] = useState<boolean>(false);
-  // const showBorder: boolean = relatedDemosOpen || helpfulLinksOpen;
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [isSubmitting,setIsSubmitting] = useState(false);
+  
+  const {
+    data: studentCourses,
+    setData: setStudentCourses,
+    loading: courseLoading,
+    error: courseError,
+  } = useFetchStudentCourses();
+
+  const {
+    data   : demo,
+    loading: demoLoading,
+    error  : demoError,
+  } = useFetchSingleDemo(uid!);
+
+  const {
+    data   : exerciseObjs,
+    loading: exLoading,
+    error  : exError,
+  } = useExercisesByIds(demo?.exercises ?? []);
+ 
+  const exercisesReady = !exLoading && !exError;
+
+  type AttemptResponse = AttemptResult & {
+    evaluation: EvaluationResponse;
+  };
 
   const handleSubmission = async (code: string) => {
-    if (!demo) {
-      return;
-    }
-
-    if (demo.exercises.length === 0) {
-      console.log("number of exercises is 0, nothing to send");
-
-      return;
-    }
-
-    const userId = localStorage.getItem('userId');
-    const currentExercise = demo.exercises[currentExerciseIndex];
-
-    const submission = {
-      timestamp: new Date().toISOString(),
-      userId: userId,
-      exerciseId: currentExercise,
-      code: code,
-    };
-
+    if (!demo) return;
+    const exerciseId = demo.exercises[currentExerciseIndex];
     setIsSubmitting(true);
 
+    const submission = {
+      timestamp : new Date().toISOString(),
+      exerciseId: demo.exercises[currentExerciseIndex],
+      code,
+    };
+
     try {
-      const response = await axios.post('/attempts', submission);
-        // 2025/06/17 NOTE: this will need to be updated to do something when
-        // they have reached the end of the exercises available for the current
-        // demo
-        if(response.data.evaluation.state === 'passed') {
-          setCurrentExerciseIndex((prevIndex) => {
-            return prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex;
+      // ---------- send attempt ----------
+      const { data: result } = await axios.post<AttemptResponse>(
+        '/attempts',
+        {
+          timestamp : new Date().toISOString(),
+          exerciseId,
+          code,
+        },
+        { withCredentials: true }
+      );
+
+      if (result.updatedModules?.length) {
+        setStudentCourses(prev => {
+          if (!prev?.length) return prev;
+          const next   = structuredClone(prev);
+          const course = next[0];
+          if (!course) return prev;
+
+          result.updatedModules.forEach(({ moduleUid, completion }) => {
+            const m = course.modules.find(m => m.uid === moduleUid);
+            if (m) m.completion = completion;
           });
-        }
+          return next;
+        });
+      }
 
-        if (response.data) {
-          setLastAttemptResult(response.data as AttemptWithEval);
-        }
-      // Optionally move to next exercise only on full pass, or keep as-is
-      // setCurrentExerciseIndex((prevIndex) =>
-      //   prevIndex + 1 < demo.exercises.length ? prevIndex + 1 : prevIndex
-      // );
-    } catch (e) {
-      console.error('Error submitting code:', e);
+      if (result.attempt?.completionPercentage === 100) {
+        setCurrentExerciseIndex(i =>
+          Math.min(i + 1, demo.exercises.length - 1)
+        );
+      }
 
+      // keep full result so CodeSubmission can render eval / stdout
+      const attemptWithEval: AttemptWithEval = {
+        attempt   : result.attempt,
+        evaluation: result.evaluation,
+      };
+
+      setLastAttemptResult(attemptWithEval);
+
+    } catch (err: any) {
+      console.error('Error submitting code:', err);
       setLastAttemptResult({
-        attempt: null,
+        attempt   : null,
         evaluation: {
-          state: 'error',
-          error: 'Unexpected error occurred ' + e?.message,
-        }
+          state : 'error',
+          error : 'Unexpected error: ' + err?.message,
+        },
       } as AttemptWithEval);
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   const likeVideo = async (uid: number) => {
     try {
       await axios.post(`/demos/${uid}/like`);
@@ -100,13 +136,13 @@ const Read = (): JSX.Element => {
     }
   };
 
-  if (loading) {
-    return <Loading />;
-  }
+  if (demoLoading || courseLoading) {
+     return <Loading />;
+   }
 
-  if (error || !demo) {
-    return <NotFound />;
-  }
+  if (demoError || courseError || !demo) {
+     return <NotFound />;
+   }
 
   return (
     <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-black">
@@ -157,7 +193,10 @@ const Read = (): JSX.Element => {
       {/* right side */}
       <div className="flex-1 h-full w-full md:overflow-hidden pt-2 px-2 flex flex-col">
         <div className="mb-2">
-          <Exercises exercises={demo.exercises} idx={currentExerciseIndex} />
+          <Exercises
+            exercises={exerciseObjs}
+            idx={currentExerciseIndex}
+          />
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden">

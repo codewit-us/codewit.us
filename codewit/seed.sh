@@ -107,12 +107,18 @@ function seed_emails {
   done  
 
   # run the npm command with .env for the seed-admins script
+  ADMIN_ARGS=()
+  for email in "${EMAILS[@]}"; do
+    ADMIN_ARGS+=( --admin "$email" )
+  done
 
+  # run the npm command with .env for the seed-admins script
   if [ -n "$CUSTOM_DB_PORT" ]; then
-    DB_PORT="$CUSTOM_DB_PORT" npm run seed-admins -- --admin "${EMAILS[*]}"
+    DB_PORT="$CUSTOM_DB_PORT" npm run seed-admins -- "${ADMIN_ARGS[@]}"
   else
-    npm run seed-admins -- --admin "${EMAILS[*]}"
+    npm run seed-admins -- "${ADMIN_ARGS[@]}"
   fi
+  
 }
 
 

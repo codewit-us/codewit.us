@@ -1,9 +1,12 @@
 import {
     DocumentDuplicateIcon
 } from '@heroicons/react/24/solid';
-import axios from 'axios';
 import bulbLit from '/bulb(lit).svg';
-import { useEffect } from 'react';
+// import axios from 'axios';
+// import { useEffect } from 'react';
+import { useCourseProgress } from '../hooks/useCourse';
+import { useParams } from 'react-router-dom';
+
 // import bulbUnlit from '/bulb(unlit).svg';
 
 interface DashboardProps {
@@ -25,47 +28,53 @@ const MockTopics = [
     "Recursion"
 ];
 
-const MockStudents = [
-    { name: "Alexandria Virginia", completed: 6 },
-    { name: "Bella Sophia", completed: 3 },
-    { name: "Cletus Spuckler", completed: 2 },
-    { name: "Duffman", completed: 5 },
-    { name: "Edna Krabappel", completed: 6 },
-    { name: "Fat Tony", completed: 9 },
-    { name: "Groundskeeper Willie", completed: 3 },
-    { name: "Homer Simpson", completed: 0 },
-    { name: "Itchy", completed: 4 },
-    { name: "Jimbo Jones", completed: 1 },
-    { name: "Krusty The Clown", completed: 2 },
-    { name: "Lisa Simpson", completed: 8 },
-    { name: "Marge Simpson", completed: 3 },
-    { name: "Nelson Muntz", completed: 0 },
-    { name: "Otto Mann", completed: 1 },
-    { name: "Patty Bouvier", completed: 0 },
-    { name: "Queen Reina", completed: 0 },
-    { name: "Ralph Wiggum", completed: 2 },
-    { name: "Snake Jailbird", completed: 12 },
-    { name: "Troy McClure", completed: 12 },
-];
+// const MockStudents = [
+//     { name: "Alexandria Virginia", completed: 6 },
+//     { name: "Bella Sophia", completed: 3 },
+//     { name: "Cletus Spuckler", completed: 2 },
+//     { name: "Duffman", completed: 5 },
+//     { name: "Edna Krabappel", completed: 6 },
+//     { name: "Fat Tony", completed: 9 },
+//     { name: "Groundskeeper Willie", completed: 3 },
+//     { name: "Homer Simpson", completed: 0 },
+//     { name: "Itchy", completed: 4 },
+//     { name: "Jimbo Jones", completed: 1 },
+//     { name: "Krusty The Clown", completed: 2 },
+//     { name: "Lisa Simpson", completed: 8 },
+//     { name: "Marge Simpson", completed: 3 },
+//     { name: "Nelson Muntz", completed: 0 },
+//     { name: "Otto Mann", completed: 1 },
+//     { name: "Patty Bouvier", completed: 0 },
+//     { name: "Queen Reina", completed: 0 },
+//     { name: "Ralph Wiggum", completed: 2 },
+//     { name: "Snake Jailbird", completed: 12 },
+//     { name: "Troy McClure", completed: 12 },
+// ];
 
 const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        const userId = localStorage.getItem('userId');
+    //     const userId = localStorage.getItem('userId');
 
-        const fetchData = async () => {
-            try {
-                const response = await axios.get(`/courses/teacher/${userId}`);
-                console.log(response.data);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
+    //     const fetchData = async () => {
+    //         try {
+    //             const response = await axios.get(`/courses/teacher/${userId}`);
+    //             console.log(response.data);
+    //         } catch (error) {
+    //             console.error('Error fetching data:', error);
+    //         }
+    //     };
         
-        fetchData();
+    //     fetchData();
 
-    }, []);
+    // }, []);
+
+    const { courseId } = useParams<{ courseId: string }>();
+    const { data: students, loading, error } = useCourseProgress(courseId!);
+
+    if (loading) return <p className="text-foreground-200">Loading…</p>;
+    if (error)   return <p className="text-red-500">Failed to load progress</p>;
 
     return (
             // class link section
@@ -102,7 +111,7 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                 <h1 className="font-bold text-foreground-200 pb-10 text-[16px]"> 
                     Progress 
                 </h1>
-
+                
                 <div className="overflow-x-auto">
                     <div className="flex flex-col">
                         <div className="flex">
@@ -130,13 +139,13 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                             </div>
                         </div>
                         
-                        <div className="space-y-4 relative"> 
-                            {MockStudents.map((student, studentIndex) => {
-                                const progressPercent = Math.round((student.completed / MockTopics.length) * 100);
+                        <div className="space-y-4 relative">
+                            {students.map((s, idx) => {
+                                const progressPercent = Math.round(s.completion * 100);
                                 return (
-                                    <div key={studentIndex} className="flex items-center hover:bg-foreground-500/20">
+                                    <div key={idx} className="flex items-center hover:bg-foreground-500/20">
                                         <span className="text-foreground-200 text-[16px] min-w-[200px] sticky left-0 bg-foreground-600 z-10">
-                                            {student.name}
+                                            {s.studentName}
                                         </span>
                                         <div className="relative flex items-center">
                                             <div 
@@ -151,7 +160,7 @@ const Dashboard = ({ courseTitle }: DashboardProps): JSX.Element => {
                                                 className="absolute flex items-center "
                                                 style={{ left: `${progressPercent}%`, transform: 'translateX(-14%)' }}
                                             >
-                                                {student.completed > 0 && (
+                                                {s.completion > 0 && (
                                                     <img
                                                         src={bulbLit}
                                                         className="size-6 relative z-10"

@@ -16,19 +16,26 @@ import UserManagement from '../pages/UserManagement';
 import Error from '../components/error/Error';
 import LoadingPage from '../components/loading/LoadingPage';
 import Dashboard from '../pages/Dashboard';
-
+import TeacherView from '../pages/course/TeacherView';
 
 export function App() {
   const { user, loading, handleLogout } = useAuth();
-  const [courseTitle, setCourseTitle] = useState<string>(() => {
-    return localStorage.getItem('courseTitle') || '';
-  });
+  const [courseTitle, setCourseTitle] = useState<string>(() =>
+     localStorage.getItem('courseTitle') || '',
+   );
+ 
+   const [courseId, setCourseId] = useState<string>(() =>
+     localStorage.getItem('courseId') || '',
+   ); 
 
   useEffect(() => {
     if (courseTitle) {
       localStorage.setItem('courseTitle', courseTitle);
     }
-  }, [courseTitle]);
+    if (courseId) { 
+      localStorage.setItem('courseId', courseId);
+  }
+  }, [courseTitle, courseId]);
 
   if (loading) {
     return <LoadingPage />;
@@ -41,10 +48,17 @@ export function App() {
         admin={user ? user.isAdmin : false}
         handleLogout={handleLogout}
         courseTitle={courseTitle}
+        courseId={courseId}
       />
       <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/:course_id" element={<CourseView onCourseChange={setCourseTitle}/>}/>
+        <Route
+          path="/"
+          element={ <Home /> }
+        />
+        <Route
+          path="/:course_id"
+          element={<CourseView onCourseChange={setCourseTitle} />}
+        />
         <Route path="/read/:uid" element={<Read />} />
         <Route
           path="/usermanagement"
@@ -88,7 +102,7 @@ export function App() {
           <Route path="course" element={<CourseForm />} />
         </Route>
         <Route
-          path="/dashboard"
+          path="/:courseId/dashboard"
           element={
             user && user.isAdmin ? (
               <Dashboard

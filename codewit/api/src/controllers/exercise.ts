@@ -19,6 +19,18 @@ async function getExerciseById(uid: number): Promise<ExerciseResponse | null> {
   return formatExerciseResponse(exercise);
 }
 
+async function getExercisesByIds(ids: number[]): Promise<ExerciseResponse[]> {
+  if (!ids.length) return [];
+
+  const exercises = await Exercise.findAll({
+    where   : { uid: ids },
+    include : [Tag, Language],
+    order   : [[Tag, ExerciseTags, 'ordering', 'ASC']],
+  });
+
+  return formatExerciseResponse(exercises);
+}
+
 async function createExercise(
   prompt: string,
   topic: string,
@@ -134,6 +146,7 @@ async function deleteExercise(uid: number): Promise<ExerciseResponse | null> {
 export {
   getAllExercises,
   getExerciseById,
+  getExercisesByIds,
   createExercise,
   updateExercise,
   deleteExercise,

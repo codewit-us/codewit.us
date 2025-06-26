@@ -63,6 +63,11 @@ export interface DemoResponse {
 }
 
 export interface AttemptWithEval {
-    attempt: Attempt;
-    evaluation: EvaluationResponse;
+  attempt: {
+    uid: number;
+    submissionNumber: number;
+    completionPercentage: number;
+  };
+  updatedModules: { moduleUid: number; completion: number }[];
+  evaluation: EvaluationResponse;
 }

@@ -36,13 +36,15 @@ function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch<T> {
       });
 
       setData(response.data);
-    } catch (error) {
-      if (error.code === "ERR_CANCELED") {
-        canceled = true;
-      } else {
-        setError(true);
+    } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          setError(true);
+        } else if ((err as any).code === 'ERR_CANCELED') {
+          canceled = true;
+        } else {
+          setError(true);
+        }
       }
-    }
 
     setActiveRequests(v => (v - 1));
 

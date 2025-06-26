@@ -14,6 +14,9 @@ async function createAttempt(
   cookies: string
 ): Promise<AttemptWithEval | null> {
   return sequelize.transaction(async (transaction) => {
+
+    const updatedModules: { moduleUid: number; completion: number }[] = [];
+
     await sequelize.query('LOCK TABLE "attempts" IN SHARE ROW EXCLUSIVE MODE', {
       transaction,
     });
@@ -157,6 +160,8 @@ async function createAttempt(
               moduleUid,
               completion: maxCompletion,
             }, { transaction });
+
+            updatedModules.push({ moduleUid, completion: maxCompletion });
           }
         }
 
@@ -170,8 +175,16 @@ async function createAttempt(
     }
 
     await attempt.save({ transaction });
-    if (!evalResponse) return null;
-    return { attempt, evaluation: evalResponse };
+    
+    return {
+      attempt: {
+        uid: attempt.uid,
+        submissionNumber: attempt.submissionNumber,
+        completionPercentage: attempt.completionPercentage,
+      },
+      updatedModules,
+      evaluation: evalResponse
+    };
   });
 }
 
