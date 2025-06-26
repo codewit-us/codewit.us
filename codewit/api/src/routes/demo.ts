@@ -63,7 +63,8 @@ demoRouter.post('/', checkAdmin, async (req, res) => {
       validatedBody.data.youtube_thumbnail,
       validatedBody.data.topic,
       validatedBody.data.tags,
-      validatedBody.data.language
+      validatedBody.data.language,
+      validatedBody.data.exercises,
     );
 
     res.json(demo);
@@ -90,7 +91,8 @@ demoRouter.patch('/:uid', checkAdmin, async (req, res) => {
       validatedBody.data.youtube_thumbnail,
       validatedBody.data.tags,
       validatedBody.data.language,
-      validatedBody.data.topic
+      validatedBody.data.topic,
+      validatedBody.data.exercises,
     );
 
     if (demo) {

@@ -33,7 +33,8 @@ async function createDemo(
   youtube_thumbnail: string,
   topic: string,
   tags?: string[],
-  language?: string
+  language?: string,
+  exercises?: number[],
 ): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.create(
@@ -77,6 +78,10 @@ async function createDemo(
       );
     }
 
+    if (exercises) {
+      await demo.addExercises(exercises, { transaction });
+    }
+
     await demo.reload({
       include: [Exercise, Tag, Language],
       order: [[Tag, DemoTags, 'ordering', 'ASC']],
@@ -94,7 +99,8 @@ async function updateDemo(
   youtube_thumbnail?: string,
   tags?: string[],
   language?: string,
-  topic?: string
+  topic?: string,
+  exercises?: number[],
 ): Promise<DemoResponse> {
   return await sequelize.transaction(async (transaction) => {
     const demo = await Demo.findByPk(uid, {
@@ -132,6 +138,10 @@ async function updateDemo(
     if (youtube_id) demo.youtube_id = youtube_id;
     if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
     if (topic) demo.topic = topic;
+
+    if (exercises) {
+      await demo.addExercises(exercises, { transaction });
+    }
 
     await demo.save({ transaction });
 
