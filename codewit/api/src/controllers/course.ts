@@ -12,6 +12,8 @@ import { formatCourseResponse } from '../utils/responseFormatter';
 
 async function createCourse(
   title: string,
+  enrolling: boolean,
+  auto_enroll: boolean,
   language?: string,
   modules?: number[],
   instructors?: number[],
@@ -26,6 +28,10 @@ async function createCourse(
       transaction,
     });
 
+    if (auto_enroll && !enrolling) {
+      auto_enroll = false;
+    }
+
     const course_count = await Course.count({ transaction });
     const course = await Course.create(
       {
@@ -36,6 +42,8 @@ async function createCourse(
           seed: course_count + 1,
         }),
         title,
+        enrolling,
+        auto_enroll,
       },
       { transaction }
     );
@@ -87,6 +95,8 @@ async function createCourse(
 async function updateCourse(
   uid: string,
   title?: string,
+  enrolling?: boolean,
+  auto_enroll?: boolean,
   language?: string,
   modules?: number[],
   instructors?: number[],
@@ -101,6 +111,20 @@ async function updateCourse(
 
     if (title) {
       course.title = title;
+    }
+
+    if (typeof enrolling === "boolean") {
+      course.enrolling = enrolling;
+
+      if (!enrolling) {
+        course.auto_enroll = false;
+      }
+    }
+
+    if (typeof auto_enroll === "boolean") {
+      if (course.enrolling) {
+        course.auto_enroll = auto_enroll;
+      }
     }
 
     if (language) {

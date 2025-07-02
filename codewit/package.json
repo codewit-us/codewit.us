@@ -8,8 +8,8 @@
     "seed-admins": "nx run api:seed-admins-builder && node dist/api/seed-admins.js",
     "seed-data": "nx run api:seed-db-builder && node dist/api/seed-db.js",
     "seed-admins-force": "nx run api:seed-admins-builder && node dist/api/seed-admins.js --force",
-    "test:gui": "cd client-e2e && npx cypress open", 
-    "test": "cd client-e2e && npx cypress run" 
+    "test:gui": "cd client-e2e && npx cypress open",
+    "test": "cd client-e2e && npx cypress run"
   },
   "private": true,
   "dependencies": {
@@ -19,6 +19,7 @@
     "@types/express-session": "^1.18.0",
     "@uiw/react-markdown-editor": "^6.0.0",
     "axios": "^1.6.0",
+    "clsx": "^2.1.1",
     "commander": "^12.0.0",
     "connect-redis": "^8.0.0",
     "express": "~4.18.1",
@@ -39,6 +40,7 @@
     "redis": "^4.7.0",
     "remark-gfm": "^4.0.0",
     "sequelize": "^6.36.0",
+    "tailwind-merge": "^2.6.0",
     "tslib": "^2.3.0",
     "unique-names-generator": "^4.7.1",
     "zod": "^3.22.4",
