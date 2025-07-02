@@ -21,17 +21,21 @@ class Course extends Model<
 > {
   declare id: string;
   declare title: string;
+  declare enrolling: boolean;
+  declare auto_enroll: boolean;
 
   declare language?: NonAttribute<Language>;
   declare modules?: NonAttribute<Module[]>;
   declare instructors?: NonAttribute<User[]>;
   declare roster?: NonAttribute<User[]>;
+  declare registered?: NonAttribute<User[]>;
 
   declare static associations: {
     language: Association<Course, Language>;
     modules: Association<Course, Module>;
     instructors: Association<Course, User>;
     roster: Association<Course, User>;
+    registered: Association<Course, User>;
   };
 
   declare setLanguage: BelongsToSetAssociationMixin<Language, number>;
@@ -56,6 +60,16 @@ class Course extends Model<
           type: DataTypes.STRING,
           allowNull: false,
         },
+        enrolling: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
+        },
+        auto_enroll: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false,
+        }
       },
       {
         sequelize,

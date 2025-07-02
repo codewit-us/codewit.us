@@ -47,7 +47,7 @@ interface DemoPostResponse {
 interface Tag {
   value: any;
   uid?: number;
-  name: string; 
+  name: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -90,6 +90,8 @@ interface Resource {
 interface Course {
   id: string;
   title: string;
+  enrolling: boolean,
+  auto_enroll: boolean,
   language: string;
   modules: Module[];
   instructors: Array<{
@@ -152,8 +154,8 @@ interface Thumbnail {
   height: number;
 }
 
-export type { 
-  Exercise, 
+export type {
+  Exercise,
   ExerciseResponse,
   ExerciseFormData,
   Demo,
@@ -162,7 +164,7 @@ export type {
   DemoPostResponse,
   DemoResponse,
   DemoFormData,
-  YouTubeSearchResult, 
+  YouTubeSearchResult,
   Thumbnail,
   Resource,
   Course,

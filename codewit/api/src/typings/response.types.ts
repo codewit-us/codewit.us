@@ -26,6 +26,8 @@ export interface ExerciseResponse {
 export interface CourseResponse {
     id: string;
     title: string;
+    enrolling: boolean,
+    auto_enroll: boolean,
     language: string;
     modules: ModuleResponse[] | number[];
     roster: UserResponse[];

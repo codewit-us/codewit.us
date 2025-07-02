@@ -10,6 +10,8 @@ import { formatCourseResponse } from '../utils/responseFormatter';
 
 async function createCourse(
   title: string,
+  enrolling: boolean,
+  auto_enroll: boolean,
   language?: string,
   modules?: number[],
   instructors?: number[],
@@ -24,6 +26,10 @@ async function createCourse(
       transaction,
     });
 
+    if (auto_enroll && !enrolling) {
+      auto_enroll = false;
+    }
+
     const course_count = await Course.count({ transaction });
     const course = await Course.create(
       {
@@ -34,6 +40,8 @@ async function createCourse(
           seed: course_count + 1,
         }),
         title,
+        enrolling,
+        auto_enroll,
       },
       { transaction }
     );
@@ -85,6 +93,8 @@ async function createCourse(
 async function updateCourse(
   uid: string,
   title?: string,
+  enrolling?: boolean,
+  auto_enroll?: boolean,
   language?: string,
   modules?: number[],
   instructors?: number[],
@@ -99,6 +109,20 @@ async function updateCourse(
 
     if (title) {
       course.title = title;
+    }
+
+    if (typeof enrolling === "boolean") {
+      course.enrolling = enrolling;
+
+      if (!enrolling) {
+        course.auto_enroll = false;
+      }
+    }
+
+    if (typeof auto_enroll === "boolean") {
+      if (course.enrolling) {
+        course.auto_enroll = auto_enroll;
+      }
     }
 
     if (language) {
@@ -135,7 +159,7 @@ async function updateCourse(
     await course.save({ transaction });
     await course.reload({
       include: [
-        Language, 
+        Language,
         Module,
         { association: Course.associations.instructors },
         { association: Course.associations.roster },
@@ -177,10 +201,10 @@ async function getCourse(uid: string): Promise<CourseResponse | null> {
 async function getAllCourses(): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language, 
+      Language,
       {
         association: Course.associations.modules,
-        include: [Language, Resource], 
+        include: [Language, Resource],
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },
@@ -195,10 +219,10 @@ async function getTeacherCourses(teacherId: string): Promise<CourseResponse[]> {
 
   const courses = await Course.findAll({
     include: [
-      Language, 
+      Language,
       {
         association: Course.associations.modules,
-        include: [Language, Resource], 
+        include: [Language, Resource],
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors, where: { googleId: teacherId } },
@@ -213,10 +237,10 @@ async function getTeacherCourses(teacherId: string): Promise<CourseResponse[]> {
 async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   const courses = await Course.findAll({
     include: [
-      Language, 
+      Language,
       {
         association: Course.associations.modules,
-        include: [Language, Resource, Demo], 
+        include: [Language, Resource, Demo],
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },
