@@ -160,6 +160,12 @@ export interface StudentCourse {
   instructors: StudentUser[],
 }
 
+export interface StudentProgress {
+  studentUid: number;
+  studentName: string;
+  completion: number;
+}
+
 export interface TeacherCourse{
   id: string,
   title: string,

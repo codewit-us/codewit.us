@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   PlayIcon,
   ChevronRightIcon,
@@ -18,28 +18,26 @@ import TeacherView from './course/TeacherView';
 
 import bulbLit from '/bulb(lit).svg';
 import bulbUnlit from '/bulb(unlit).svg';
+import { useAuth } from '../hooks/useAuth';
 
 interface StudentCourse extends StuCourse {
   type: "StudentView",
 }
 
-interface TeacherCourse extends TeachCourse {
-  type: "TeacherView",
-}
-
-type GetCourse = StudentCourse | TeacherCourse;
+type GetCourse = StudentCourse;
 
 interface CourseView {
   onCourseChange: (title: string) => void,
 }
 
 export default function CourseView({onCourseChange}: CourseView) {
-  const { course_id } = useParams();
+  
+  const { course_id: courseId } = useParams();
 
-  const { data: course, loading, error } = useAxiosFetch<GetCourse | null>(`/api/courses/${course_id}`, null);
+  const { data: course, loading, error } = useAxiosFetch<GetCourse | null>(`/api/courses/${courseId}?student_view=1`, null);
 
   useEffect(() => {
-    if (course != null && course.type === "StudentView") {
+    if (course != null) {
       onCourseChange(course.title);
     } else {
       onCourseChange("");
@@ -57,8 +55,6 @@ export default function CourseView({onCourseChange}: CourseView) {
   switch (course.type) {
     case "StudentView":
       return <StudentView course={course}/>
-    case "TeacherView":
-      return <TeacherView course={course}/>
     default:
       return <div>Unknown View from server</div>;
   }

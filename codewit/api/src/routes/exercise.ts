@@ -45,13 +45,11 @@ exerciseRouter.get('/', async (req, res) => {
   try {
     const idsParam = req.query.ids as string | undefined;
 
-    // no ?ids=   ➜ old behaviour (all exercises)
     if (!idsParam) {
       const exercises = await getAllExercises();
       return res.json(exercises);
     }
 
-    // ?ids=34,37 ➜ batch fetch
     const ids = idsParam.split(',').map(Number).filter(Boolean);
     const exercises = await getExercisesByIds(ids);
     res.json(exercises);

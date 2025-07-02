@@ -32,10 +32,8 @@ export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch
       });
 
       setData(response.data);
-    } catch (err) {
-      if (axios.isAxiosError(err))
-        if (err.code === "ERR_CANCELED") {
-        } else {
+    } catch (err: any) {
+      if (err.code === "ERR_CANCELED") {
         canceled = true;
       } else {
         setError(true);

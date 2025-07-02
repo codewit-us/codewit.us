@@ -1,7 +1,7 @@
 // codewit/client/src/hooks/useCourse.ts
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Course } from '@codewit/interfaces';
+import { Course, StudentProgress } from '@codewit/interfaces';
 import { useAuth } from './useAuth';
 
 // General hook to handle fetching data with axios
@@ -100,12 +100,6 @@ export const useDeleteCourse = () => {
   const { operation } = useAxiosCRUD('delete');
   return (uid: number | string) => operation(`/courses/${uid}`);
 };
-
-export interface StudentProgress {
-  studentUid: number;
-  studentName: string;
-  completion: number;
-}
 
 export const useCourseProgress = (courseId: string) => {
   const [data, setData] = useState<StudentProgress[]>([]);

@@ -41,8 +41,8 @@ const ExerciseForms = (): JSX.Element => {
   const [formData, setFormData] = useState<ExerciseFormState>({
     prompt: "",
     topic: "",
-    language: "cpp",          // <— maps 1-to-1 when you POST
-    tags: [],                 // <— dto field
+    language: "cpp",
+    tags: [],                 
     referenceTest: "",
     selectedLanguage: "cpp",
     selectedTags: [],

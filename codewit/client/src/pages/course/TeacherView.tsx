@@ -8,43 +8,40 @@ import { default as ErrorEle } from '../../components/error/Error';
 import { useAxiosFetch } from "../../hooks/fetching";
 
 import type { TeacherCourse } from '@codewit/interfaces';
+import { useEffect } from "react";
 
-function topicList(course: TeacherCourse): string[] {
-  return course.modules.map(m => m.topic);;
+interface TeacherViewProps {
+  onCourseChange: (name: string) => void,
 }
 
-export interface TeacherViewProps {
-  course: TeacherCourse
-}
+export default function TeacherView({ onCourseChange }: TeacherViewProps) {
+  const { courseId } = useParams();
 
-export default function TeacherView({}: TeacherViewProps) {
-  const { course_id } = useParams();
-
-  if (course_id == null) {
-    throw new Error("missing course_id parameter");
+  if (courseId == null) {
+    throw new Error("courseId param not given");
   }
 
-  const { data: course,
-          loading: course_loading,
-          error: course_error 
-  } = useAxiosFetch<any>(`/api/courses/${course_id}`, null);
+  const { data: course, loading: course_loading, error: course_error } = useAxiosFetch<TeacherCourse | null>(`/api/courses/${courseId}`, null);
+  const { data: students, loading, error } = useCourseProgress(courseId);
 
-  const { data: students, loading, error } = useCourseProgress(course_id);
+  useEffect(() => {
+    if (course != null) {
+      onCourseChange(course.title);
+    } else {
+      onCourseChange("");
+    }
+  }, [course, onCourseChange]);
 
-  if (course_loading || loading) {
+  if (loading || course_loading) {
     return <Loading />;
   }
-
-  if (error) {
-    return <ErrorEle message="Failed to load progress" />;
-  }
-
-  if (course == null || course_error) {
+  
+  if (error || course_error || course == null || !students) {
     return <ErrorEle message="Failed to load course information"/>;
   }
 
   const courseTitle = course.title;
-  const Topics = topicList(course);
+  const Topics = course.modules.map(m => m.topic);
 
   return (
     <div className="h-container-full overflow-auto flex flex-col w-full bg-black items-center gap-2">
@@ -105,7 +102,7 @@ export default function TeacherView({}: TeacherViewProps) {
             {/* student rows */}
             <div className="space-y-4 relative">
               {students.map((s, idx) => {
-                const pct = Math.round(s.completion * 100);  // 0-100
+                const pct = Math.round(s.completion * 100);
                 return (
                   <div key={idx} className="flex items-center hover:bg-foreground-500/20">
                     {/* name cell */}

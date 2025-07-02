@@ -81,7 +81,7 @@ async function createAttempt(
         attempt.error = eval_error;
         console.log(`Completion Percentage: ${completionPercentage}%`);
 
-        // 1. Update UserExerciseCompletion
+        // Update UserExerciseCompletion
         const completion = passed / tests_run;
 
         await UserExerciseCompletion.upsert({
@@ -91,7 +91,7 @@ async function createAttempt(
         }, { transaction });
 
 
-        // 2. Update all demo completions that include this exercise
+        // Update all demo completions that include this exercise
         const demoExerciseLinks = await DemoExercises.findAll({
           where: { exerciseUid: exercise.uid },
           transaction,
@@ -129,7 +129,7 @@ async function createAttempt(
           }, { transaction });
 
 
-          // 3. Update module completion (max of demo completions)
+          // Update module completion (max of demo completions)
           const moduleDemoLinks = await ModuleDemos.findAll({
             where: { demoUid },
             transaction,

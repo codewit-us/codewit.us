@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import NavBar from '../components/nav/Nav';
@@ -20,6 +20,8 @@ import TeacherView from '../pages/course/TeacherView';
 
 export function App() {
   const { user, loading, handleLogout } = useAuth();
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
   const [courseTitle, setCourseTitle] = useState<string>(() =>
      localStorage.getItem('courseTitle') || '',
    );
@@ -47,7 +49,7 @@ export function App() {
         name={user ? user.username : ''}
         admin={user ? user.isAdmin : false}
         handleLogout={handleLogout}
-        courseTitle={courseTitle}
+        courseTitle={isLandingPage ? '' : courseTitle}
         courseId={courseId}
       />
       <Routes>
@@ -105,8 +107,8 @@ export function App() {
           path="/:courseId/dashboard"
           element={
             user && user.isAdmin ? (
-              <Dashboard
-                courseTitle={courseTitle}
+              <TeacherView
+                onCourseChange={setCourseTitle}
               />
             ) : (
               <Navigate

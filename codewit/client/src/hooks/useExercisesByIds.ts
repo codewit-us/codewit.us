@@ -11,11 +11,11 @@ export default function useExercisesByIds(ids: number[]) {
     if (!ids.length) return;
     setL(true);
     axios
-      .get<Exercise[]>('/exercises', { params: { ids } })   // backend route below
+      .get<Exercise[]>('/exercises', { params: { ids } })
       .then(r => setData(r.data))
       .catch(() => setErr(true))
       .finally(() => setL(false));
-  }, [ids.join(',')]);          // stable deps
+  }, [ids.join(',')]);
 
   return { data, loading, error };
 }

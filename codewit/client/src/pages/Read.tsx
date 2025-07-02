@@ -35,7 +35,7 @@ const Read = (): JSX.Element => {
   const { uid } = useParams<{ uid: string }>();
 
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [isSubmitting,setIsSubmitting] = useState(false);
+  const [isSubmitting,setIsSubmitting] = useState<boolean>(false);
   
   const {
     data: studentCourses,

@@ -124,7 +124,7 @@ courseRouter.get('/:courseId/progress', checkAuth, async (req, res) => {
         const sum = moduleIds.reduce(
           (acc, id) => acc + (compMap.get(id) ?? 0), 0
         );
-        const avg = totalModules ? sum / totalModules : 0; // 0–1
+        const avg = totalModules ? sum / totalModules : 0; 
 
         return {
           studentUid  : student.uid,
