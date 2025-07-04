@@ -124,6 +124,8 @@ export default function CourseForm() {
     setFormData({
       id: "",
       title: "",
+      enrolling: false,
+      auto_enroll: false,
       language: "cpp",
       modules: [],
       instructors: [],
