@@ -28,6 +28,8 @@ import { asyncHandle } from "../middleware/catch";
 import {  } from "../models";
 import { formatCourseResponse } from '../utils/responseFormatter';
 
+type UserStatus = { is_instructor: boolean; is_student: boolean };
+
 const courseRouter = Router();
 
 courseRouter.get("/landing", asyncHandle(async (req, res) => {
@@ -172,6 +174,35 @@ courseRouter.get('/', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+courseRouter.get('/:uid/role', asyncHandle(async (req, res) => {
+  interface UserStatus { 
+    is_instructor: boolean; 
+    is_student: boolean 
+  }
+  const [row] = await sequelize.query<UserStatus>(
+    `
+    select
+      "CourseInstructors"."userUid" is not null as is_instructor,
+      "CourseRoster"."userUid"      is not null as is_student
+    from courses
+      left join "CourseInstructors"
+        on courses.id = "CourseInstructors"."courseId"
+       and "CourseInstructors"."userUid" = $2
+      left join "CourseRoster"
+        on courses.id = "CourseRoster"."courseId"
+       and "CourseRoster"."userUid" = $2
+    where courses.id = $1
+    `,
+    { bind: [req.params.uid, req.user.uid], type: QueryTypes.SELECT }
+  );
+
+  if (!row) return res.status(404).json({ role: null });
+
+  if (row.is_instructor) return res.json({ role: 'instructor' });
+  if (row.is_student)    return res.json({ role: 'student' });
+  return res.json({ role: null });
+}));
 
 courseRouter.get('/:uid', asyncHandle(async (req, res) => {
   interface UserStatus {

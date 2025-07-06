@@ -49,12 +49,12 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
       {/* ───────── header + invite link ───────── */}
       <div className="bg-foreground-600 w-3/4 mt-4 rounded-md p-4">
         <span className="text-[16px] font-bold text-foreground-200">
-          {courseTitle ? `${courseTitle} - ` : ''}Teacher&nbsp;Dashboard
+          {courseTitle ? `${courseTitle} - ` : ''}Teacher Dashboard
         </span>
 
         {/* invite link (static for now) */}
         <div className="mt-4 flex items-center gap-2">
-          <p className="text-foreground-200 text-sm">Class&nbsp;Link</p>
+          <p className="text-foreground-200 text-sm">Class Link</p>
           <input
             className="p-1 bg-background-500 text-foreground-200 w-1/3 border border-accent-500 rounded-sm"
             type="text"

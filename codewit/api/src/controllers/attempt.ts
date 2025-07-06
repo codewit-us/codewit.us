@@ -15,7 +15,7 @@ async function createAttempt(
 ): Promise<AttemptWithEval | null> {
   return sequelize.transaction(async (transaction) => {
 
-    const updatedModules: { moduleUid: number; completion: number }[] = [];
+    let updatedModules: { moduleUid: number; completion: number }[] = [];
 
     await sequelize.query('LOCK TABLE "attempts" IN SHARE ROW EXCLUSIVE MODE', {
       transaction,

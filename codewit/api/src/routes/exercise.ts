@@ -17,16 +17,6 @@ import { checkAdmin } from '../middleware/auth';
 
 const exerciseRouter = Router();
 
-exerciseRouter.get('/', async (req, res) => {
-  try {
-    const exercises = await getAllExercises();
-    res.json(exercises);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 exerciseRouter.get('/:uid', async (req, res) => {
   try {
     const exercise = await getExerciseById(Number(req.params.uid));
@@ -45,14 +35,26 @@ exerciseRouter.get('/', async (req, res) => {
   try {
     const idsParam = req.query.ids as string | undefined;
 
-    if (!idsParam) {
-      const exercises = await getAllExercises();
+    // If ?ids is present, validate it; otherwise return *all* exercises.
+    if (idsParam) {
+      const ids = idsParam
+        .split(',')
+        .map(Number)
+        // Keep only positive ints
+        .filter(id => Number.isInteger(id) && id > 0);   
+
+      if (ids.length === 0) {
+        return res.status(400).json({ message: 'Provide at least one positive integer id' });
+      }
+
+      const exercises = await getExercisesByIds(ids);
       return res.json(exercises);
     }
 
-    const ids = idsParam.split(',').map(Number).filter(Boolean);
-    const exercises = await getExercisesByIds(ids);
-    res.json(exercises);
+    // No ids → return everything
+    const exercises = await getAllExercises();
+    return res.json(exercises);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
