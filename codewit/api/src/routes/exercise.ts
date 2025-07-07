@@ -33,15 +33,26 @@ exerciseRouter.get('/:uid', async (req, res) => {
 
 exerciseRouter.get('/', async (req, res) => {
   try {
-    const idsParam = req.query.ids as string | undefined;
+    const idsParam = req.query.ids;
 
-    // If ?ids is present, validate it; otherwise return *all* exercises.
-    if (idsParam) {
+    if (typeof idsParam === 'string') {
       const ids = idsParam
         .split(',')
         .map(Number)
-        // Keep only positive ints
-        .filter(id => Number.isInteger(id) && id > 0);   
+        .filter(id => Number.isInteger(id) && id > 0);
+
+      if (ids.length === 0) {
+        return res.status(400).json({ message: 'Provide at least one positive integer id' });
+      }
+
+      const exercises = await getExercisesByIds(ids);
+      return res.json(exercises);
+    }
+
+    if (Array.isArray(idsParam)) {
+      const ids = idsParam
+        .map(Number)
+        .filter(id => Number.isInteger(id) && id > 0);
 
       if (ids.length === 0) {
         return res.status(400).json({ message: 'Provide at least one positive integer id' });
