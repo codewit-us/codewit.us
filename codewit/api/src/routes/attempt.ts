@@ -30,7 +30,11 @@ attemptRouter.post('/', checkAuth, async (req, res) => {
     if (!result)
       return res.status(404).json({ message: 'Exercise/User not found' });
 
-    res.json({ attempt: result.attempt, evaluation: result.evaluation });
+    res.json({ 
+      attempt: result.attempt, 
+      evaluation: result.evaluation, 
+      updatedModules: result.updatedModules,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

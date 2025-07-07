@@ -57,25 +57,25 @@ The `codewit/client` directory contains the react app that drives the front-end.
   - **Creating/Editing/Deleting Forms**: Allows users to create new instances of forms, edit existing ones, and delete them as needed.
 - **Components**:
   - **DemoForm (`<DemoForm />`)**: This component is responsible for rendering the form used for creating and editing demo information. It encapsulates all the necessary fields and functionalities, including input fields for demo details and submission controls.
-  - **ExerciseForm (`<ExerciseForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting courses. It features a Markdown Editor for inputting exercise prompts and other necessary fields and functionalities to create exercises. 
+  - **ExerciseForm (`<ExerciseForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting courses. It features a Markdown Editor for inputting exercise prompts and other necessary fields and functionalities to create exercises.
   - **CourseForm (`<CourseForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting courses. It encapsulates all the necessary fields and functionalities, including input fields for course details and submission controls.
   - **ModuleForm (`<ModuleForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting modules. It encapsulates all the necessary fields and functionalities, including input fields for module details and submission controls.
   - **ResourceForm (`<ResourceForm />`)**: This component is responsible for rendering the page used for creating editing, and deleting resources. It encapsulates all the necessary fields and functionalities, including input fields for resource details and submission controls.
-    - All pages are located under the same directory as the Create Page and  use components located under `../components/form/` to render various inputs/fields
+    - All pages are located under the same directory as the Create Page and use components located under `../components/form/` to render various inputs/fields
     - API calls for these forms are located under `codewit/client/src/hooks`
 
 ## User Management page
-- **Location**: `codewit/client/src/pages/usermanagement.tsx`. 
+
+- **Location**: `codewit/client/src/pages/usermanagement.tsx`.
 - **Functionality**:
   - The User Management page is supposed to allow **admin** users to promote other users to admins as well
   - URL is also hidden if the user is not an admin or is not signed in.
- 
+
 ## Dashboard
-- **Location**: `codewit/client/src/pages/Dashboard.tsx`.
+
+- **Location**: `codewit/client/src/pages/course/TeacherView.tsx`.
 - **Functionality**:
   - This page is for Teacher's only to view their current classes Progress
-  - Currently WIP, since we don't have any progress checkers, but we also need a middleware to check if a user is an instructor, since it's currently an Admin locked page.
-
 
 ## Back-end
 
@@ -212,9 +212,9 @@ The `codewit/api` directory contains the express back-end.
 
 The codeval implementation resides at [codewit-us/codeval](https://github.com/codewit-us/codeval) and is used to evaluate user-submitted code.
 
-This **code execution server** uses Redis-based session authentication and provides an API endpoint (`POST /execute`) for running user-submitted code in Python, C++, or Java. 
+This **code execution server** uses Redis-based session authentication and provides an API endpoint (`POST /execute`) for running user-submitted code in Python, C++, or Java.
 
-1. **Session Handling**: Users must be authenticated via Redis sessions.  
+1. **Session Handling**: Users must be authenticated via Redis sessions.
 2. **Code Execution**:
    - The submitted code is stored in a temporary directory.
    - If required, the code is compiled (C++ with `g++`, Java with `javac`).
@@ -258,6 +258,7 @@ The `codewit/client-e2e` directory contains our end-to-end tests using Cypress.
 ### Helpful Resources
 
 - **Cypress Documentation**:
+
   - [Getting Started Guide](https://docs.cypress.io/guides/getting-started/writing-your-first-test)
   - [Best Practices](https://docs.cypress.io/guides/references/best-practices)
   - [API Reference](https://docs.cypress.io/api/table-of-contents)
@@ -270,6 +271,7 @@ The `codewit/client-e2e` directory contains our end-to-end tests using Cypress.
 ### Writing Tests
 
 When writing new tests:
+
 1. Place test files in `client-e2e/src/e2e/`
 2. Use TypeScript for better type checking and IDE support
 3. Follow the existing patterns in `app.cy.ts`
@@ -277,26 +279,29 @@ When writing new tests:
 5. Use meaningful test descriptions that explain the expected behavior
 
 Example test structure:
+
 ```typescript
-describe('Feature Name', () => {
+describe("Feature Name", () => {
   beforeEach(() => {
     // Setup code that runs before each test
-    cy.visit('/')
-  })
+    cy.visit("/");
+  });
 
-  it('should perform expected behavior', () => {
+  it("should perform expected behavior", () => {
     // Test implementation
-  })
-})
+  });
+});
 ```
 
 ### CI/CD Integration
 
 Tests are run as part of our continuous integration pipeline. Ensure all tests pass locally before pushing changes:
+
 ```bash
 npm run test
 ```
 
 ### Things To Do
+
 1. Like button on Frontend is still not integrated with backend since the backend does not return if user has liked video
 2. Teacher only navigation for Dashboard

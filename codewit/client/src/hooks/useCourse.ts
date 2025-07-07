@@ -1,7 +1,7 @@
 // codewit/client/src/hooks/useCourse.ts
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Course } from '@codewit/interfaces';
+import { Course, StudentProgress } from '@codewit/interfaces';
 import { useAuth } from './useAuth';
 
 // General hook to handle fetching data with axios
@@ -24,6 +24,39 @@ const useAxiosFetch = (initialUrl: string, initialData: Course[] = []) => {
     };
     fetchData();
   }, [initialUrl]);
+
+  return { data, setData, loading, error };
+};
+
+// Fetch Student Courses
+export const useFetchStudentCourses = () => {
+  const { user, loading: authLoading } = useAuth(); 
+  const [data, setData] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    const fetchStudentCourses = async () => {
+      if (!user || !user.googleId) {
+        setLoading(false); 
+        return;
+      }
+
+      try {
+        const response = await axios.get(`/courses/student/by-uid/${user.uid}`);
+        setData(response.data);
+      } catch (err) {
+        setError(true);
+        console.error('Failed to fetch student courses:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentCourses();
+  }, [user, authLoading]);
 
   return { data, setData, loading, error };
 };
@@ -66,4 +99,29 @@ export const usePatchCourse = () => {
 export const useDeleteCourse = () => {
   const { operation } = useAxiosCRUD('delete');
   return (uid: number | string) => operation(`/courses/${uid}`);
+};
+
+export const useCourseProgress = (courseId: string) => {
+  const [data, setData] = useState<StudentProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await axios.get(`/courses/${courseId}/progress`, {
+          signal: controller.signal,
+        });
+        setData(res.data);
+      } catch (err: any) {
+        if (err.code !== 'ERR_CANCELED') setError(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
+    return () => controller.abort();
+  }, [courseId]);
+
+  return { data, setData, loading, error };
 };

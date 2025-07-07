@@ -1,7 +1,7 @@
 // codewit/client/src/components/nav/Nav.tsx
 import { useState } from 'react';
 import { Navbar, Button } from 'flowbite-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   ArrowLeftStartOnRectangleIcon,
   Bars3Icon,
@@ -104,12 +104,6 @@ const NavBar = ({
           </Link>
           {admin && (
             <>
-              <Link
-                to="/dashboard"
-                className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600"
-              >
-                Dashboard
-              </Link>
               <Link
                 to="/create"
                 className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600"

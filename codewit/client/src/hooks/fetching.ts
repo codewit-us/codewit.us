@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 interface AxiosFetch<T> {
   data: T,
@@ -32,8 +32,8 @@ export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch
       });
 
       setData(response.data);
-    } catch (error) {
-      if (error.code === "ERR_CANCELED") {
+    } catch (err: any) {
+      if (err.code === "ERR_CANCELED") {
         canceled = true;
       } else {
         setError(true);

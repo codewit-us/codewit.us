@@ -14,6 +14,9 @@ async function createAttempt(
   cookies: string
 ): Promise<AttemptWithEval | null> {
   return sequelize.transaction(async (transaction) => {
+
+    let updatedModules: { moduleUid: number; completion: number }[] = [];
+
     await sequelize.query('LOCK TABLE "attempts" IN SHARE ROW EXCLUSIVE MODE', {
       transaction,
     });
@@ -78,7 +81,7 @@ async function createAttempt(
         attempt.error = eval_error;
         console.log(`Completion Percentage: ${completionPercentage}%`);
 
-        // 1. Update UserExerciseCompletion
+        // Update UserExerciseCompletion
         const completion = passed / tests_run;
 
         await UserExerciseCompletion.upsert({
@@ -88,7 +91,7 @@ async function createAttempt(
         }, { transaction });
 
 
-        // 2. Update all demo completions that include this exercise
+        // Update all demo completions that include this exercise
         const demoExerciseLinks = await DemoExercises.findAll({
           where: { exerciseUid: exercise.uid },
           transaction,
@@ -126,7 +129,7 @@ async function createAttempt(
           }, { transaction });
 
 
-          // 3. Update module completion (max of demo completions)
+          // Update module completion (max of demo completions)
           const moduleDemoLinks = await ModuleDemos.findAll({
             where: { demoUid },
             transaction,
@@ -157,6 +160,8 @@ async function createAttempt(
               moduleUid,
               completion: maxCompletion,
             }, { transaction });
+
+            updatedModules.push({ moduleUid, completion: maxCompletion });
           }
         }
 
@@ -170,8 +175,16 @@ async function createAttempt(
     }
 
     await attempt.save({ transaction });
-    if (!evalResponse) return null;
-    return { attempt, evaluation: evalResponse };
+    
+    return {
+      attempt: {
+        uid: attempt.uid,
+        submissionNumber: attempt.submissionNumber,
+        completionPercentage: attempt.completionPercentage,
+      },
+      updatedModules,
+      evaluation: evalResponse
+    };
   });
 }
 

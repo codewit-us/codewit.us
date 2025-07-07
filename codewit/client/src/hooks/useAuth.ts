@@ -8,7 +8,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('/oauth2/google/userinfo')
+    axios.get('/oauth2/google/userInfo')
       .then(response => {
         setUser(response.data.user);
         localStorage.setItem('userId', response.data.user.googleId);

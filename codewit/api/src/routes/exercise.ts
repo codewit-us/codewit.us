@@ -5,6 +5,7 @@ import {
   deleteExercise,
   getAllExercises,
   getExerciseById,
+  getExercisesByIds,
   updateExercise,
 } from '../controllers/exercise';
 import {
@@ -16,16 +17,6 @@ import { checkAdmin } from '../middleware/auth';
 
 const exerciseRouter = Router();
 
-exerciseRouter.get('/', async (req, res) => {
-  try {
-    const exercises = await getAllExercises();
-    res.json(exercises);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 exerciseRouter.get('/:uid', async (req, res) => {
   try {
     const exercise = await getExerciseById(Number(req.params.uid));
@@ -34,6 +25,47 @@ exerciseRouter.get('/:uid', async (req, res) => {
     } else {
       res.status(404).json({ message: 'Exercise not found' });
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+exerciseRouter.get('/', async (req, res) => {
+  try {
+    const idsParam = req.query.ids;
+
+    if (typeof idsParam === 'string') {
+      const ids = idsParam
+        .split(',')
+        .map(Number)
+        .filter(id => Number.isInteger(id) && id > 0);
+
+      if (ids.length === 0) {
+        return res.status(400).json({ message: 'Provide at least one positive integer id' });
+      }
+
+      const exercises = await getExercisesByIds(ids);
+      return res.json(exercises);
+    }
+
+    if (Array.isArray(idsParam)) {
+      const ids = idsParam
+        .map(Number)
+        .filter(id => Number.isInteger(id) && id > 0);
+
+      if (ids.length === 0) {
+        return res.status(400).json({ message: 'Provide at least one positive integer id' });
+      }
+
+      const exercises = await getExercisesByIds(ids);
+      return res.json(exercises);
+    }
+
+    // No ids → return everything
+    const exercises = await getAllExercises();
+    return res.json(exercises);
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

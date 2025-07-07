@@ -72,13 +72,17 @@ export default function Home() {
   );
   const { user, loading: user_loading } = useAuth();
 
-  if (loading || user_loading) {
-    return <Loading />;
-  }
-
-  if (!user) {
-    return <UnauthorizedState />;
-  }
+  if (user_loading) {
+     return <Loading />;
+   }
+ 
+   if (!user) {
+     return <UnauthorizedState />;
+   }
+ 
+   if (loading) {
+     return <Loading />;
+   }  
 
   if (error) {
     return <Error message="Failed to fetch courses. Please try again later." />;
@@ -111,7 +115,7 @@ interface StudentCourseListProps {
   courses: StudentCoursePartial[],
 }
 
-function StudentCourseList({title, courses}: StudentCourseListProps) {
+function StudentCourseList({ courses }: StudentCourseListProps) {
   return <div className="space-y-2">
     <h2 className="border-b text-2xl pb-2">Attending</h2>
     {courses.map(course => {
@@ -148,16 +152,16 @@ function StudentCourseList({title, courses}: StudentCourseListProps) {
 }
 
 interface InstructorCourseListProps {
-  courses: InstructorCoursePartial
+  courses: InstructorCoursePartial[];
 }
 
-function InstructorCourseList({courses}: InstructorCourseListProps) {
+function InstructorCourseList({ courses }: InstructorCourseListProps) {
   return <div className="space-y-2">
     <h2 className="border-b text-2xl pb-2">Instructing</h2>
     {courses.map(course => {
       return <div key={course.id} className="p-4 rounded-2xl bg-foreground-500 text-white">
         <h3 className="text-xl">
-          <Link to={`/${course.id}`}>
+          <Link to={`/${course.id}/dashboard`}>
             {course.title}
           </Link>
         </h3>

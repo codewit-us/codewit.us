@@ -1,6 +1,7 @@
 // Interface For Video Object
 
 interface Exercise {
+  uid: number
   prompt: string;
   topic: string;
   tags: string[];
@@ -112,6 +113,7 @@ interface Module {
   topic: string;
   language: string;
   resources: Resource[];
+  completion: number;
 }
 
 
@@ -160,6 +162,19 @@ export interface StudentCourse {
   instructors: StudentUser[],
 }
 
+export interface StudentProgress {
+  studentUid: number;
+  studentName: string;
+  completion: number;
+}
+
+export interface TeacherCourse{
+  id: string,
+  title: string,
+  language: string,
+  modules: StudentModule[],
+}
+
 // Interface to Youtube API Response
 
 interface YouTubeSearchResult {
@@ -191,20 +206,39 @@ interface Thumbnail {
   height: number;
 }
 
-export type {
-  Exercise,
+interface AttemptDTO {
+  uid: number;
+  submissionNumber: number;
+  completionPercentage: number;
+}
+
+interface AttemptResult {
+  attempt: AttemptDTO;          
+  updatedModules: {
+    moduleUid: number;
+    completion: number;
+  }[];
+}
+
+// Payload sent when creating a NEW exercise (no uid yet)
+export type ExerciseInput = Omit<Exercise, 'uid'>;
+
+export type { 
+  AttemptDTO,
+  AttemptResult,
+  Course,
+  Exercise, 
   ExerciseResponse,
   ExerciseFormData,
   Demo,
-  Tag,
-  SelectedTag,
   DemoPostResponse,
   DemoResponse,
   DemoFormData,
-  YouTubeSearchResult,
-  Thumbnail,
-  Resource,
-  Course,
   Module,
-  User
+  Resource,
+  SelectedTag,
+  User,
+  Tag,
+  Thumbnail,
+  YouTubeSearchResult
 };

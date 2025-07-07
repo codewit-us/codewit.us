@@ -254,6 +254,24 @@ async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
   return formatCourseResponse(courses, true);
 }
 
+async function getStudentCoursesByUid(userUid: number): Promise<CourseResponse[]> {
+  const courses = await Course.findAll({
+    include: [
+      Language,
+      {
+        association: Course.associations.modules,
+        include: [Language, Resource, Demo],
+        through: { attributes: ['ordering'] },
+      },
+      { association: Course.associations.instructors },
+      { association: Course.associations.roster, where: { uid: userUid } },
+    ],
+    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+  });
+
+  return formatCourseResponse(courses, true);
+}
+
 export async function getStudentCourse(course_id: string): Promise<StudentCourse | null> {
   const course = await Course.findOne({
     where: { id: course_id },
@@ -266,6 +284,7 @@ export async function getStudentCourse(course_id: string): Promise<StudentCourse
       },
       { association: Course.associations.instructors },
     ],
+    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
   });
 
   if (course == null) {
@@ -324,4 +343,13 @@ export async function getStudentCourse(course_id: string): Promise<StudentCourse
   };
 }
 
-export { createCourse, updateCourse, deleteCourse, getCourse, getAllCourses, getStudentCourses, getTeacherCourses };
+export { 
+  createCourse, 
+  updateCourse, 
+  deleteCourse, 
+  getCourse, 
+  getAllCourses, 
+  getStudentCourses,
+  getStudentCoursesByUid, 
+  getTeacherCourses 
+};

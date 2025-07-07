@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import {
   PlayIcon,
   ChevronRightIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/solid';
 
-import { StudentCourse as StuCourse } from '@codewit/interfaces';
+import { StudentCourse as StuCourse, TeacherCourse as TeachCourse} from '@codewit/interfaces';
 import { Accordion } from '@codewit/shared/components';
 
 import Error from '../components/error/Error';
@@ -14,31 +14,30 @@ import Loading from '../components/loading/LoadingPage';
 import { useAxiosFetch } from "../hooks/fetching";
 
 import StudentView from "./course/StudentView";
+import TeacherView from './course/TeacherView';
 
 import bulbLit from '/bulb(lit).svg';
 import bulbUnlit from '/bulb(unlit).svg';
+import { useAuth } from '../hooks/useAuth';
 
 interface StudentCourse extends StuCourse {
   type: "StudentView",
 }
 
-interface TeacherCourse {
-  type: "TeacherView",
-}
-
-type GetCourse = StudentCourse | TeacherCourse;
+type GetCourse = StudentCourse;
 
 interface CourseView {
   onCourseChange: (title: string) => void,
 }
 
-export default function CourseView({onCourseChange}: CourseViewProps) {
-  const { course_id } = useParams();
+export default function CourseView({onCourseChange}: CourseView) {
+  
+  const { course_id: courseId } = useParams();
 
-  const { data: course, loading, error } = useAxiosFetch<GetCourse | null>(`/api/courses/${course_id}?student_view=1`, null);
+  const { data: course, loading, error } = useAxiosFetch<GetCourse | null>(`/api/courses/${courseId}?student_view=1`, null);
 
   useEffect(() => {
-    if (course != null && course.type === "StudentView") {
+    if (course != null) {
       onCourseChange(course.title);
     } else {
       onCourseChange("");
@@ -56,8 +55,6 @@ export default function CourseView({onCourseChange}: CourseViewProps) {
   switch (course.type) {
     case "StudentView":
       return <StudentView course={course}/>
-    case "TeacherView":
-      return <div>Teacher View WIP</div>;
     default:
       return <div>Unknown View from server</div>;
   }

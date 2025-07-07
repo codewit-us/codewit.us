@@ -167,5 +167,8 @@ export {
   Resource,
   User,
   Attempt,
+  UserDemoCompletion,
+  UserExerciseCompletion,
+  UserModuleCompletion,
   sequelize,
 };

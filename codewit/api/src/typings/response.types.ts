@@ -1,5 +1,5 @@
 import { Attempt } from "../models";
-import { EvaluationResponse } from "../utils/codeEvalService";
+import { EvaluationResponse } from "../utils/codeEvalService"
 
 export interface ModuleResponse {
     uid: number;
@@ -26,8 +26,6 @@ export interface ExerciseResponse {
 export interface CourseResponse {
     id: string;
     title: string;
-    enrolling: boolean,
-    auto_enroll: boolean,
     language: string;
     modules: ModuleResponse[] | number[];
     roster: UserResponse[];
@@ -65,6 +63,11 @@ export interface DemoResponse {
 }
 
 export interface AttemptWithEval {
-    attempt: Attempt;
-    evaluation: EvaluationResponse;
+  attempt: {
+    uid: number;
+    submissionNumber: number;
+    completionPercentage: number;
+  };
+  updatedModules: { moduleUid: number; completion: number }[];
+  evaluation: EvaluationResponse;
 }
