@@ -19,8 +19,9 @@ import {
 import { useFetchModules } from "../hooks/useModule";
 import { useFetchUsers } from "../hooks/useUsers";
 import { isFormValid } from "../utils/formValidationUtils";
+import { cn } from "../utils/styles";
 
-const CourseForm = (): JSX.Element => {
+export default function CourseForm() {
   const { data: courses, setData: setCourses } = useFetchCourses();
   const { data: modules } = useFetchModules();
   const { data: users } = useFetchUsers();
@@ -35,6 +36,8 @@ const CourseForm = (): JSX.Element => {
   const [formData, setFormData] = useState<Course>({
     id: "",
     title: "",
+    enrolling: false,
+    auto_enroll: false,
     language: "cpp",
     modules: [],
     instructors: [],
@@ -45,7 +48,6 @@ const CourseForm = (): JSX.Element => {
   const [userOptions, setUserOptions] = useState<SelectedTag[]>([]);
 
   useEffect(() => {
-
     setModuleOptions(
       modules.map((module: any) => ({
         value: module.uid,
@@ -97,8 +99,8 @@ const CourseForm = (): JSX.Element => {
     try {
       const payload = {
         ...formData,
-        instructors: formData.instructors.map((uid) => ( uid)), 
-        roster: formData.roster.map((uid) => (uid)), 
+        instructors: formData.instructors.map((uid) => ( uid)),
+        roster: formData.roster.map((uid) => (uid)),
       };
 
       if (isEditing) {
@@ -122,6 +124,8 @@ const CourseForm = (): JSX.Element => {
     setFormData({
       id: "",
       title: "",
+      enrolling: false,
+      auto_enroll: false,
       language: "cpp",
       modules: [],
       instructors: [],
@@ -195,12 +199,51 @@ const CourseForm = (): JSX.Element => {
               required
             />
           </div>
-
+          <div className="flex flex-row gap-4">
+            <div className="flex flex-row items-center gap-2">
+              <input
+                id="enrolling"
+                type="checkbox"
+                name="enrolling"
+                checked={formData.enrolling}
+                onChange={e => {
+                  setFormData(v => ({
+                    ...v,
+                    enrolling: e.target.checked,
+                    auto_enroll: !e.target.checked ? false : v.auto_enroll,
+                  }));
+                }}
+              />
+              <label
+                htmlFor="enrolling"
+                title={"allows user to request being registered for a course"}
+              >
+                Enrolling
+              </label>
+            </div>
+            <div className={cn("flex flex-row items-center gap-2", {"cursor-not-allowed": !formData.enrolling})}>
+              <input
+                id="auto_enroll"
+                type="checkbox"
+                name="auto_enroll"
+                className={cn({"cursor-not-allowed": !formData.enrolling})}
+                disabled={!formData.enrolling}
+                checked={formData.auto_enroll}
+                onChange={e => handleInputChange("auto_enroll", e.target.checked)}
+              />
+              <label
+                htmlFor="auto_enroll"
+                title={"allows for any user to be automatically enrolled into the course. \"enrolling\" must be enabled"}
+                className={cn({"cursor-not-allowed": !formData.enrolling})}
+              >
+                Auto Enroll
+              </label>
+            </div>
+          </div>
           <LanguageSelect
             handleChange={(e) => handleInputChange("language", e.target.value)}
             initialLanguage={formData.language}
           />
-
           <div data-testid="module-select">
             <InputLabel htmlFor="modules">Modules</InputLabel>
             <Select
@@ -243,6 +286,4 @@ const CourseForm = (): JSX.Element => {
       </ReusableModal>
     </div>
   );
-};
-
-export default CourseForm;
+}

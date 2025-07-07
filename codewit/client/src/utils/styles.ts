@@ -1,3 +1,6 @@
+import { clsx, ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
 // codewit/client/src/utils/styles.ts
 const styles = {
   control: (provided: any) => ({
@@ -64,3 +67,7 @@ const styles = {
 };
 
 export {styles as SelectStyles};
+
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs))
+}

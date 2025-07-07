@@ -1,5 +1,5 @@
 import { Attempt } from "../models";
-import { EvaluationResponse } from "../utils/codeEvalService";
+import { EvaluationResponse } from "../utils/codeEvalService"
 
 export interface ModuleResponse {
     uid: number;

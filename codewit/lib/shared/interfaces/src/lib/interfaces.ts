@@ -91,6 +91,8 @@ interface Resource {
 interface Course {
   id: string;
   title: string;
+  enrolling: boolean,
+  auto_enroll: boolean,
   language: string;
   modules: Module[];
   instructors: Array<{

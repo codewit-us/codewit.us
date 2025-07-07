@@ -4,6 +4,7 @@ import { Exercise } from './exercise';
 import { Tag } from './tag';
 import { Language } from './language';
 import { Course } from './course';
+import { CourseRegistration } from "./course_registration";
 import { Module } from './module';
 import { Resource } from './resource';
 import { User } from './user';
@@ -45,13 +46,14 @@ const sequelize = new Sequelize({
   Resource,
   Module,
   Course,
+  CourseRegistration,
   User,
   Attempt,
   UserDemoCompletion,
   UserExerciseCompletion,
   UserModuleCompletion,
   DemoExercises,
-  ModuleDemos
+  ModuleDemos,
 ].forEach((model) => model.initialize(sequelize));
 
 Demo.belongsToMany(Exercise, { through: DemoExercises });
@@ -116,6 +118,9 @@ User.belongsToMany(Course, {
 
 Course.belongsToMany(User, { through: 'CourseRoster', as: 'roster' });
 User.belongsToMany(Course, { through: 'CourseRoster', as: 'studentCourses' });
+
+Course.belongsToMany(User, { through: CourseRegistration, as: "registered"});
+User.belongsToMany(Course, { through: CourseRegistration, as: "registered"});
 
 Demo.belongsToMany(User, { through: 'DemoLikes', as: 'likedBy' });
 User.belongsToMany(Demo, { through: 'DemoLikes', as: 'likedDemos' });

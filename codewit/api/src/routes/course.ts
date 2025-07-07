@@ -306,6 +306,8 @@ courseRouter.post('/', checkAdmin, async (req, res) => {
 
     const course = await createCourse(
       validatedBody.data.title,
+      validatedBody.data.enrolling,
+      validatedBody.data.auto_enroll,
       validatedBody.data.language,
       validatedBody.data.modules,
       validatedBody.data.instructors,
@@ -331,6 +333,8 @@ courseRouter.patch('/:uid', checkAdmin, async (req, res) => {
     const course = await updateCourse(
       req.params.uid,
       validatedBody.data.title,
+      validatedBody.data.enrolling,
+      validatedBody.data.auto_enroll,
       validatedBody.data.language,
       validatedBody.data.modules,
       validatedBody.data.instructors,

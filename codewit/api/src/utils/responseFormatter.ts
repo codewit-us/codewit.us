@@ -76,6 +76,8 @@ function formatSingleCourse(course: Course, isGetStudent = false): CourseRespons
   return {
     id: course.id,
     title: course.title,
+    enrolling: course.enrolling,
+    auto_enroll: course.auto_enroll,
     language: course.language.name,
     modules: isGetStudent
       ? course.modules.map((module) => filterModule(module) as ModuleResponse)
