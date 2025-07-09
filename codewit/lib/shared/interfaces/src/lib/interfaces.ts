@@ -130,6 +130,7 @@ export interface StudentDemo {
   title: string,
   youtube_id: string,
   youtube_thumbnail: string,
+  completion: number,
 }
 
 export interface StudentModule {
@@ -138,6 +139,7 @@ export interface StudentModule {
   language: string,
   resources: StudentResource[];
   demos: StudentDemo[],
+  completion: number,
 }
 
 export interface StudentResource {
@@ -213,7 +215,7 @@ interface AttemptDTO {
 }
 
 interface AttemptResult {
-  attempt: AttemptDTO;          
+  attempt: AttemptDTO;
   updatedModules: {
     moduleUid: number;
     completion: number;
@@ -223,11 +225,11 @@ interface AttemptResult {
 // Payload sent when creating a NEW exercise (no uid yet)
 export type ExerciseInput = Omit<Exercise, 'uid'>;
 
-export type { 
+export type {
   AttemptDTO,
   AttemptResult,
   Course,
-  Exercise, 
+  Exercise,
   ExerciseResponse,
   ExerciseFormData,
   Demo,

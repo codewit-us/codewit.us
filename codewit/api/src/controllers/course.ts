@@ -6,7 +6,17 @@ import {
 } from 'unique-names-generator';
 import { StudentCourse } from "@codewit/interfaces";
 
-import { Course, CourseModules, Language, Module, Demo, Resource, sequelize } from '../models';
+import {
+  Course,
+  CourseModules,
+  Language,
+  Module,
+  Demo,
+  Resource,
+  UserDemoCompletion,
+  UserModuleCompletion,
+  sequelize
+} from '../models';
 import { CourseResponse } from '../typings/response.types';
 import { formatCourseResponse } from '../utils/responseFormatter';
 
@@ -279,7 +289,15 @@ export async function getStudentCourse(course_id: string): Promise<StudentCourse
       Language,
       {
         association: Course.associations.modules,
-        include: [Language, Resource, Demo],
+        include: [
+          Language,
+          Resource,
+          {
+            association: "demos",
+            include: [ UserDemoCompletion ],
+          },
+          UserModuleCompletion,
+        ],
         through: { attributes: ['ordering'] },
       },
       { association: Course.associations.instructors },
@@ -299,11 +317,20 @@ export async function getStudentCourse(course_id: string): Promise<StudentCourse
     let resources = [];
 
     for (let module_demo of course_module.demos) {
+      //console.log("module demo:", module_demo);
+
+      let completion = 0.0;
+
+      if (module_demo["UserDemoCompletions"]?.length ?? 0 != 0) {
+        completion = module_demo["UserDemoCompletions"][0].completion;
+      }
+
       demos.push({
         uid: module_demo.uid,
         title: module_demo.title,
         youtube_id: module_demo.youtube_id,
         youtube_thumbnail: module_demo.youtube_thumbnail,
+        completion,
       });
     }
 
@@ -317,12 +344,19 @@ export async function getStudentCourse(course_id: string): Promise<StudentCourse
       });
     }
 
+    let completion = 0.0;
+
+    if (course_module["UserModuleCompletions"]?.length ?? 0 != 0) {
+      completion = course_module["UserModuleCompletions"][0].completion;
+    }
+
     modules.push({
       uid: course_module.uid,
       topic: course_module.topic,
       language: course_module.language.name,
       demos,
       resources,
+      completion,
     });
   }
 
@@ -343,13 +377,13 @@ export async function getStudentCourse(course_id: string): Promise<StudentCourse
   };
 }
 
-export { 
-  createCourse, 
-  updateCourse, 
-  deleteCourse, 
-  getCourse, 
-  getAllCourses, 
+export {
+  createCourse,
+  updateCourse,
+  deleteCourse,
+  getCourse,
+  getAllCourses,
   getStudentCourses,
-  getStudentCoursesByUid, 
-  getTeacherCourses 
+  getStudentCoursesByUid,
+  getTeacherCourses
 };
