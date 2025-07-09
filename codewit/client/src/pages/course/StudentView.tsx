@@ -12,25 +12,11 @@ export interface StudentViewProps {
   course: StudentCourse
 }
 
-function module_demos_complete(module: StudentModule) {
-  if (module.demos.length === 0) {
-    return 1;
-  }
-
-  let count = 0;
-
-  for (let demo of module.demos) {
-    count += demo.completion === 1 ? 1 : 0;
-  }
-
-  return count / module.demos.length;
-}
-
 export default function StudentView({course}: StudentViewProps) {
   const [open_index, set_open_index] = useState<number | null>(() => {
     if (course.modules.length > 0) {
       for (let module of course.modules) {
-        if (module_demos_complete(module) === 1) {
+        if (module.demos.length === 0 || module.completion === 1) {
           continue;
         }
 
@@ -55,44 +41,47 @@ export default function StudentView({course}: StudentViewProps) {
     </div>;
   }
 
-  const modules = course.modules.map((module, index, all) => {
-    let allow_selection = index !== 0 ? module_demos_complete(all[index - 1]) === 1 : true;
+  let modules = [];
+  let index = 0;
 
-    return <div
-      key={module.uid}
-      className={cn({
-        "collapse bg-foreground-500 collapse-arrow": allow_selection,
-        "bg-foreground-700 rounded-2xl": !allow_selection}
-      )}
-    >
-      {allow_selection ?
-        <>
-          <input
-            type="radio"
-            name="demo"
-            disabled={!allow_selection}
-            checked={module.uid === open_index}
-            onChange={() => set_open_index(open_index === module.uid ? null : module.uid)}
-          />
-          <div
-            className="collapse-title text-xl font-medium"
-            onClick={() => {
-              set_open_index(open_index === module.uid ? null : module.uid);
-            }}
-          >
-            <CourseModuleHeader allow_selection={allow_selection} module={module}/>
-          </div>
-          <div className="collapse-content">
-            <CourseModuleContent module={module}/>
-          </div>
-        </>
-        :
-        <div className="collapse-title text-xl font-medium">
-          <CourseModuleHeader allow_selection={allow_selection} module={module}/>
-        </div>
-      }
-    </div>
-  });
+  for (; index < course.modules.length; index += 1) {
+    let module = course.modules[index];
+
+    modules.push(<div key={module.uid} className="collapse bg-foreground-500 collapse-arrow">
+      <input
+        type="radio"
+        name="demo"
+        checked={module.uid === open_index}
+        onChange={() => set_open_index(open_index === module.uid ? null : module.uid)}
+      />
+      <div
+        className="collapse-title text-xl font-medium"
+        onClick={() => {
+          set_open_index(open_index === module.uid ? null : module.uid);
+        }}
+      >
+        <CourseModuleHeader allow_selection={true} module={module}/>
+      </div>
+      <div className="collapse-content">
+        <CourseModuleContent module={module}/>
+      </div>
+    </div>);
+
+    if (module.demos.length > 0 && module.completion !== 1) {
+      break;
+    }
+  }
+
+  // increment by 1 to avoid repeating the previous module
+  for (index += 1; index < course.modules.length; index += 1) {
+    let module = course.modules[index];
+
+    modules.push(<div key={module.uid} className="bg-foreground-700 rounded-2xl">
+      <div className="collapse-title text-xl font-medium">
+        <CourseModuleHeader allow_selection={false} module={module}/>
+      </div>
+    </div>);
+  }
 
   return <div className="h-container-full max-w-full overflow-auto bg-zinc-900">
     <div className="max-w-7xl mx-auto px-10 py-4 space-y-2">
@@ -110,13 +99,9 @@ function CourseModuleHeader({allow_selection, module}: CourseModuleHeaderProps) 
   let header_status = null;
 
   if (allow_selection) {
-    let completion_percent = module_demos_complete(module);
-
-    if (completion_percent === 1.0) {
-      header_status = "Completed";
-    } else {
-      header_status = `${(completion_percent * 100).toFixed(0)}% Complete`;
-    }
+    header_status = module.demos.length === 0 || module.completion === 1 ?
+      "Completed" :
+      `${(module.completion * 100).toFixed(0)}% Complete`;
   }
 
   return <div className={cn("flex items-center space-x-5", {"cursor-default": !allow_selection})}>
@@ -155,9 +140,7 @@ function CourseModuleContent({module}: CourseModuleContentProps) {
     </div>;
   }
 
-  let demos = module.demos.map((demo, index) => (
-    <CourseModuleDemo key={demo.uid} demo={demo}/>
-  ));
+  let demos = module.demos.map(demo => <CourseModuleDemo key={demo.uid} demo={demo}/>);
 
   return <>
     <p className="font-bold text-white">Choose a lesson: </p>
@@ -172,6 +155,12 @@ interface CourseModuleDemoProps {
 }
 
 function CourseModuleDemo({demo}: CourseModuleDemoProps) {
+  let status = null;
+
+  if (demo.completion !== 0 && demo.completion !== 1) {
+    status = `${(demo.completion * 100).toFixed(0)}%`;
+  }
+
   return <div className="relative overflow-hidden w-48">
     <div className="relative h-32">
       <img
@@ -187,7 +176,10 @@ function CourseModuleDemo({demo}: CourseModuleDemoProps) {
           {demo.completion === 1 ?
             <CheckCircleIcon className="h-8 w-8 text-green-500 opacity-40 group-hover:opacity-100"/>
             :
-            <PlayIcon className="h-8 w-8 text-white opacity-40 group-hover:opacity-100"/>
+            <div className="flex flex-row items-center gap-2 ">
+              {status}
+              <PlayIcon className="h-8 w-8 text-white opacity-40 group-hover:opacity-100"/>
+            </div>
           }
         </Link>
       </div>
