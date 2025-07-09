@@ -1,6 +1,6 @@
 // codewit/client/src/pages/Read.tsx
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import NotFound from '../components/notfound/NotFound';
 import CodeBlock from '../components/codeblock/Codeblock';
 import { AttemptWithEval } from '../interfaces/evaluation';
@@ -29,14 +29,26 @@ import {
 } from '@heroicons/react/24/solid';
 import type { EvaluationResponse } from '../interfaces/evaluation';
 
+enum SubmissionState {
+  Submit = 0,
+  Next = 1,
+  Finished = 2,
+};
 
-const Read = (): JSX.Element => {
-  const [lastAttemptResult, setLastAttemptResult] = useState<AttemptWithEval | null>(null);
+function Read() {
   const { uid } = useParams<{ uid: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  if (uid == null) {
+    throw new Error("missing demo uid");
+  }
+
+  const [lastAttemptResult, setLastAttemptResult] = useState<AttemptWithEval | null>(null);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [isSubmitting,setIsSubmitting] = useState<boolean>(false);
-  
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submission_state, set_submission_state] = useState<SubmissionState>(SubmissionState.Submit);
+
   const {
     data: studentCourses,
     setData: setStudentCourses,
@@ -48,14 +60,14 @@ const Read = (): JSX.Element => {
     data   : demo,
     loading: demoLoading,
     error  : demoError,
-  } = useFetchSingleDemo(uid!);
+  } = useFetchSingleDemo(uid);
 
   const {
     data   : exerciseObjs,
     loading: exLoading,
     error  : exError,
   } = useExercisesByIds(demo?.exercises ?? []);
- 
+
   const exercisesReady = !exLoading && !exError;
 
   type AttemptResponse = AttemptResult & {
@@ -63,22 +75,35 @@ const Read = (): JSX.Element => {
   };
 
   const handleSubmission = async (code: string) => {
-    if (!demo) return;
-    const exerciseId = demo.exercises[currentExerciseIndex];
-    setIsSubmitting(true);
+    if (!demo) {
+      return;
+    }
 
-    const submission = {
-      timestamp : new Date().toISOString(),
-      exerciseId: demo.exercises[currentExerciseIndex],
-      code,
-    };
+    if (submission_state === SubmissionState.Next) {
+      setCurrentExerciseIndex(i => (i + 1));
+      set_submission_state(SubmissionState.Submit);
+
+      return;
+    } else if (submission_state === SubmissionState.Finished) {
+      let course_id = new URL(location.pathname + location.search, window.location.origin)
+        .searchParams
+        .get("course_id");
+
+      navigate(`/${course_id ?? ""}`);
+
+      return;
+    }
+
+    const exerciseId = demo.exercises[currentExerciseIndex];
+
+    setIsSubmitting(true);
 
     try {
       // ---------- send attempt ----------
       const { data: result } = await axios.post<AttemptResponse>(
-        '/attempts',
+        "/attempts",
         {
-          timestamp : new Date().toISOString(),
+          timestamp: new Date(),
           exerciseId,
           code,
         },
@@ -87,28 +112,40 @@ const Read = (): JSX.Element => {
 
       if (result.updatedModules?.length) {
         setStudentCourses(prev => {
-          if (!prev?.length) return prev;
-          const next   = structuredClone(prev);
+          if (!prev?.length) {
+            return prev;
+          }
+
+          const next = structuredClone(prev);
           const course = next[0];
-          if (!course) return prev;
+
+          if (!course) {
+            return prev;
+          }
 
           result.updatedModules.forEach(({ moduleUid, completion }) => {
             const m = course.modules.find(m => m.uid === moduleUid);
-            if (m) m.completion = completion;
+
+            if (m) {
+              m.completion = completion;
+            }
           });
+
           return next;
         });
       }
 
       if (result.attempt?.completionPercentage === 100) {
-        setCurrentExerciseIndex(i =>
-          Math.min(i + 1, demo.exercises.length - 1)
-        );
+        if (currentExerciseIndex === demo.exercises.length - 1) {
+          set_submission_state(SubmissionState.Finished);
+        } else {
+          set_submission_state(SubmissionState.Next);
+        }
       }
 
       // keep full result so CodeSubmission can render eval / stdout
       const attemptWithEval: AttemptWithEval = {
-        attempt   : result.attempt,
+        attempt: result.attempt,
         evaluation: result.evaluation,
       };
 
@@ -116,6 +153,7 @@ const Read = (): JSX.Element => {
 
     } catch (err: any) {
       console.error('Error submitting code:', err);
+
       setLastAttemptResult({
         attempt   : null,
         evaluation: {
@@ -127,7 +165,7 @@ const Read = (): JSX.Element => {
       setIsSubmitting(false);
     }
   };
-  
+
   const likeVideo = async (uid: number) => {
     try {
       await axios.post(`/demos/${uid}/like`);
@@ -137,12 +175,26 @@ const Read = (): JSX.Element => {
   };
 
   if (demoLoading || courseLoading) {
-     return <Loading />;
-   }
+    return <Loading />;
+  }
 
   if (demoError || courseError || !demo) {
-     return <NotFound />;
-   }
+    return <NotFound />;
+  }
+
+  let button_text;
+
+  switch (submission_state) {
+    case SubmissionState.Submit:
+      button_text = "Submit";
+      break;
+    case SubmissionState.Next:
+      button_text = "Next";
+      break;
+    case SubmissionState.Finished:
+      button_text = "Finished";
+      break;
+  }
 
   return (
     <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-black">
@@ -158,8 +210,7 @@ const Read = (): JSX.Element => {
         enable={{ right: true }}
         className="overflow-x-hidden overflow-y-hidden pl-2 pt-2 pr-5 font-white"
         handleClasses={{
-          right:
-            'h-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
+          right: 'h-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
         }}
         handleComponent={{
           right: (
@@ -210,8 +261,7 @@ const Read = (): JSX.Element => {
             enable={{ bottom: true }}
             className="overflow-hidden"
             handleClasses={{
-              bottom:
-                'w-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
+              bottom: 'w-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
             }}
             handleComponent={{
               bottom: (
@@ -226,8 +276,10 @@ const Read = (): JSX.Element => {
             }}
           >
             <CodeBlock
-              onSubmit={handleSubmission}
-              isSubmitting={isSubmitting}
+              on_submit={handleSubmission}
+              is_submitting={isSubmitting}
+              language={demo.language}
+              submit_text={button_text}
             />
           </Resizable>
 
@@ -240,6 +292,6 @@ const Read = (): JSX.Element => {
       </div>
     </div>
   );
-};
+}
 
 export default Read;
