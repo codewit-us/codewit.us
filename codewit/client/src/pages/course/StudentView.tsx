@@ -1,13 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  PlayIcon,
-  ChevronRightIcon,
-  ChevronDownIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/24/solid";
+import { PlayIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 
-import { StudentCourse } from "@codewit/interfaces";
+import { StudentCourse, StudentModule, StudentDemo } from "@codewit/interfaces";
 import { cn } from "../../utils/styles";
 
 import bulbLit from "/bulb(lit).svg";
@@ -17,11 +12,15 @@ export interface StudentViewProps {
   course: StudentCourse
 }
 
-function module_demos_complete(module) {
+function module_demos_complete(module: StudentModule) {
+  if (module.demos.length === 0) {
+    return 1;
+  }
+
   let count = 0;
 
   for (let demo of module.demos) {
-    count += demo.completion === 1;
+    count += demo.completion === 1 ? 1 : 0;
   }
 
   return count / module.demos.length;
@@ -102,7 +101,12 @@ export default function StudentView({course}: StudentViewProps) {
   </div>;
 }
 
-function CourseModuleHeader({allow_selection, module}) {
+interface CourseModuleHeaderProps {
+  allow_selection: boolean,
+  module: StudentModule,
+}
+
+function CourseModuleHeader({allow_selection, module}: CourseModuleHeaderProps) {
   let header_status = null;
 
   if (allow_selection) {
@@ -137,18 +141,37 @@ function CourseModuleHeader({allow_selection, module}) {
   </div>
 }
 
-function CourseModuleContent({module}) {
+interface CourseModuleContentProps {
+  module: StudentModule
+}
+
+function CourseModuleContent({module}: CourseModuleContentProps) {
+  if (module.demos.length === 0) {
+    return <div className="flex flex-col items-center justify-center">
+      <h2 className="text-2xl text-white">No Lessons for Module</h2>
+      <p className="text-center text-white">
+        There are no lessons for this module.
+      </p>
+    </div>;
+  }
+
+  let demos = module.demos.map((demo, index) => (
+    <CourseModuleDemo key={demo.uid} demo={demo}/>
+  ));
+
   return <>
     <p className="font-bold text-white">Choose a lesson: </p>
     <div className="flex justify-center space-x-24 py-2">
-      {module.demos.map((demo, index) => (
-        <CourseModuleDemo key={demo.uid} demo={demo}/>
-      ))}
+      {demos}
     </div>
   </>
 }
 
-function CourseModuleDemo({demo}) {
+interface CourseModuleDemoProps {
+  demo: StudentDemo
+}
+
+function CourseModuleDemo({demo}: CourseModuleDemoProps) {
   return <div className="relative overflow-hidden w-48">
     <div className="relative h-32">
       <img
@@ -156,15 +179,15 @@ function CourseModuleDemo({demo}) {
         alt={demo.title}
         className="w-full h-full object-cover rounded-xl"
       />
-      <div className="absolute inset-0 bg-black bg-opacity-80 flex rounded-xl items-center justify-center group hover:bg-opacity-30 transition-all">
+      <div className="absolute inset-0 bg-black bg-opacity-80 flex rounded-xl items-center justify-center group hover:bg-opacity-30">
         <Link
           to={`/read/${demo.uid}`}
-          className="text-2xl opacity-70 group-hover:opacity-100 transition-opacity"
+          className="text-2xl opacity-70 group-hover:opacity-100"
         >
           {demo.completion === 1 ?
-            <CheckCircleIcon className="h-8 w-8 text-green-500 opacity-40 group-hover:opacity-100 transition-opacity"/>
+            <CheckCircleIcon className="h-8 w-8 text-green-500 opacity-40 group-hover:opacity-100"/>
             :
-            <PlayIcon className="h-8 w-8 text-white opacity-40 group-hover:opacity-100 transition-opacity"/>
+            <PlayIcon className="h-8 w-8 text-white opacity-40 group-hover:opacity-100"/>
           }
         </Link>
       </div>
