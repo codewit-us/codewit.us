@@ -63,7 +63,7 @@ export default function StudentView({course}: StudentViewProps) {
         <CourseModuleHeader allow_selection={true} module={module}/>
       </div>
       <div className="collapse-content">
-        <CourseModuleContent module={module}/>
+        <CourseModuleContent course_id={course.id} module={module}/>
       </div>
     </div>);
 
@@ -127,10 +127,11 @@ function CourseModuleHeader({allow_selection, module}: CourseModuleHeaderProps) 
 }
 
 interface CourseModuleContentProps {
+  course_id: string,
   module: StudentModule
 }
 
-function CourseModuleContent({module}: CourseModuleContentProps) {
+function CourseModuleContent({course_id, module}: CourseModuleContentProps) {
   if (module.demos.length === 0) {
     return <div className="flex flex-col items-center justify-center">
       <h2 className="text-2xl text-white">No Lessons for Module</h2>
@@ -140,7 +141,7 @@ function CourseModuleContent({module}: CourseModuleContentProps) {
     </div>;
   }
 
-  let demos = module.demos.map(demo => <CourseModuleDemo key={demo.uid} demo={demo}/>);
+  let demos = module.demos.map(demo => <CourseModuleDemo key={demo.uid} course_id={course_id} demo={demo}/>);
 
   return <>
     <p className="font-bold text-white">Choose a lesson: </p>
@@ -151,10 +152,11 @@ function CourseModuleContent({module}: CourseModuleContentProps) {
 }
 
 interface CourseModuleDemoProps {
+  course_id: string,
   demo: StudentDemo
 }
 
-function CourseModuleDemo({demo}: CourseModuleDemoProps) {
+function CourseModuleDemo({course_id, demo}: CourseModuleDemoProps) {
   let status = null;
 
   if (demo.completion !== 0 && demo.completion !== 1) {
@@ -170,7 +172,7 @@ function CourseModuleDemo({demo}: CourseModuleDemoProps) {
       />
       <div className="absolute inset-0 bg-black bg-opacity-80 flex rounded-xl items-center justify-center group hover:bg-opacity-30">
         <Link
-          to={`/read/${demo.uid}`}
+          to={`/read/${demo.uid}?course_id=${course_id}`}
           className="text-2xl opacity-70 group-hover:opacity-100"
         >
           {demo.completion === 1 ?
