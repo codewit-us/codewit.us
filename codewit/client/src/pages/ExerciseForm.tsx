@@ -162,7 +162,7 @@ const ExerciseForms = (): JSX.Element => {
   const columns = [
     { header: "Prompt", accessor: "prompt" },
     { header: "Topic", accessor: "topic" },
-    { header: "Language", accessor: "language.name" },
+    { header: "Language", accessor: "language" },
   ];
 
   return (
