@@ -51,7 +51,7 @@ export default function CourseForm() {
     setModuleOptions(
       modules.map((module: any) => ({
         value: module.uid,
-        label: module.title || module.uid,
+        label: module.topic || module.uid,
       }))
     );
 
