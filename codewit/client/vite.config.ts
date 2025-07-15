@@ -15,9 +15,10 @@ dotenv.config({ path: '../../.env' });
 // const BACKEND_URL = `http://${API_HOST}:${API_PORT}/api`;
 const BACKEND_URL = 'http://app:3000';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: __dirname,
   cacheDir: '../node_modules/.vite/client',
+  base: mode === 'production' ? './' : '/',
   define: {
     'import.meta.env.VITE_KEY': JSON.stringify(process.env.YT_KEY),
     'import.meta.env.VITE_CHANNEL_ID': JSON.stringify(
@@ -105,4 +106,4 @@ export default defineConfig({
       },
     ],
   },
-});
+}));

@@ -1,13 +1,16 @@
 FROM node:20-alpine
 
+ARG MODE=dev
+ENV MODE=$MODE
+ENV NODE_ENV=$MODE
+
 WORKDIR /codewit
 
-COPY package* .
-
+COPY package.json ./
 RUN npm install
-
-EXPOSE 3001
 
 COPY . .
 
-CMD npm run frontend-dev
+EXPOSE 3001
+
+CMD [ "sh", "-c", "if [ \"$MODE\" = 'dev' ]; then npm run frontend-dev; else npm run build:client && npm run start:client; fi" ]

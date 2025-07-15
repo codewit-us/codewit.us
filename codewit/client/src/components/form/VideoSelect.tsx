@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Select from 'react-select';
 import axios from 'axios';
 import { SelectStyles } from '../../utils/styles.js';
-import { YouTubeSearchResult } from '@codewit/interfaces'; 
+import { VideoOption, YouTubeSearchResult } from '@codewit/interfaces'; 
 
 interface VideoSelectProps {
   onSelectVideo: (videoId: string, videoThumbnail: string) => void;
@@ -11,7 +11,7 @@ interface VideoSelectProps {
 }
 
 const VideoSelect = ({ onSelectVideo, selectedVideoId }: VideoSelectProps): JSX.Element => {
-  const [videos, setVideos] = useState<YouTubeSearchResult[]>([]);
+  const [videos, setVideos] = useState<VideoOption[]>([]);
   const [selectedOption, setSelectedOption] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
