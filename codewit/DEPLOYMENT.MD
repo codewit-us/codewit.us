@@ -62,8 +62,8 @@ Make sure the following tools are installed:
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             }
     ```
-
-5. Flow of the commands:
+5. Update the `k8s/app-deployment.yaml` file with the correct environment variable values. 
+6. Flow of the commands:
     ```bash
     make auth
     make registry-login
