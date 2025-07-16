@@ -101,7 +101,7 @@ function Read() {
     try {
       // ---------- send attempt ----------
       const { data: result } = await axios.post<AttemptResponse>(
-        "/attempts",
+        "/api/attempts",
         {
           timestamp: new Date(),
           exerciseId,
@@ -151,14 +151,17 @@ function Read() {
 
       setLastAttemptResult(attemptWithEval);
 
-    } catch (err: any) {
-      console.error('Error submitting code:', err);
+    } catch (e: unknown) {
+      console.error('Error submitting code:', e);
+      const message = e instanceof Error ? e.message : 
+        typeof e === 'string' ? e : 
+        'An unexpected error occurred';
 
       setLastAttemptResult({
         attempt   : null,
         evaluation: {
           state : 'error',
-          error : 'Unexpected error: ' + err?.message,
+          error : 'Unexpected error: ' + message,
         },
       } as AttemptWithEval);
     } finally {

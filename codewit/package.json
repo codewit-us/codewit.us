@@ -5,6 +5,10 @@
   "scripts": {
     "backend-dev": "nx run api:serve:development",
     "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001",
+    "build:client": "nx build client --configuration=production",
+    "build:api": "nx build api --configuration=production",
+    "start:api": "node dist/api/main.js",
+    "start:client": "npx serve -l 3001 dist/apps/client",
     "seed-admins": "nx run api:seed-admins-builder && node dist/api/seed-admins.js",
     "seed-data": "nx run api:seed-db-builder && node dist/api/seed-db.js",
     "seed-admins-force": "nx run api:seed-admins-builder && node dist/api/seed-admins.js --force",
@@ -102,6 +106,7 @@
     "typescript": "~5.3.2",
     "vite": "^5.0.0",
     "vite-plugin-dts": "~2.3.0",
-    "vitest": "^1.0.4"
+    "vitest": "^1.0.4",
+    "serve":"14.2.4"
   }
 }

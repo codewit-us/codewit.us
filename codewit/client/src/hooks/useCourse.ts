@@ -45,7 +45,7 @@ export const useFetchStudentCourses = () => {
       }
 
       try {
-        const response = await axios.get(`/courses/student/by-uid/${user.uid}`);
+        const response = await axios.get(`/api/courses/student/by-uid/${user.uid}`);
         setData(response.data);
       } catch (err) {
         setError(true);
