@@ -14,13 +14,14 @@ import {
 import { fromZodError } from 'zod-validation-error';
 import { createCourseSchema, updateCourseSchema } from '@codewit/validations';
 import { checkAdmin, checkAuth } from '../middleware/auth';
-import { 
-  Course, 
-  User, 
-  UserModuleCompletion, 
-  sequelize, 
+import {
+  Course,
+  User,
+  UserModuleCompletion,
+  sequelize,
   Language,
   CourseModules,
+  CourseRegistration,
   Resource,
   Module,
 } from '../models';
@@ -28,7 +29,10 @@ import { asyncHandle } from "../middleware/catch";
 import {  } from "../models";
 import { formatCourseResponse } from '../utils/responseFormatter';
 
-type UserStatus = { is_instructor: boolean; is_student: boolean };
+interface UserStatus {
+  is_instructor: boolean,
+  is_student: boolean,
+}
 
 const courseRouter = Router();
 
@@ -126,13 +130,13 @@ courseRouter.get('/:courseId/progress', checkAuth, async (req, res) => {
         const sum = moduleIds.reduce(
           (acc, id) => acc + (compMap.get(id) ?? 0), 0
         );
-        const avg = totalModules ? sum / totalModules : 0; 
+        const avg = totalModules ? sum / totalModules : 0;
 
         return {
           studentUid  : student.uid,
           studentName : student.username,
           // 0‒1  (UI multiplies by 100)
-          completion  : avg,        
+          completion  : avg,
         };
       })
     );
@@ -176,10 +180,6 @@ courseRouter.get('/', async (req, res) => {
 });
 
 courseRouter.get('/:uid/role', asyncHandle(async (req, res) => {
-  interface UserStatus { 
-    is_instructor: boolean; 
-    is_student: boolean 
-  }
   const [row] = await sequelize.query<UserStatus>(
     `
     select
@@ -204,16 +204,24 @@ courseRouter.get('/:uid/role', asyncHandle(async (req, res) => {
   return res.json({ role: null });
 }));
 
-courseRouter.get('/:uid', asyncHandle(async (req, res) => {
-  interface UserStatus {
-    is_instructor: boolean,
-    is_student: boolean,
-  }
+interface CourseUserStatus {
+  is_instructor: boolean,
+  is_student: boolean,
+  enrolling: boolean,
+  auto_enroll: boolean,
+  title: string,
+  is_registered: boolean,
+}
 
-  let check: UserStatus[] = await sequelize.query(
+courseRouter.get('/:uid', asyncHandle(async (req, res) => {
+  let check: CourseUserStatus[] = await sequelize.query(
     `
     select "CourseInstructors"."userUid" is not null as is_instructor,
-           "CourseRoster"."userUid" is not null as is_student
+           "CourseRoster"."userUid" is not null as is_student,
+           courses.enrolling,
+           courses.auto_enroll,
+           courses.title,
+           course_registrations."userUid" is not null as is_registered
     from courses
       left join "CourseInstructors" on
         courses.id = "CourseInstructors"."courseId" and
@@ -221,6 +229,9 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
       left join "CourseRoster" on
         courses.id = "CourseRoster"."courseId" and
         "CourseRoster"."userUid" = $2
+      left join course_registrations on
+        courses.id = course_registrations."courseId" and
+        course_registrations."userUid" = $2
     where courses.id = $1`,
     {
       bind: [req.params.uid, req.user.uid],
@@ -229,7 +240,7 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
   );
 
   if (check.length === 0) {
-    return res.status(404).json({error: "CourseNotFound"});
+    return res.status(404).json({ error: "CourseNotFound" });
   }
 
   let found = check[0];
@@ -281,7 +292,16 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
       ...course,
     });
   } else {
-    res.status(404).json({error: "CourseNotFound"});
+    if (found.enrolling) {
+      res.json({
+        type: "Enrolling",
+        title: found.title,
+        is_registered: found.is_registered,
+        auto_enroll: found.auto_enroll,
+      });
+    } else {
+      res.status(404).json({ error: "CourseNotFound" });
+    }
   }
 }));
 
@@ -365,5 +385,94 @@ courseRouter.delete('/:uid', checkAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+interface RegistrationStatus {
+  is_student: boolean,
+  enrolling: boolean,
+  auto_enroll: boolean,
+  is_registered: boolean,
+}
+
+courseRouter.post("/:uid/register", asyncHandle(async (req, res) => {
+  await sequelize.transaction(async transaction => {
+    let result: RegistrationStatus[] = await sequelize.query(
+      `
+      select "CourseRoster"."userUid" is not null as is_student,
+             courses.enrolling,
+             courses.auto_enroll,
+             course_registrations."userUid" is not null as is_registered
+      from courses
+        left join "CourseRoster" on
+          courses.id = "CourseRoster"."courseId" and
+          "CourseRoster"."userUid" = $2
+        left join course_registrations on
+          courses.id = course_registrations."courseId" and
+          course_registrations."userUid" = $2
+      where courses.id = $1`,
+      {
+        bind: [req.params.uid, req.user.uid],
+        type: QueryTypes.SELECT,
+        transaction,
+      }
+    );
+
+    if (result.length === 0) {
+      return res.status(404).json({error: "CourseNotFound"});
+    }
+
+    let found = result[0];
+
+    if (found.is_student) {
+      return res.json({type: "AlreadyEnrolled"});
+    }
+
+    if (found.is_registered) {
+      return res.json({type: "AlreadyRegistered"});
+    }
+
+    if (found.enrolling) {
+      if (found.auto_enroll) {
+        // auto register to course
+
+        // currently there is not a model for "CourseRoster" so I am going to
+        // just insert this manually.
+        await sequelize.query(
+          `
+          insert into "CourseRoster" ("courseId", "userUid", "createdAt", "updatedAt") values
+          ($1, $2, $3, $3)`,
+          {
+            bind: [req.params.uid, req.user.uid, new Date()],
+            type: QueryTypes.INSERT,
+            transaction
+          }
+        );
+
+        let course = await getStudentCourse(req.params.uid, transaction);
+
+        if (course == null) {
+          throw new Error("the course was not found when it was found?");
+        }
+
+        return res.json({
+          type: "Enrolled",
+          ...course,
+        });
+      } else {
+        // request registration
+        await CourseRegistration.create(
+          {
+            courseId: req.params.uid,
+            userUid: req.user.uid,
+          },
+          { transaction }
+        );
+
+        return res.json({type: "Registered"});
+      }
+    } else {
+      return res.status(404).json({error: "CourseNotFound"});
+    }
+  });
+}));
 
 export default courseRouter;

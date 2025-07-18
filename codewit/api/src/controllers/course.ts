@@ -4,6 +4,7 @@ import {
   colors,
   animals,
 } from 'unique-names-generator';
+import { Transaction } from "sequelize";
 import { StudentCourse } from "@codewit/interfaces";
 
 import {
@@ -282,7 +283,7 @@ async function getStudentCoursesByUid(userUid: number): Promise<CourseResponse[]
   return formatCourseResponse(courses, true);
 }
 
-export async function getStudentCourse(course_id: string): Promise<StudentCourse | null> {
+export async function getStudentCourse(course_id: string, transaction?: Transaction): Promise<StudentCourse | null> {
   const course = await Course.findOne({
     where: { id: course_id },
     include: [
@@ -303,6 +304,7 @@ export async function getStudentCourse(course_id: string): Promise<StudentCourse
       { association: Course.associations.instructors },
     ],
     order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+    transaction,
   });
 
   if (course == null) {

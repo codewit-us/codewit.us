@@ -164,6 +164,7 @@ export {
   Module,
   ModuleDemos,
   CourseModules,
+  CourseRegistration,
   Resource,
   User,
   Attempt,
