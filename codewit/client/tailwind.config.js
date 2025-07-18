@@ -12,10 +12,18 @@ module.exports = {
     ),
     // Add shared library components to content
     join(__dirname, '../lib/shared/components/**/*.{ts,tsx}'),
-    flowbite.content(),
+    // similar to below, the path that this outputs is expecting a directory
+    // structure that does not exist for this project. the path that
+    // `flowbite.content()` gives will not be found unless it is modified or
+    // the location of this file changes
+    //flowbite.content(),
     ...createGlobPatternsForDependencies(__dirname),
     './src/**/*.{js,jsx,ts,tsx}',
-    '../../node_modules/flowbite-react/lib/**/*.js',
+    // the previous path did not properly include the tailwindcss from flowbite
+    // and because of that the proper styling was not included for the
+    // components. because of this if it is properly included parse of the site
+    // are no longer properly styled.
+    //"../node_modules/flowbite-react/dist/{esm,cjs}/**/*.{mjs,cjs}",
   ],
   theme: {
     screens: {
