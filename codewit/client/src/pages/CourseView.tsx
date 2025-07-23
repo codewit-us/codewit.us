@@ -158,8 +158,8 @@ interface RegError {
 
 function EnrollingView({course_id, course_title, auto_enroll, on_update}: EnrollingViewProps) {
   let [sending, set_sending] = useState(false);
-  let [reg_state, set_reg_state] = useState<RegistrationResult | null>({type: "Registered"});
-  let [error, set_error] = useState<RegError | null>({title: "test", message: "test"});
+  let [reg_state, set_reg_state] = useState<RegistrationResult | null>(null);
+  let [error, set_error] = useState<RegError | null>(null);
 
   async function request_enrollment() {
     if (sending) {
