@@ -21,6 +21,7 @@ export interface ExerciseResponse {
     tags: string[];
     prompt: string;
     referenceTest: string;
+    starterCode: string;
 }
 
 export interface CourseResponse {
