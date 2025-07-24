@@ -83,7 +83,9 @@ services:
       - frontend
       - app
       - codewitus_db
-    image: rohith2801/codewit.us-codeeval:latest
+    build:
+      context: ../../codeval/
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       - HOST=0.0.0.0
