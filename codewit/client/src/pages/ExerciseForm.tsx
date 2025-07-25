@@ -34,7 +34,6 @@ interface ExerciseFormState extends ExerciseInput {
 
 const ExerciseForms = (): JSX.Element => {
   const { data: exercises, setData: setExercises } = useFetchExercises();
-  console.log(exercises);
   const postExercise = usePostExercise();
   const patchExercise = usePatchExercise();
   const deleteExercise = useDeleteExercise();
@@ -79,7 +78,6 @@ const ExerciseForms = (): JSX.Element => {
         );
         toast.success("Exercise successfully updated!");
       } else {
-        console.log(exerciseData);
         response = await postExercise(exerciseData);
         setExercises((prev) => [...prev, response]);
         toast.success("Exercise successfully created!");
