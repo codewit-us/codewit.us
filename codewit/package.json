@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "backend-dev": "nx run api:serve:development",
+    "migrate": "npx sequelize-cli db:migrate",
+    "backend-dev": "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && nx run api:serve:development",
     "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001",
     "seed-admins": "nx run api:seed-admins-builder && node dist/api/seed-admins.js",
     "seed-data": "nx run api:seed-db-builder && node dist/api/seed-db.js",
@@ -42,6 +43,7 @@
     "redis": "^4.7.0",
     "remark-gfm": "^4.0.0",
     "sequelize": "^6.36.0",
+    "sequelize-cli": "^6.6.1",
     "tailwind-merge": "^2.6.0",
     "tslib": "^2.3.0",
     "unique-names-generator": "^4.7.1",
