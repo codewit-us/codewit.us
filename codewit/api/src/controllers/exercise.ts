@@ -36,7 +36,8 @@ async function createExercise(
   topic: string,
   referenceTest: string,
   tags?: string[],
-  language?: string
+  language?: string,
+  starterCode?: string
 ): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
     const [languageInstance] = await Language.findOrCreate({
@@ -45,7 +46,7 @@ async function createExercise(
     });
 
     const exercise = await Exercise.create(
-      { prompt, topic, referenceTest, languageUid: languageInstance.uid },
+      { prompt, topic, referenceTest, languageUid: languageInstance.uid, starterCode },
       { transaction }
     );
 
@@ -80,7 +81,8 @@ async function updateExercise(
   referenceTest?: string,
   tags?: string[],
   language?: string,
-  topic?: string
+  topic?: string,
+  starterCode?: string
 ): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.findByPk(uid, {
@@ -120,6 +122,10 @@ async function updateExercise(
 
       if (referenceTest) {
         exercise.referenceTest = referenceTest;
+      }
+
+      if (starterCode) {
+        exercise.starterCode = starterCode;
       }
 
       await exercise.save({ transaction });

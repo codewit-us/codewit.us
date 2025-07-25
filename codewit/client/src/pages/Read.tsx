@@ -25,6 +25,7 @@ import RelatedDemos from '../components/videoui/RelatedDemos';
 import type { EvaluationResponse } from '../interfaces/evaluation';
 import { cn } from '../utils/styles';
 import { ErrorView } from '../components/error/Error';
+import { fetchExercisesByIds } from '../hooks/useExercise';
 
 function demo_query_key(demo_uid: string): ["demo_attempt", string] {
   return ["demo_attempt", demo_uid];
@@ -160,6 +161,14 @@ function RightPanel({demo}: RightPanelProps) {
   const [last_attempt, set_last_attempt] = useState<AttemptWithEval | null>(null);
   const [submission_state, set_submission_state] = useState<SubmissionState>(SubmissionState.Submit);
 
+  const activeExerciseId = demo.exercises[exercise_index];
+
+  const { data: exerciseDetails, isLoading: isExerciseLoading } = useQuery({
+    queryKey: ['exercise', activeExerciseId],
+    queryFn: () => fetchExercisesByIds([activeExerciseId]).then(res => res[0]),
+    enabled: !!activeExerciseId,
+  });
+
   const {mutateAsync, isPending} = useMutation({
     mutationFn: async (code: string) => {
       const exerciseId = demo.exercises[exercise_index];
@@ -206,7 +215,7 @@ function RightPanel({demo}: RightPanelProps) {
 
   const form = useForm({
     defaultValues: {
-      code: ""
+      code: exerciseDetails?.starterCode ?? ""
     },
     onSubmit: async ({value}) => {
       await mutateAsync(value.code);
