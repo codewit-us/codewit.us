@@ -141,7 +141,7 @@ function CourseModuleContent({course_id, module}: CourseModuleContentProps) {
     </div>;
   }
 
-  let demos = module.demos.map(demo => <CourseModuleDemo key={demo.uid} course_id={course_id} demo={demo}/>);
+  let demos = module.demos.map(demo => <CourseModuleDemo key={demo.uid} course_id={course_id} module_id={module.uid} demo={demo}/>);
 
   return <>
     <p className="font-bold text-white">Choose a lesson: </p>
@@ -153,10 +153,11 @@ function CourseModuleContent({course_id, module}: CourseModuleContentProps) {
 
 interface CourseModuleDemoProps {
   course_id: string,
+  module_id: number,
   demo: StudentDemo
 }
 
-function CourseModuleDemo({course_id, demo}: CourseModuleDemoProps) {
+function CourseModuleDemo({course_id, module_id, demo}: CourseModuleDemoProps) {
   let status = null;
 
   if (demo.completion !== 0 && demo.completion !== 1) {
@@ -172,7 +173,7 @@ function CourseModuleDemo({course_id, demo}: CourseModuleDemoProps) {
       />
       <div className="absolute inset-0 bg-black bg-opacity-80 flex rounded-xl items-center justify-center group hover:bg-opacity-30">
         <Link
-          to={`/read/${demo.uid}?course_id=${course_id}`}
+          to={`/read/${demo.uid}?course_id=${course_id}&module_id=${module_id}`}
           className="text-2xl opacity-70 group-hover:opacity-100"
         >
           {demo.completion === 1 ?
