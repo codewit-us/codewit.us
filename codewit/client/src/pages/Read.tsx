@@ -1,47 +1,58 @@
+import { HandThumbUpIcon } from '@heroicons/react/24/outline';
 import {
   EllipsisVerticalIcon,
   EllipsisHorizontalIcon,
   CheckIcon,
   ArrowPathIcon,
+  ChevronRightIcon,
+  PlayIcon,
+  CheckCircleIcon,
+  LinkIcon,
 } from '@heroicons/react/24/solid';
 import { Editor } from '@monaco-editor/react';
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
-import { AttemptResult, DemoResponse } from 'lib/shared/interfaces';
+import { AttemptResult, DemoAttempt, DemoResource, RelatedDemo } from 'lib/shared/interfaces';
 import { ButtonHTMLAttributes, useState } from 'react';
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Resizable } from 're-resizable';
 
 import NotFound from '../components/notfound/NotFound';
 import { AttemptWithEval } from '../interfaces/evaluation';
 import CodeSubmission from '../components/codeblock/CodeSubmission';
 import Loading from '../components/loading/LoadingPage';
-import HelpfulLinks from '../components/videoui/HelpfulLinks';
 import VideoPlayer from '../components/videoui/VideoPlayer';
-import VideoHeader from '../components/videoui/VideoHeader';
-import AuthorTags from '../components/videoui/AuthorTags';
-import RelatedDemos from '../components/videoui/RelatedDemos';
 import type { EvaluationResponse } from '../interfaces/evaluation';
 import { cn } from '../utils/styles';
 import { ErrorView } from '../components/error/Error';
-import { fetchExercisesByIds } from '../hooks/useExercise';
+import { toast } from 'react-toastify';
 
-function demo_query_key(demo_uid: string): ["demo_attempt", string] {
-  return ["demo_attempt", demo_uid];
+function demo_query_key(demo_uid: string, module_id: string | null): ["demo_attempt", string, string | null] {
+  return ["demo_attempt", demo_uid, module_id];
 }
 
 export default function Read() {
   const { uid } = useParams<{ uid: string }>();
+  const [search_params, set_search_params] = useSearchParams();
+
+  const module_id = search_params.get("module_id");
+  const course_id = search_params.get("course_id");
 
   if (uid == null) {
     throw new Error("missing demo uid");
   }
 
   const {data, isLoading, error} = useQuery({
-    queryKey: demo_query_key(uid),
+    queryKey: demo_query_key(uid, module_id),
     queryFn: async ({queryKey}) => {
-      let result = await axios.get<DemoResponse>(`/api/demos/${queryKey[1]}`);
+      let path = `/api/demos/${queryKey[1]}/attempt?`;
+
+      if (queryKey[2] != null) {
+        path += `module_id=${queryKey[2]}`;
+      }
+
+      let result = await axios.get<DemoAttempt>(path);
 
       return result.data;
     }
@@ -86,23 +97,63 @@ export default function Read() {
 
   return (
     <div className="h-container-full w-full overflow-auto flex flex-col md:flex-row bg-black">
-      <LeftPanel demo={data}/>
-      <RightPanel demo={data}/>
+      <LeftPanel info={data} module_id={module_id} course_id={course_id}/>
+      {data.demo.exercises.length === 0 ?
+        <div className="flex flex-col items-center justify-center w-full">
+          <h3 className="text-xl">No Exercises</h3>
+          <p>There are no exercises attached to this demo</p>
+        </div>
+        :
+        <RightPanel info={data} course_id={course_id}/>
+      }
     </div>
   );
 }
 
 interface LeftPanelProps {
-  demo: DemoResponse,
+  info: DemoAttempt,
+  module_id: string | null,
+  course_id: string | null
 }
 
-function LeftPanel({demo}: LeftPanelProps) {
-  const {mutate} = useMutation({
-    mutationFn: async (uid: number) => {
-      let result = await axios.post(`/api/demos/${uid}/like`);
+function LeftPanel({info, module_id, course_id}: LeftPanelProps) {
+  let [is_liked, set_is_liked] = useState(info.demo.liked);
+
+  const {mutate} = useMutation<void, Error, {uid: number, like_demo: boolean}>({
+    mutationFn: async ({uid, like_demo}) => {
+      let path = `/api/demos/${uid}/like`;
+
+      if (like_demo) {
+        await axios.post(path);
+      } else {
+        await axios.delete(path);
+      }
+    },
+    onSuccess: (data, {like_demo}, ctx) => {
+      set_is_liked(like_demo);
     },
     onError: (err, vars, cxt) => {
       console.error("error liking demo:", err);
+
+      if (err instanceof AxiosError) {
+        if (err.response != null) {
+          switch (err.response.status) {
+            case 404:
+              toast.error("Failed to update demo like: DemoNotFound");
+              break;
+            case 500:
+              toast.error("Failed to update demo like: ServerError");
+              break;
+            default:
+              toast.error("Filaed to udpate demo like");
+              break;
+          }
+        } else {
+          toast.error("Failed to update demo like: ClientError");
+        }
+      } else {
+        toast.error("Failed to update demo like: ClientError");
+      }
     }
   });
 
@@ -122,21 +173,149 @@ function LeftPanel({demo}: LeftPanelProps) {
     }}
   >
     <div className="w-full h-full">
-      <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
+      <VideoPlayer youtube_id={info.demo.youtube_id} title={info.demo.title} />
       <div className="ml-2">
-        <VideoHeader
-          title={demo.title}
-          uid={demo.uid}
-          handleClick={mutate}
-        />
-        <AuthorTags tags={demo.tags} />
+        <div className="flex justify-between items-center mt-4">
+          <h2 data-testid="demo-title" className="text-3xl font-bold text-white">{info.demo.title}</h2>
+          <button
+            onClick={() => mutate({uid: info.demo.uid, like_demo: !is_liked})}
+            type="button"
+            data-testid="like-button"
+            className={cn(
+              "group px-2 py-1 text-md font-medium text-center flex items-center rounded-lg border-2 hover:bg-accent-400 focus:outline-none",
+              {"text-green-500 border-green-500": is_liked},
+              {"text-accent-400 border-accent-400": !is_liked}
+            )}
+          >
+            {is_liked ?
+              <HandThumbUpIcon className="w-6 h-6 mr-2 group-hover:text-white" />
+              :
+              <HandThumbUpIcon className="w-6 h-6 mr-2 group-hover:text-white" />
+            }
+            <span  className="group-hover:text-white">Like</span>
+          </button>
+        </div>
+        <div className="mt-2 flex items-center space-x-2 text-white">
+          {/*
+          // we have a way of specifying who the presenter is for the video
+          // then this can be used
+          <span className = "inline-flex justify-center items-center gap-1 text-lg font-medium"> 
+            by 
+            <UserCircleIcon className="w-7 h-7" />
+            Jessica
+          </span>
+          */}
+          {info.demo.tags.map(tag => (
+            <span key={tag} data-testid="author-tags" className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag}</span>
+          ))}
+        </div>
         <div className="mt-4 h-[26vh] overflow-y-auto">
-          <RelatedDemos />
-          <HelpfulLinks />
+          <RelatedDemos demos={info.related_demos} module_id={module_id} course_id={course_id}/>
+          <HelpfulLinks links={info.resources}/>
         </div>
       </div>
     </div>
   </Resizable>;
+}
+
+interface RelatedDemosProps {
+  demos: RelatedDemo[] | null,
+  course_id?: string | null,
+  module_id?: string | null,
+}
+
+function RelatedDemos({demos, course_id, module_id}: RelatedDemosProps) {
+  if (demos == null || demos.length === 0) {
+    return null;
+  }
+
+  return <details data-testid="related-demos" className="font-bold rounded-lg w-full text-white flex flex-col overflow-hidden group mb-4 border border-gray-800">
+    <summary className="px-3 py-2 cursor-pointer list-none flex items-center gap-2 hover:bg-accent-500/10 transition-all rounded-lg">
+      <ChevronRightIcon className="w-5 h-5 transition-transform duration-200 group-open:rotate-90" />
+      <span className="text-base">Related Demos</span>
+    </summary>
+    <div className="px-2 py-3">
+      <div className="flex overflow-x-auto gap-3 pb-2">
+        {demos.map(demo => {
+          let link_path = `/read/${demo.uid}?`;
+
+          if (course_id != null) {
+            link_path += `course_id=${course_id}&`;
+          }
+
+          if (module_id != null) {
+            link_path += `module_id=${module_id}`;
+          }
+
+          let status = null;
+
+          if (demo.completion !== 0 && demo.completion !== 1) {
+            status = `${(demo.completion * 100).toFixed(0)}%`;
+          }
+
+          return <Link
+            key={demo.uid}
+            to={link_path}
+            className="flex-shrink-0 w-48 rounded-md overflow-hidden hover:shadow-lg transition-all duration-200 group/link border border-gray-800 hover:border-accent-500/50"
+          >
+            <div className="relative w-full h-28 overflow-hidden">
+              <img src={demo.youtube_thumbnail} alt={demo.title} className="w-full h-full object-cover"/>
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center group-hover/link:bg-opacity-20 transition-all">
+                {demo.completion === 1 ?
+                  <CheckCircleIcon className="h-8 w-8 text-green-500"/>
+                  :
+                  <div className="flex flex-row items-center gap-2">
+                    {status}
+                    <PlayIcon className="h-8 w-8 text-white" />
+                  </div>
+                }
+              </div>
+            </div>
+            <div className="p-2">
+              <h3 className="text-sm font-medium text-white group-hover/link:text-accent-400 transition-colors truncate">
+                {demo.title}
+              </h3>
+            </div>
+          </Link>
+        })}
+      </div>
+    </div>
+  </details>;
+};
+
+interface HelpfulLinksProps {
+  links: DemoResource[] | null
+}
+
+function HelpfulLinks({links}: HelpfulLinksProps) {
+  if (links == null || links.length === 0) {
+    return null;
+  }
+
+  return <details data-testid="helpful-links" className="font-bold rounded-lg w-full text-white flex flex-col overflow-hidden group mb-4 border border-gray-800">
+    <summary className="px-3 py-2 cursor-pointer list-none flex items-center gap-2 hover:bg-accent-500/10 transition-all rounded-lg">
+      <ChevronRightIcon className="w-5 h-5 transition-transform duration-200 group-open:rotate-90" />
+      <span className="text-base">Helpful Links</span>
+    </summary>
+    <div className="flex flex-col px-2 py-2 space-y-2">
+      {links.map(link => (
+        <a
+          key={link.uid}
+          href={link.url}
+          className="flex items-center p-2 rounded-md hover:bg-gray-800/50 transition-all duration-200 group/link hover:border-accent-500/30"
+        >
+          <div className="flex-grow">
+            <h3 className="text-sm font-medium text-white group-hover/link:text-accent-400 transition-colors">
+              {link.title}
+            </h3>
+          </div>
+          <div className="flex-shrink-0 opacity-0 group-hover/link:opacity-100 transition-opacity">
+            <LinkIcon className="w-4 h-4 text-accent-400" />
+          </div>
+        </a>
+      ))}
+    </div>
+  </details>;
 }
 
 enum SubmissionState {
@@ -150,34 +329,24 @@ type AttemptResponse = AttemptResult & {
 };
 
 interface RightPanelProps {
-  demo: DemoResponse,
+  info: DemoAttempt,
+  course_id: string | null,
 }
 
-function RightPanel({demo}: RightPanelProps) {
-  const location = useLocation();
+function RightPanel({info, course_id}: RightPanelProps) {
   const navigate = useNavigate();
 
   const [exercise_index, set_exercise_index] = useState(0);
   const [last_attempt, set_last_attempt] = useState<AttemptWithEval | null>(null);
   const [submission_state, set_submission_state] = useState<SubmissionState>(SubmissionState.Submit);
 
-  const activeExerciseId = demo.exercises[exercise_index];
-
-  const { data: exerciseDetails, isLoading: isExerciseLoading } = useQuery({
-    queryKey: ['exercise', activeExerciseId],
-    queryFn: () => fetchExercisesByIds([activeExerciseId]).then(res => res[0]),
-    enabled: !!activeExerciseId,
-  });
-
   const {mutateAsync, isPending} = useMutation({
     mutationFn: async (code: string) => {
-      const exerciseId = demo.exercises[exercise_index];
-
       const { data } = await axios.post<AttemptResponse>(
         "/api/attempts",
         {
           timestamp: new Date(),
-          exerciseId,
+          exerciseId: info.demo.exercises[exercise_index].uid,
           code,
         },
         { withCredentials: true }
@@ -187,7 +356,7 @@ function RightPanel({demo}: RightPanelProps) {
     },
     onSuccess: (data, vars, ctx) => {
       if (data.attempt.completionPercentage === 100) {
-        if (exercise_index === demo.exercises.length - 1) {
+        if (exercise_index === info.demo.exercises.length - 1) {
           set_submission_state(SubmissionState.Finished);
         } else {
           set_submission_state(SubmissionState.Next);
@@ -215,7 +384,7 @@ function RightPanel({demo}: RightPanelProps) {
 
   const form = useForm({
     defaultValues: {
-      code: exerciseDetails?.starterCode ?? ""
+      code: info.demo.exercises[exercise_index].skeleton ?? ""
     },
     onSubmit: async ({value}) => {
       await mutateAsync(value.code);
@@ -238,10 +407,7 @@ function RightPanel({demo}: RightPanelProps) {
           </span>
         </ActionBtn>;
       } else {
-        action_btn = <ActionBtn
-          type="submit"
-          className="border-accent-500"
-        >
+        action_btn = <ActionBtn type="submit" className="border-accent-500">
           <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600" />
           <span data-testid="submit-button" className="text-accent-500 group-hover:text-accent-600">
             Submit
@@ -253,7 +419,9 @@ function RightPanel({demo}: RightPanelProps) {
       action_btn = <ActionBtn
         type="button"
         className="border-accent-500"
-        onClick={() => {
+        onClick={e => {
+          e.preventDefault();
+
           set_exercise_index(i => (i + 1));
           set_submission_state(SubmissionState.Submit);
 
@@ -270,13 +438,7 @@ function RightPanel({demo}: RightPanelProps) {
       action_btn = <ActionBtn
         type="button"
         className="border-accent-500 bg-green-500"
-        onClick={() => {
-          let course_id = new URL(location.pathname + location.search, window.location.origin)
-            .searchParams
-            .get("course_id");
-
-          navigate(`/${course_id ?? ""}`);
-        }}
+        onClick={() => navigate(`/${course_id ?? ""}`)}
       >
         <CheckIcon className="w-6 h-6 text-alternate-background-700" />
         <span data-testid="submit-button" className="text-alternate-background-700">
@@ -314,7 +476,7 @@ function RightPanel({demo}: RightPanelProps) {
         <form.Field name="code" children={(field) => {
           return <Editor
             value={field.state.value}
-            language={demo.language}
+            language={info.demo.exercises[exercise_index].language}
             theme="hc-black"
             className="border-2 rounded-lg border-gray-800 focus-within:border-accent-500 overflow-hidden"
             wrapperProps={{
