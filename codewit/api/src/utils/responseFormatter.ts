@@ -43,6 +43,7 @@ export function formatSingleExercise(
     tags: exercise.tags?.map(tag => tag.name) || [],
     prompt: exercise.prompt,
     referenceTest: exercise.referenceTest,
+    starterCode: exercise.starterCode,
   };
 }
 

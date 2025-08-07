@@ -27,6 +27,7 @@ class Exercise extends Model<
   declare prompt: string;
   declare topic: string;
   declare referenceTest: string;
+  declare starterCode: string;
   declare languageUid: number;
 
   declare language?: NonAttribute<Language>;
@@ -66,6 +67,10 @@ class Exercise extends Model<
         referenceTest: {
           type: DataTypes.TEXT,
           allowNull: false,
+        },
+        starterCode: {
+          type: DataTypes.TEXT,
+          allowNull: true,
         },
         languageUid: {
           type: DataTypes.INTEGER,

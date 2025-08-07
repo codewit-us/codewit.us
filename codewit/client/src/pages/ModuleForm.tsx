@@ -18,6 +18,8 @@ import {
   usePatchModule,
 } from "../hooks/useModule";
 
+type ModuleDraft = Omit<Module, "completion">;
+
 const ModuleForm = (): JSX.Element => {
   const { data: existingResources } = useFetchResources();
   const { data: existingModules, setData: setExistingModules } = useFetchModules();
@@ -28,7 +30,7 @@ const ModuleForm = (): JSX.Element => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<Module>({
+  const [formData, setFormData] = useState<ModuleDraft>({
     demos: [],
     uid: undefined,
     language: "cpp",

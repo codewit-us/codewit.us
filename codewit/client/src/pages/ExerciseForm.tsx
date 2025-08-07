@@ -34,7 +34,6 @@ interface ExerciseFormState extends ExerciseInput {
 
 const ExerciseForms = (): JSX.Element => {
   const { data: exercises, setData: setExercises } = useFetchExercises();
-  console.log(exercises);
   const postExercise = usePostExercise();
   const patchExercise = usePatchExercise();
   const deleteExercise = useDeleteExercise();
@@ -44,6 +43,7 @@ const ExerciseForms = (): JSX.Element => {
     language: "java",
     tags: [],                 
     referenceTest: "",
+    starterCode: "",
     selectedLanguage: "java",
     selectedTags: [],
     isEditing: false,
@@ -61,6 +61,7 @@ const ExerciseForms = (): JSX.Element => {
       tags: formData.selectedTags.map((tag) => String(tag.value)),
       language: formData.selectedLanguage,
       referenceTest: formData.referenceTest,
+      starterCode: formData.starterCode,
     };
 
     try {
@@ -77,7 +78,6 @@ const ExerciseForms = (): JSX.Element => {
         );
         toast.success("Exercise successfully updated!");
       } else {
-        console.log(exerciseData);
         response = await postExercise(exerciseData);
         setExercises((prev) => [...prev, response]);
         toast.success("Exercise successfully created!");
@@ -99,6 +99,10 @@ const ExerciseForms = (): JSX.Element => {
     setFormData((prev) => ({ ...prev, referenceTest: value || "" }));
   };
 
+  const handleStarterCodeChange = (value: string | undefined) => {
+    setFormData((prev) => ({ ...prev, starterCode: value || "" }));
+  };
+
   const handleEdit = (exercise: ExerciseResponse) => {
     setFormData({
       prompt: exercise.prompt,
@@ -106,6 +110,7 @@ const ExerciseForms = (): JSX.Element => {
       selectedTags: exercise.tags.map((tag) => ({ label: tag, value: Number(tag) })),
       selectedLanguage: exercise.language || "java",
       referenceTest: exercise.referenceTest || "",
+      starterCode: exercise.starterCode || "",
       isEditing: true,
       editingUid: exercise.uid,
       tags: exercise.tags,
@@ -151,6 +156,7 @@ const ExerciseForms = (): JSX.Element => {
       selectedLanguage: "java",
       selectedTags: [],
       referenceTest: "",
+      starterCode: "",
       isEditing: false,
       editingUid: -1,
     });
@@ -162,7 +168,7 @@ const ExerciseForms = (): JSX.Element => {
   const columns = [
     { header: "Prompt", accessor: "prompt" },
     { header: "Topic", accessor: "topic" },
-    { header: "Language", accessor: "language.name" },
+    { header: "Language", accessor: "language" },
   ];
 
   return (
@@ -222,6 +228,15 @@ const ExerciseForms = (): JSX.Element => {
               language={formData.selectedLanguage}
               value={formData.referenceTest}
               onChange={handleScriptChange}
+              theme="vs-dark"
+          />
+
+          <InputLabel htmlFor="starterCode">Starter Code</InputLabel>
+          <Editor
+              height="200px"
+              language={formData.selectedLanguage}
+              value={formData.starterCode}
+              onChange={handleStarterCodeChange}
               theme="vs-dark"
           />
 

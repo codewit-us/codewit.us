@@ -382,6 +382,77 @@ public class TestProgram {
   }
 };
 
+function generateJavaStarterCode(topic: string): string {
+  switch (topic.toLowerCase()) {
+    case 'variable':
+      return `public class Program {
+    public static int getVariable() {
+    }
+    public static int updateVariable(int x) {
+
+    }
+}`;
+    case 'array':
+      return `public class Program {
+    public static int getArrayFirstElement() {
+
+    }
+    public static int sumArray() {
+
+    }
+}`;
+    case 'recursion':
+      return `public class Program {
+    public static int factorial(int n) {
+    }
+}`;
+    case 'boolean expression':
+      return `public class Program {
+    public static boolean booleanAnd(boolean a, boolean b) {
+    }
+    public static boolean booleanOr(boolean a, boolean b) {
+    }
+}`;
+    case 'for loop':
+      return `public class Program {
+    public static int forLoopSum(int n) {
+    }
+}`;
+    case 'while loop':
+      return `public class Program {
+    public static int whileLoopDecrement(int n) {
+    }
+}`;
+    case 'object':
+      return `public class Program {
+    public static int getPointX() {
+    }
+    public static int getPointY() {
+    }
+}`;
+    case 'modularity':
+      return `public class Program {
+    public static int add(int a, int b) {
+    }
+}`;
+    case 'multidimensional array':
+      return `public class Program {
+    public static int getMatrixElement() {
+    }
+}`;
+    case 'array list':
+      return `public class Program {
+    public static int getVectorFirstElement() {
+    }
+}`;
+    default:
+      return `public class Program {
+    public static boolean testPlaceholder() {
+    }
+}`;
+  }
+};
+
 // ---------------------------------------- //
 // Main Seeder
 // ---------------------------------------- //
@@ -414,12 +485,12 @@ const seedData = async () => {
   };
 
   const languageConfigs = [
-    { lang: 'cpp', generateTest: generateCppTest },
-    { lang: 'python', generateTest: generatePythonTest },
-    { lang: 'java', generateTest: generateJavaTest },
+    { lang: 'cpp', generateTest: generateCppTest, generateStarterCode: null },
+    { lang: 'python', generateTest: generatePythonTest, generateStarterCode: null },
+    { lang: 'java', generateTest: generateJavaTest, generateStarterCode: generateJavaStarterCode },
   ];
 
-  for (const { lang, generateTest } of languageConfigs) {
+  for (const { lang, generateTest, generateStarterCode } of languageConfigs) {
     const language = languages[lang];
 
     console.log(`Creating course for ${lang}...`);
@@ -453,6 +524,7 @@ const seedData = async () => {
           topic: topic,
           referenceTest: generateTest(topic),
           languageUid: language.uid,
+          starterCode: generateStarterCode?.(topic),
         });
 
         const exerciseTag = await Tag.findOrCreate({ where: { name: `${topic.toLowerCase()}-exercise` } }).then(([tag]) => tag);

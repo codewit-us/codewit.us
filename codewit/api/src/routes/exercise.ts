@@ -87,7 +87,8 @@ exerciseRouter.post('/', checkAdmin, async (req, res) => {
       validatedBody.data.topic,
       validatedBody.data.referenceTest,
       validatedBody.data.tags,
-      validatedBody.data.language
+      validatedBody.data.language,
+      validatedBody.data.starterCode
     );
     res.json(exercise);
   } catch (err) {
@@ -112,7 +113,8 @@ exerciseRouter.patch('/:uid', checkAdmin, async (req, res) => {
       validatedBody.data.referenceTest,
       validatedBody.data.tags,
       validatedBody.data.language,
-      validatedBody.data.topic
+      validatedBody.data.topic,
+      validatedBody.data.starterCode
     );
 
     if (exercise) {

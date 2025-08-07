@@ -9,6 +9,7 @@ const createExerciseSchema = z.object({
   language: z.string().optional(),
   tags: z.string().array().optional(),
   referenceTest: z.string(),
+  starterCode: z.string().optional(),
 });
 
 const updateExerciseSchema = z.object({
@@ -20,6 +21,7 @@ const updateExerciseSchema = z.object({
   language: z.string().optional(),
   tags: z.string().array().optional(),
   referenceTest: z.string().optional(),
+  starterCode: z.string().optional(),
 });
 
 export type ZCreateExerciseSchema = z.infer<typeof createExerciseSchema>;

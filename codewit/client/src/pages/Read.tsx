@@ -1,33 +1,143 @@
-// codewit/client/src/pages/Read.tsx
-import React, { useState } from 'react';
-import { useParams, useLocation, useNavigate } from "react-router-dom";
-import NotFound from '../components/notfound/NotFound';
-import CodeBlock from '../components/codeblock/Codeblock';
-import { AttemptWithEval } from '../interfaces/evaluation';
 import {
-  DemoResponse,
-  Demo,
-  ExerciseResponse,
-} from '@codewit/interfaces';
+  EllipsisVerticalIcon,
+  EllipsisHorizontalIcon,
+  CheckIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/solid';
+import { Editor } from '@monaco-editor/react';
+import { useForm } from "@tanstack/react-form";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import axios, { AxiosError } from 'axios';
+import { AttemptResult, DemoResponse } from 'lib/shared/interfaces';
+import { ButtonHTMLAttributes, useState } from 'react';
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { Resizable } from 're-resizable';
+
+import NotFound from '../components/notfound/NotFound';
+import { AttemptWithEval } from '../interfaces/evaluation';
 import CodeSubmission from '../components/codeblock/CodeSubmission';
-import { AttemptResult } from 'lib/shared/interfaces';
 import Loading from '../components/loading/LoadingPage';
 import HelpfulLinks from '../components/videoui/HelpfulLinks';
-import Exercises from '../components/codeblock/Exercises';
-import useExercisesByIds from '../hooks/useExercisesByIds';
-import axios from 'axios';
-import { Resizable } from 're-resizable';
 import VideoPlayer from '../components/videoui/VideoPlayer';
 import VideoHeader from '../components/videoui/VideoHeader';
 import AuthorTags from '../components/videoui/AuthorTags';
 import RelatedDemos from '../components/videoui/RelatedDemos';
-import { useFetchSingleDemo } from '../hooks/useDemo';
-import { useFetchStudentCourses } from '../hooks/useCourse';
-import {
-  EllipsisVerticalIcon,
-  EllipsisHorizontalIcon,
-} from '@heroicons/react/24/solid';
 import type { EvaluationResponse } from '../interfaces/evaluation';
+import { cn } from '../utils/styles';
+import { ErrorView } from '../components/error/Error';
+import { fetchExercisesByIds } from '../hooks/useExercise';
+
+function demo_query_key(demo_uid: string): ["demo_attempt", string] {
+  return ["demo_attempt", demo_uid];
+}
+
+export default function Read() {
+  const { uid } = useParams<{ uid: string }>();
+
+  if (uid == null) {
+    throw new Error("missing demo uid");
+  }
+
+  const {data, isLoading, error} = useQuery({
+    queryKey: demo_query_key(uid),
+    queryFn: async ({queryKey}) => {
+      let result = await axios.get<DemoResponse>(`/api/demos/${queryKey[1]}`);
+
+      return result.data;
+    }
+  });
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
+  if (error != null) {
+    if (error instanceof AxiosError) {
+      if (error.response != null) {
+        switch (error.response.status) {
+          case 404:
+            return <NotFound />;
+          case 500:
+            return <ErrorView title="Server Error">
+              <p className="text-lg">There was a server error when retrieving data for this page.</p>;
+            </ErrorView>;
+          default:
+            return <ErrorView>
+              <p className="text-lg">There was a problem loading this page.</p>
+            </ErrorView>;
+        }
+      } else {
+        return <ErrorView>
+          <p className="text-lg">There was a problem loading this page.</p>
+        </ErrorView>;
+      }
+    } else {
+      return <ErrorView>
+        <p className="text-lg">There was a problem loading this page.</p>
+      </ErrorView>;
+    }
+  }
+
+  if (data == null) {
+    return <ErrorView title="No Data">
+      <p className="text-lg">There was no data to load for this page.</p>
+    </ErrorView>;
+  }
+
+  return (
+    <div className="h-container-full w-full overflow-auto flex flex-col md:flex-row bg-black">
+      <LeftPanel demo={data}/>
+      <RightPanel demo={data}/>
+    </div>
+  );
+}
+
+interface LeftPanelProps {
+  demo: DemoResponse,
+}
+
+function LeftPanel({demo}: LeftPanelProps) {
+  const {mutate} = useMutation({
+    mutationFn: async (uid: number) => {
+      let result = await axios.post(`/api/demos/${uid}/like`);
+    },
+    onError: (err, vars, cxt) => {
+      console.error("error liking demo:", err);
+    }
+  });
+
+  return <Resizable
+    defaultSize={{width: '60%', height: '100%'}}
+    maxWidth="65%"
+    minWidth="30%"
+    enable={{ right: true }}
+    className="pl-2 pt-2 pr-5 font-white"
+    handleClasses={{
+      right: 'h-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
+    }}
+    handleComponent={{
+      right: <div className="group flex flex-col items-center justify-center">
+        <EllipsisVerticalIcon className="h-[30px] w-[30px] z-10 text-foreground-200 rounded-full hover:bg-foreground-400 transition-colors"/>
+      </div>,
+    }}
+  >
+    <div className="w-full h-full">
+      <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
+      <div className="ml-2">
+        <VideoHeader
+          title={demo.title}
+          uid={demo.uid}
+          handleClick={mutate}
+        />
+        <AuthorTags tags={demo.tags} />
+        <div className="mt-4 h-[26vh] overflow-y-auto">
+          <RelatedDemos />
+          <HelpfulLinks />
+        </div>
+      </div>
+    </div>
+  </Resizable>;
+}
 
 enum SubmissionState {
   Submit = 0,
@@ -35,72 +145,35 @@ enum SubmissionState {
   Finished = 2,
 };
 
-function Read() {
-  const { uid } = useParams<{ uid: string }>();
+type AttemptResponse = AttemptResult & {
+  evaluation: EvaluationResponse;
+};
+
+interface RightPanelProps {
+  demo: DemoResponse,
+}
+
+function RightPanel({demo}: RightPanelProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  if (uid == null) {
-    throw new Error("missing demo uid");
-  }
-
-  const [lastAttemptResult, setLastAttemptResult] = useState<AttemptWithEval | null>(null);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [exercise_index, set_exercise_index] = useState(0);
+  const [last_attempt, set_last_attempt] = useState<AttemptWithEval | null>(null);
   const [submission_state, set_submission_state] = useState<SubmissionState>(SubmissionState.Submit);
 
-  const {
-    data: studentCourses,
-    setData: setStudentCourses,
-    loading: courseLoading,
-    error: courseError,
-  } = useFetchStudentCourses();
+  const activeExerciseId = demo.exercises[exercise_index];
 
-  const {
-    data   : demo,
-    loading: demoLoading,
-    error  : demoError,
-  } = useFetchSingleDemo(uid);
+  const { data: exerciseDetails, isLoading: isExerciseLoading } = useQuery({
+    queryKey: ['exercise', activeExerciseId],
+    queryFn: () => fetchExercisesByIds([activeExerciseId]).then(res => res[0]),
+    enabled: !!activeExerciseId,
+  });
 
-  const {
-    data   : exerciseObjs,
-    loading: exLoading,
-    error  : exError,
-  } = useExercisesByIds(demo?.exercises ?? []);
+  const {mutateAsync, isPending} = useMutation({
+    mutationFn: async (code: string) => {
+      const exerciseId = demo.exercises[exercise_index];
 
-  const exercisesReady = !exLoading && !exError;
-
-  type AttemptResponse = AttemptResult & {
-    evaluation: EvaluationResponse;
-  };
-
-  const handleSubmission = async (code: string) => {
-    if (!demo) {
-      return;
-    }
-
-    if (submission_state === SubmissionState.Next) {
-      setCurrentExerciseIndex(i => (i + 1));
-      set_submission_state(SubmissionState.Submit);
-
-      return;
-    } else if (submission_state === SubmissionState.Finished) {
-      let course_id = new URL(location.pathname + location.search, window.location.origin)
-        .searchParams
-        .get("course_id");
-
-      navigate(`/${course_id ?? ""}`);
-
-      return;
-    }
-
-    const exerciseId = demo.exercises[currentExerciseIndex];
-
-    setIsSubmitting(true);
-
-    try {
-      // ---------- send attempt ----------
-      const { data: result } = await axios.post<AttemptResponse>(
+      const { data } = await axios.post<AttemptResponse>(
         "/api/attempts",
         {
           timestamp: new Date(),
@@ -110,33 +183,11 @@ function Read() {
         { withCredentials: true }
       );
 
-      if (result.updatedModules?.length) {
-        setStudentCourses(prev => {
-          if (!prev?.length) {
-            return prev;
-          }
-
-          const next = structuredClone(prev);
-          const course = next[0];
-
-          if (!course) {
-            return prev;
-          }
-
-          result.updatedModules.forEach(({ moduleUid, completion }) => {
-            const m = course.modules.find(m => m.uid === moduleUid);
-
-            if (m) {
-              m.completion = completion;
-            }
-          });
-
-          return next;
-        });
-      }
-
-      if (result.attempt?.completionPercentage === 100) {
-        if (currentExerciseIndex === demo.exercises.length - 1) {
+      return data;
+    },
+    onSuccess: (data, vars, ctx) => {
+      if (data.attempt.completionPercentage === 100) {
+        if (exercise_index === demo.exercises.length - 1) {
           set_submission_state(SubmissionState.Finished);
         } else {
           set_submission_state(SubmissionState.Next);
@@ -144,157 +195,163 @@ function Read() {
       }
 
       // keep full result so CodeSubmission can render eval / stdout
-      const attemptWithEval: AttemptWithEval = {
-        attempt: result.attempt,
-        evaluation: result.evaluation,
-      };
+      set_last_attempt({
+        attempt: data.attempt,
+        evaluation: data.evaluation,
+      });
+    },
+    onError: (err, vars, ctx) => {
+      console.error('Error submitting code:', err);
 
-      setLastAttemptResult(attemptWithEval);
-
-    } catch (e: unknown) {
-      console.error('Error submitting code:', e);
-      const message = e instanceof Error ? e.message : 
-        typeof e === 'string' ? e : 
-        'An unexpected error occurred';
-
-      setLastAttemptResult({
+      set_last_attempt({
         attempt   : null,
         evaluation: {
           state : 'error',
           error : 'Unexpected error: ' + message,
         },
       } as AttemptWithEval);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  });
 
-  const likeVideo = async (uid: number) => {
-    try {
-      await axios.post(`/demos/${uid}/like`);
-    } catch (error) {
-      console.error('Error liking the video:', error);
+  const form = useForm({
+    defaultValues: {
+      code: exerciseDetails?.starterCode ?? ""
+    },
+    onSubmit: async ({value}) => {
+      await mutateAsync(value.code);
     }
-  };
+  });
 
-  if (demoLoading || courseLoading) {
-    return <Loading />;
-  }
-
-  if (demoError || courseError || !demo) {
-    return <NotFound />;
-  }
-
-  let button_text;
+  let action_btn;
 
   switch (submission_state) {
     case SubmissionState.Submit:
-      button_text = "Submit";
+      if (isPending) {
+        action_btn = <ActionBtn
+          type="button"
+          disabled
+          className="bg-alternate-background-500 border-foreground-400 hover:bg-alternate-background-500/90"
+        >
+          <img className="h-[24px] w-[24px]" src ="/processing-cog.svg" alt="cog loader svg for submission"/>
+          <span data-testid="submit-button-checking" className="text-accent-500 font-bold">
+            Checking...
+          </span>
+        </ActionBtn>;
+      } else {
+        action_btn = <ActionBtn
+          type="submit"
+          className="border-accent-500"
+        >
+          <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600" />
+          <span data-testid="submit-button" className="text-accent-500 group-hover:text-accent-600">
+            Submit
+          </span>
+        </ActionBtn>;
+      }
       break;
     case SubmissionState.Next:
-      button_text = "Next";
+      action_btn = <ActionBtn
+        type="button"
+        className="border-accent-500"
+        onClick={() => {
+          set_exercise_index(i => (i + 1));
+          set_submission_state(SubmissionState.Submit);
+
+          form.resetField("code");
+        }}
+      >
+        <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600" />
+        <span data-testid="submit-button" className="text-accent-500 group-hover:text-accent-600">
+          Next Exercise
+        </span>
+      </ActionBtn>
       break;
     case SubmissionState.Finished:
-      button_text = "Finished";
+      action_btn = <ActionBtn
+        type="button"
+        className="border-accent-500 bg-green-500"
+        onClick={() => {
+          let course_id = new URL(location.pathname + location.search, window.location.origin)
+            .searchParams
+            .get("course_id");
+
+          navigate(`/${course_id ?? ""}`);
+        }}
+      >
+        <CheckIcon className="w-6 h-6 text-alternate-background-700" />
+        <span data-testid="submit-button" className="text-alternate-background-700">
+          Finished
+        </span>
+      </ActionBtn>
       break;
   }
 
-  return (
-    <div className="h-container-full overflow-auto flex flex-col md:flex-row w-full bg-black">
-
-      {/* left side */}
-      <Resizable
-        defaultSize={{
-          width: '60%',
-          height: '100%',
-        }}
-        maxWidth="65%"
-        minWidth="30%"
-        enable={{ right: true }}
-        className="overflow-x-hidden overflow-y-hidden pl-2 pt-2 pr-5 font-white"
-        handleClasses={{
-          right: 'h-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
-        }}
-        handleComponent={{
-          right: (
-            <div className="group mr-[5px] w-[5px] h-16">
-              <div className="flex flex-col items-center justify-center mt-[18px]">
-                <EllipsisVerticalIcon className="h-[30px] w-[30px] text-foreground-200" />
-              </div>
-            </div>
-          ),
-        }}
-      >
-        {demo && (
-          <div className="w-full h-full">
-            <VideoPlayer youtube_id={demo.youtube_id} title={demo.title} />
-            <div className="ml-2">
-              <VideoHeader
-                title={demo.title}
-                uid={demo.uid}
-                handleClick={likeVideo}
-              />
-              <AuthorTags tags={demo.tags} />
-              <div className="mt-4 h-[26vh] overflow-y-auto">
-                <RelatedDemos />
-                <HelpfulLinks />
-              </div>
-            </div>
-          </div>
-        )}
-      </Resizable>
-
-      {/* right side */}
-      <div className="flex-1 h-full w-full md:overflow-hidden pt-2 px-2 flex flex-col">
-        <div className="mb-2">
-          <Exercises
-            exercises={exerciseObjs}
-            idx={currentExerciseIndex}
-          />
-        </div>
-
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Resizable
-            defaultSize={{
-              width: '100%',
-              height: '60%',
-            }}
-            minHeight="30%"
-            maxHeight="70%"
-            enable={{ bottom: true }}
-            className="overflow-hidden"
-            handleClasses={{
-              bottom: 'w-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
-            }}
-            handleComponent={{
-              bottom: (
-                <div className="w-full flex items-center justify-center">
-                  <div className="group h-[12px]">
-                    <div className="absolute top-[-12px] left-1/2 transform -translate-x-1/2">
-                      <EllipsisHorizontalIcon className="h-[30px] w-[30px] text-foreground-200" />
-                    </div>
-                  </div>
-                </div>
-              ),
-            }}
-          >
-            <CodeBlock
-              on_submit={handleSubmission}
-              is_submitting={isSubmitting}
-              language={demo.language}
-              submit_text={button_text}
-            />
-          </Resizable>
-
-          <div className="flex-1 overflow-y-auto mt-2">
-            {lastAttemptResult && (
-              <CodeSubmission evaluation={lastAttemptResult.evaluation || null} />
-            )}
-          </div>
-        </div>
-      </div>
+  return <div className="flex-1 h-full w-full md:overflow-hidden pt-2 flex flex-col">
+    <div className="pb-2 px-2">
+      <h3 className="font-semibold text-lg bg-accent-700 text-white py-2 px-3 rounded-lg">
+        Exercise {exercise_index + 1}
+      </h3>
     </div>
-  );
+    <Resizable
+      defaultSize={{width: '100%', height: '60%'}}
+      minHeight="30%"
+      maxHeight="70%"
+      enable={{bottom: true}}
+      handleClasses={{
+        bottom: 'w-full flex items-center justify-center bg-foreground-700 hover:bg-foreground-400 transition-colors duration-200',
+      }}
+      handleComponent={{
+        bottom: <div className="group w-full h-full flex items-center justify-center">
+          <EllipsisHorizontalIcon className="h-[30px] w-[30px] text-foreground-200 rounded-full hover:bg-foreground-400 transition-colors"/>
+        </div>,
+      }}
+    >
+      <form className="flex-1 flex flex-col h-full px-2" onSubmit={e => {
+        e.preventDefault();
+
+        form.handleSubmit();
+      }}>
+        <form.Field name="code" children={(field) => {
+          return <Editor
+            value={field.state.value}
+            language={demo.language}
+            theme="hc-black"
+            className="border-2 rounded-lg border-gray-800 focus-within:border-accent-500 overflow-hidden"
+            wrapperProps={{
+              // this is needed to properly resize the editor otherwise it only resize when the handle reaches
+              // the bottom of the editor which would hide the buttons
+              className: "overflow-hidden"
+            }}
+            onChange={(v) => field.handleChange(v ?? "")}
+          />;
+        }}/>
+        <div className="flex flex-row gap-1 pt-2 pb-3">
+          <ActionBtn type="button" className="w-1/3 border-accent-500" disabled={isPending} onClick={() => form.resetField("code")}>
+            <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
+            <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
+          </ActionBtn>
+          {action_btn}
+        </div>
+      </form>
+    </Resizable>
+    <div className="flex-1 overflow-y-auto mt-2 px-2">
+      {last_attempt && (
+        <CodeSubmission evaluation={last_attempt.evaluation || null} />
+      )}
+    </div>
+  </div>;
 }
 
-export default Read;
+type ActionBtnProps = ButtonHTMLAttributes<HTMLButtonElement>;
+
+function ActionBtn({className, children, ...rest}: ActionBtnProps) {
+  return <button
+    className={cn(
+      "group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 rounded-lg focus:outline-none w-2/3",
+      className
+    )}
+    {...rest}
+  >
+    {children}
+  </button>
+}

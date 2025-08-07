@@ -7,6 +7,7 @@ interface Exercise {
   tags: string[];
   language: string;
   referenceTest: string;
+  starterCode: string;
 }
 
 interface ExerciseResponse {
@@ -15,6 +16,7 @@ interface ExerciseResponse {
   tags: string[];
   language: string;
   referenceTest: string;
+  starterCode: string;
   uid: number;
 }
 
@@ -26,6 +28,7 @@ interface ExerciseFormData{
   topic: string;
   selectedTags: { label: string, value: string }[];
   referenceTest: string;
+  starterCode: string;
 }
 
 interface Demo {
@@ -229,6 +232,8 @@ interface AttemptResult {
 
 // Payload sent when creating a NEW exercise (no uid yet)
 export type ExerciseInput = Omit<Exercise, 'uid'>;
+
+export type ModuleDraft = Omit<Module, 'completion'>;
 
 export type {
   AttemptDTO,

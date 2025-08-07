@@ -1,7 +1,7 @@
 // codewit/client/src/hooks/useModule.ts
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Module } from '@codewit/interfaces';
+import { Module, ModuleDraft } from '@codewit/interfaces';
 
 // General hook to handle fetching data with axios
 const useAxiosFetch = (initialUrl: string, initialData: Module[] = []) => {
@@ -51,13 +51,13 @@ const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
 // Hook to post a new module
 export const usePostModule = () => {
   const { operation } = useAxiosCRUD('post');
-  return (moduleData: Module) => operation('/modules', moduleData);
+  return (moduleData: ModuleDraft) => operation('/modules', moduleData);
 };
 
 // Hook to patch an existing module
 export const usePatchModule = () => {
   const { operation } = useAxiosCRUD('patch');
-  return (moduleData: Module, uid: number) => operation(`/modules/${uid}`, moduleData);
+  return (moduleData: ModuleDraft, uid: number) => operation(`/modules/${uid}`, moduleData);
 };
 
 // Hook to delete a module
