@@ -1,6 +1,5 @@
 /* v8 ignore next 98 */
 const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
-const flowbite = require('flowbite-react/tailwind');
 const { join } = require('path');
 
 /** @type {import('tailwindcss').Config} */
@@ -12,18 +11,10 @@ module.exports = {
     ),
     // Add shared library components to content
     join(__dirname, '../lib/shared/components/**/*.{ts,tsx}'),
-    // similar to below, the path that this outputs is expecting a directory
-    // structure that does not exist for this project. the path that
-    // `flowbite.content()` gives will not be found unless it is modified or
-    // the location of this file changes
-    //flowbite.content(),
     ...createGlobPatternsForDependencies(__dirname),
     './src/**/*.{js,jsx,ts,tsx}',
-    // the previous path did not properly include the tailwindcss from flowbite
-    // and because of that the proper styling was not included for the
-    // components. because of this if it is properly included parse of the site
-    // are no longer properly styled.
-    //"../node_modules/flowbite-react/dist/{esm,cjs}/**/*.{mjs,cjs}",
+    '../../node_modules/flowbite-react/lib/**/*.js',
+    './node_modules/flowbite/**/*.js',
   ],
   theme: {
     screens: {
@@ -116,7 +107,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/typography'),
-    flowbite.plugin(),
+    require('flowbite/plugin'),
     require('daisyui'),
   ],
 };

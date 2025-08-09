@@ -1,0 +1,4 @@
+build:
+  docker:
+    web: /codewit/Dockerfile.frontend
+    api: /codewit/Dockerfile.backend

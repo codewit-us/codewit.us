@@ -205,6 +205,11 @@ interface YouTubeSearchResult {
   };
 }
 
+interface VideoOption {
+  value: string;
+  label: string;
+  thumbnail: string;
+}
 interface Thumbnail {
   url: string;
   width: number;
@@ -241,6 +246,7 @@ export type {
   DemoPostResponse,
   DemoResponse,
   DemoFormData,
+  VideoOption,
   Module,
   Resource,
   SelectedTag,
