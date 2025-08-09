@@ -2,7 +2,3 @@ build:
   docker:
     web: /codewit/Dockerfile.frontend
     api: /codewit/Dockerfile.backend
-
-run:
-  web: npm --prefix /codewit/client frontend-dev
-  api: npm --prefix /codewit/api backend-dev
