@@ -28,6 +28,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     port: 3001,
     host: 'localhost',
+    allowedHosts: [
+      'codewit-api-711de55249e1.herokuapp.com',
+      'localhost'
+    ],
     proxy: {
       '/demos': {
         target: BACKEND_URL,
