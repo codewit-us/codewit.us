@@ -11,7 +11,7 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE $PORT
 
 # Choose between dev and prod startup
 CMD [ "sh", "-c", "if [ \"$MODE\" = 'dev' ]; then npm run backend-dev; else npm run build:api && npm run start:api; fi" ]
