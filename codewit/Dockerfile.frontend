@@ -11,6 +11,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3001
+EXPOSE $PORT
 
 CMD [ "sh", "-c", "if [ \"$MODE\" = 'dev' ]; then npm run frontend-dev; else npm run build:client && npm run start:client; fi" ]

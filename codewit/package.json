@@ -5,7 +5,7 @@
   "scripts": {
     "migrate": "npx sequelize-cli db:migrate",
     "backend-dev": "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && nx run api:serve:development",
-    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001",
+    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port $PORT",
     "build:client": "nx build client --configuration=production",
     "build:api": "nx build api --configuration=production",
     "start:api": "node dist/api/main.js",
