@@ -6,14 +6,16 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
-// const API_PORT = process.env.API_PORT
-// const API_HOST = process.env.API_HOST
-// if (!API_HOST || !API_PORT) {
-//   throw new Error('BACKEND_URL is not set');
-// }
+const API_PORT = process.env.API_PORT
+const API_HOST = process.env.API_HOST
+if (!API_HOST) {
+  throw new Error('BACKEND_URL is not set');
+}
 
 // const BACKEND_URL = `http://${API_HOST}:${API_PORT}/api`;
-const BACKEND_URL = 'http://app:3000';
+// if API_HOST is not set, use http://app:3000
+
+const BACKEND_URL = API_HOST ? `http://${API_HOST}/api` : 'http://app:3000/api';
 
 export default defineConfig(({ mode }) => ({
   root: __dirname,
