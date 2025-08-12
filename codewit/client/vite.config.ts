@@ -9,7 +9,7 @@ dotenv.config({ path: '../../.env' });
 const API_PORT = process.env.API_PORT
 const API_HOST = process.env.API_HOST
 if (!API_HOST) {
-  throw new Error('BACKEND_URL is not set');
+  console.log('BACKEND_URL is not set');
 }
 
 // const BACKEND_URL = `http://${API_HOST}:${API_PORT}/api`;
