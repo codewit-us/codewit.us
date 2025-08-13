@@ -23,6 +23,7 @@ const NavBar = ({
   admin: boolean;
   handleLogout: () => void;
   courseTitle?: string;
+  courseId?: string;
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
 
