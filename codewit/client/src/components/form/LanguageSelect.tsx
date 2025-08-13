@@ -7,11 +7,20 @@ interface LanguageSelectProps {
   initialLanguage: string;
 }
 
-const options = [
+interface LanguageOption {
+  value: string,
+  label: string,
+}
+
+export const language_options: LanguageOption[] = [
   { value: 'cpp', label: 'C++' },
   { value: 'java', label: 'Java' },
   { value: 'python', label: 'Python' },
 ];
+
+export function get_language_option(given: string): LanguageOption {
+  return language_options.find(opt => given === opt.value) ?? language_options[0];
+}
 
 const LanguageSelect = ({handleChange, initialLanguage }: LanguageSelectProps) => (
   <div 
@@ -24,9 +33,9 @@ const LanguageSelect = ({handleChange, initialLanguage }: LanguageSelectProps) =
     <Select
       id="language"
       name="language"
-      options={options}
+      options={language_options}
       onChange={option => handleChange({ target: { value: option?.value || '', name: "language"}} as any)}
-      value={options.find(option => option.value === initialLanguage) || options[0]}
+      value={language_options.find(option => option.value === initialLanguage) || language_options[0]}
       isSearchable={false}
       styles={SelectStyles}
       menuPortalTarget={document.body}

@@ -12,6 +12,7 @@ class DemoExercises extends Model<
 > {
   declare demoUid: number;
   declare exerciseUid: number;
+  declare order: number;
 
   static initialize(sequelize: Sequelize) {
     this.init(
@@ -26,13 +27,18 @@ class DemoExercises extends Model<
           primaryKey: true,
           references: { model: 'exercises', key: 'uid' },
         },
+        order: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          defaultValue: 0,
+        },
       },
       {
         sequelize,
         modelName: 'DemoExercises',
         tableName: 'DemoExercises',
         timestamps: true,
-      }
+      },
     );
   }
 }

@@ -99,7 +99,7 @@ export function formatSingleDemo(
     language: demo.language.name,
     youtube_id: demo.youtube_id,
     youtube_thumbnail: demo.youtube_thumbnail,
-    exercises: demo.exercises ? demo.exercises.map(each => each.uid) : [],
+    exercises: demo.exercises ? demo.exercises.map(({uid, prompt}) => ({uid, prompt})) : [],
   }
 }
 

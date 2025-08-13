@@ -62,7 +62,12 @@ export interface DemoResponse {
     language: string,
     youtube_id: string,
     youtube_thumbnail: string,
-    exercises: number[]
+    exercises: DemoExercise[]
+}
+
+export interface DemoExercise {
+    uid: number,
+    prompt: string,
 }
 
 export interface AttemptWithEval {
