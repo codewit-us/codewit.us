@@ -1,4 +1,4 @@
-import { User, Course, Demo, Exercise, Module, Resource, Tag, Language, sequelize } from '../models';
+import { User, Course, Demo, Exercise, Module, Resource, Tag, Language, sequelize, DemoExercises } from '../models';
 import { Command } from 'commander';
 
 const program = new Command();
@@ -457,11 +457,11 @@ function generateJavaStarterCode(topic: string): string {
 // Main Seeder
 // ---------------------------------------- //
 
-const seedData = async () => {
-  let user = await User.findOne({ where: { email } });
+const seedData = async () => await sequelize.transaction(async transaction => {
+  let user = await User.findOne({ where: { email }, transaction });
 
   if (!user) {
-    user = await User.create({ email, isAdmin: true });
+    user = await User.create({ email, isAdmin: true }, {transaction});
   }
 
   const studentUsers = await Promise.all(studentNames.map(async (name) => {
@@ -469,6 +469,7 @@ const seedData = async () => {
     const [student] = await User.findOrCreate({
       where: { email },
       defaults: { username: name, isAdmin: false },
+      transaction
     });
     return student;
   }));
@@ -479,9 +480,9 @@ const seedData = async () => {
   ];
 
   const languages = {
-    cpp: await Language.findOrCreate({ where: { name: 'cpp' } }).then(([lang]) => lang),
-    python: await Language.findOrCreate({ where: { name: 'python' } }).then(([lang]) => lang),
-    java: await Language.findOrCreate({ where: { name: 'java' } }).then(([lang]) => lang),
+    cpp: await Language.findOrCreate({ where: { name: 'cpp' }, transaction }).then(([lang]) => lang),
+    python: await Language.findOrCreate({ where: { name: 'python' }, transaction }).then(([lang]) => lang),
+    java: await Language.findOrCreate({ where: { name: 'java' }, transaction }).then(([lang]) => lang),
   };
 
   const languageConfigs = [
@@ -499,72 +500,113 @@ const seedData = async () => {
       where: { id: `ap-comp-sci-${lang}` },
       defaults: {
         title: `Open AP Computer Science ${lang.toUpperCase()}`,
-      }
+      },
+      transaction
     });
-    await course.setLanguage(language);
+    await course.setLanguage(language, {transaction});
 
     const modules = await Promise.all(moduleTopics.map(async (topic, index) => {
       const demos = await Promise.all([1, 2, 3].map(async (num) => {
-        const demo = await Demo.create({
-          title: `${topic} Demo ${num} (${lang.toUpperCase()})`,
-          youtube_id: 'XxBWL_ntnNE',
-          youtube_thumbnail: 'https://i.ytimg.com/vi/XxBWL_ntnNE/maxresdefault.jpg',
-          topic: topic,
-        });
-
-        await demo.setLanguage(language.uid);
-
-        await demo.addTag(
-          await Tag.findOrCreate({ where: { name: topic.toLowerCase() } }).then(([tag]) => tag),
-          { through: { ordering: 1 } }
+        const demo = await Demo.create(
+          {
+            title: `${topic} Demo ${num} (${lang.toUpperCase()})`,
+            youtube_id: 'XxBWL_ntnNE',
+            youtube_thumbnail: 'https://i.ytimg.com/vi/XxBWL_ntnNE/maxresdefault.jpg',
+            topic: topic,
+          },
+          {
+            transaction
+          }
         );
 
-        const exercise = await Exercise.create({
-          prompt: `Complete the ${topic} exercise ${num} (${lang.toUpperCase()})`,
-          topic: topic,
-          referenceTest: generateTest(topic),
-          languageUid: language.uid,
-          starterCode: generateStarterCode?.(topic),
-        });
+        await demo.setLanguage(language.uid, {transaction});
 
-        const exerciseTag = await Tag.findOrCreate({ where: { name: `${topic.toLowerCase()}-exercise` } }).then(([tag]) => tag);
-        await exercise.addTag(exerciseTag);
-        await demo.addExercise(exercise);
+        let [tag] = await Tag.findOrCreate({
+          where: {
+            name: topic.toLowerCase()
+          },
+          transaction
+        });
+        await demo.addTag(
+          tag,
+          {
+            through: { ordering: 1 },
+            transaction
+          }
+        );
+
+        const exercise = await Exercise.create(
+          {
+            prompt: `Complete the ${topic} exercise ${num} (${lang.toUpperCase()})`,
+            topic: topic,
+            referenceTest: generateTest(topic),
+            languageUid: language.uid,
+            starterCode: generateStarterCode?.(topic),
+          },
+          {
+            transaction
+          }
+        );
+
+        const [exerciseTag] = await Tag.findOrCreate({
+          where: {
+            name: `${topic.toLowerCase()}-exercise`
+          },
+          transaction
+        });
+        await exercise.addTag(exerciseTag, {transaction});
+
+        await DemoExercises.create(
+          {
+            exerciseUid: exercise.uid,
+            demoUid: demo.uid,
+            order: 0
+          },
+          {
+            transaction
+          }
+        );
 
         return demo;
       }));
 
-      const module = await Module.create({ topic: topic });
-      await module.setLanguage(language.uid);
-      await module.setDemos(demos);
+      const module = await Module.create({ topic: topic }, {transaction});
+      await module.setLanguage(language.uid, {transaction});
+      await module.setDemos(demos, {transaction});
 
-      const mainResource = await Resource.findOrCreate({
+      const [mainResource] = await Resource.findOrCreate({
         where: { url: `https://example.com/${topic.toLowerCase().replace(' ', '-')}` },
         defaults: {
           title: `${topic} Tutorial`,
           source: 'Documentation'
-        }
-      }).then(([resource]) => resource);
+        },
+        transaction
+      });
 
       const additionalResources = await Promise.all([1, 2].map(async (num) => {
-        return await Resource.create({
-          url: `https://example.com/${topic.toLowerCase().replace(' ', '-')}-${num}`,
-          title: `${topic} Extra Resource ${num}`,
-          source: 'Documentation'
-        });
+        return await Resource.create(
+          {
+            url: `https://example.com/${topic.toLowerCase().replace(' ', '-')}-${num}`,
+            title: `${topic} Extra Resource ${num}`,
+            source: 'Documentation'
+          },
+          {
+            transaction
+          }
+        );
       }));
 
-      await module.setResources([mainResource, ...additionalResources]);
+      await module.setResources([mainResource, ...additionalResources], {transaction});
 
       return module;
     }));
 
     await Promise.all(modules.map(async (module, idx) => {
-      await course.addModule(module, { through: { ordering: idx + 1 } });
+      await course.addModule(module, { through: { ordering: idx + 1 }, transaction });
     }));
 
-    await course.addInstructor(user);
-    await course.setRoster([...studentUsers, user]);
+    await course.addInstructor(user, {transaction});
+    await course.setRoster([...studentUsers, user], {transaction});
 
     console.log(`Created course: ${course.title}`);
     console.log('Created modules:', moduleTopics.length);
@@ -574,13 +616,10 @@ const seedData = async () => {
   }
 
   console.log('Finished creating courses for all languages.');
-};
+});
 
-(async () => {
-  if (options.force) {
-    await sequelize.sync({ force: true });
-    console.log('Force syncing database');
-  }
-  await seedData();
-  console.log('Database seeded!');
-})();
+seedData().then(() => {
+  console.log("Database seeded!");
+}).catch(err => {
+  console.error("failed to seed database", err);
+});
