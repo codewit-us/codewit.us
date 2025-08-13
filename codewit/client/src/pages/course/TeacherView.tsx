@@ -6,13 +6,22 @@ import { useCourseProgress } from '../../hooks/useCourse';
 import Loading  from '../../components/loading/LoadingPage';
 import { default as ErrorEle } from '../../components/error/Error';
 import { useAxiosFetch } from "../../hooks/fetching";
-
-import type { TeacherCourse } from '@codewit/interfaces';
 import { useEffect } from "react";
+import PendingRequestsCard from './components/PendingRequestsCard';
+import type { Course } from '@codewit/interfaces';
+import { useQuery } from "@tanstack/react-query";
+import axios from 'axios';
 
 interface TeacherViewProps {
   onCourseChange: (name: string) => void,
 }
+
+export type Pending = {
+  uid: number;
+  username: string;
+  email: string;
+  requested: string;
+};
 
 export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   const { courseId } = useParams();
@@ -21,8 +30,22 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
     throw new Error("courseId param not given");
   }
 
-  const { data: course, loading: course_loading, error: course_error } = useAxiosFetch<TeacherCourse | null>(`/api/courses/${courseId}`, null);
+  const { data: course, loading: course_loading, error: course_error } = useAxiosFetch<Course | null>(`/api/courses/${courseId}`, null);
   const { data: students, loading, error } = useCourseProgress(courseId);
+
+  async function fetchPending(courseId: string): Promise<Pending[]> {
+    const { data } = await axios.get(`/api/courses/${courseId}/registrations`);
+    return data;
+  }
+
+  const {
+    data: pending = [],
+    isLoading: pendingLoading,
+    isError: pendingError,
+  } = useQuery<Pending[]>({
+    queryKey: ['pending', courseId],
+    queryFn: () => fetchPending(courseId),
+  });
 
   useEffect(() => {
     if (course != null) {
@@ -44,26 +67,30 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   const Topics = course.modules.map(m => m.topic);
 
   return (
-    <div className="h-container-full overflow-auto flex flex-col w-full bg-black items-center gap-2">
-
+    <div className="min-h-screen w-full bg-black flex flex-col items-center gap-8 py-8">
       {/* ───────── header + invite link ───────── */}
-      <div className="bg-foreground-600 w-3/4 mt-4 rounded-md p-4">
+      <div className="bg-foreground-600 w-3/4 rounded-md p-4">
         <span className="text-[16px] font-bold text-foreground-200">
-          {courseTitle ? `${courseTitle} - ` : ''}Teacher Dashboard
+          Teacher Dashboard
         </span>
 
-        {/* invite link (static for now) */}
+        {/* invite link */}
         <div className="mt-4 flex items-center gap-2">
           <p className="text-foreground-200 text-sm">Class Link</p>
           <input
+            id="invite-link"
             className="p-1 bg-background-500 text-foreground-200 w-1/3 border border-accent-500 rounded-sm"
             type="text"
-            placeholder="https://codewit.us/class/ap-comp-sci"
+            value={`${window.location.origin}/${courseId}`}
             readOnly
           />
           <button
+            onClick={() => {
+              const url = `${window.location.origin}/${courseId}`;
+              navigator.clipboard.writeText(url);
+            }}
             className="flex items-center gap-2 border border-accent-500 text-accent-500 font-bold hover:bg-accent-600/20 rounded-md p-1"
-            title="copy link (todo)"
+            title="Copy to clipboard"
           >
             <DocumentDuplicateIcon className="h-6 w-6" />
             Copy
@@ -72,71 +99,78 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
       </div>
 
       {/* ───────── progress table ───────── */}
-      <div className="bg-foreground-600 w-3/4 rounded-md p-4 mb-10">
+      <div className="bg-foreground-600 w-3/4 rounded-md p-4">
         <h1 className="font-bold text-foreground-200 pb-10 text-[16px]">
-          Progress
+          Student Module Completion Progress
         </h1>
 
-        <div className="overflow-x-auto">
-          <div className="flex flex-col">
-
-            {/* column header */}
-            <div className="flex">
-              <div className="min-w-[200px] sticky left-0 bg-foreground-600 z-10">
-                <span className="font-bold text-foreground-200 text-[16px]">
+        <div
+          className={
+            pending.length > 0
+              ? "max-h-[500px] overflow-y-auto overflow-x-auto"
+              : "overflow-x-auto"
+          }
+        >
+          <table className="min-w-full table-auto border-separate border-spacing-y-1">
+            <thead className="bg-foreground-600 sticky top-0 z-20">
+              <tr>
+                <th className="text-[16px] font-bold text-left text-foreground-200 bg-foreground-600 sticky left-0 z-30">
                   Name
-                </span>
-              </div>
-
-              <div className="flex pl-14 mb-4">
-                {Topics.map((topic, i) => (
-                  <div key={i} className="w-[100px] flex justify-center">
-                    <span className="font-bold text-foreground-200 text-[14px]">
-                      {topic.length > 10 ? `${topic.slice(0,10)}…` : topic}
-                    </span>
+                </th>
+                <th className="text-left px-4 py-2 text-foreground-200 text-[14px] align-top bg-foreground-600 sticky top-0 z-20">
+                  <div className="flex flex-wrap justify-between gap-x-4 gap-y-2 text-[15px] font-bold text-foreground-300 max-w-full">
+                    {course.modules.map((mod, i) => (
+                      <span key={i} className="whitespace-nowrap">{mod.topic}</span>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* student rows */}
-            <div className="space-y-4 relative">
-              {students.map((s, idx) => {
-                const pct = Math.round(s.completion * 100);
-                return (
-                  <div key={idx} className="flex items-center hover:bg-foreground-500/20">
-                    {/* name cell */}
-                    <span className="text-foreground-200 text-[16px] min-w-[200px] sticky left-0 bg-foreground-600 z-10">
-                      {s.studentName}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {students.map((student) => (
+                <tr key={student.studentUid} className="hover:bg-foreground-500/10">
+                  <td className="pr-4 whitespace-nowrap bg-foreground-600 sticky left-0 z-10">
+                    <span className="text-sm font-medium text-white">
+                      {student.studentName}
+                      <span className="ml-2 font-semibold text-accent-400">
+                        ({Math.round(student.completion)}%)
+                      </span>
                     </span>
-
-                    {/* progress bar */}
-                    <div className="relative flex items-center">
+                  </td>
+                  <td className="px-4 py-2 w-full align-middle">
+                    <div className="relative w-full h-4 bg-alternate-background-500 rounded-full overflow-hidden">
                       <div
-                        className="h-2 bg-alternate-background-500 rounded-full"
-                        style={{ width: `${Topics.length * 100}px` }}
+                        className="absolute top-0 left-0 h-4 bg-accent-500 rounded-full transition-all duration-300"
+                        style={{ width: `${student.completion}%` }}
                       />
-                      <div
-                        className="absolute h-2 bg-accent-500 rounded-full"
-                        style={{ width: `${pct}%` }}
+                      <img
+                        src={bulbLit}
+                        alt="completion indicator"
+                        className="absolute top-1/2 transform -translate-y-1/2 h-4"
+                        style={{
+                          left: student.completion === 0
+                            ? '0.25rem'
+                            : `calc(${student.completion}% - 10px)`,
+                        }}
                       />
-                      <div
-                        className="absolute flex items-center"
-                        style={{ left: `${pct}%`, transform: 'translateX(-14%)' }}
-                      >
-                        {pct > 0 && <img src={bulbLit} className="size-6 z-10" alt="" />}
-                        <span className="text-accent-500 text-sm font-medium ml-2">
-                          {pct}%
-                        </span>
-                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
+
+      {/* ─── pending enrollment requests ─── */}
+      {pending.length > 0 && (
+        <div className="bg-foreground-600 w-3/4 rounded-md p-4">
+          <h2 className="font-bold text-foreground-200 text-[16px] mb-4">
+            Pending Enrollment Requests ({pending.length})
+          </h2>
+          <PendingRequestsCard courseId={courseId} pending={pending} />
+        </div>
+      )}
     </div>
   );
 }
