@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { DemoResponse, Demo } from '@codewit/interfaces';
 import axios from 'axios';
 
-const baseUrl = '/api/demos';
+const baseUrl = '/demos';
 
 interface AxiosFetch<T> {
   data: T,

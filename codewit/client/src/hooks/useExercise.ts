@@ -27,7 +27,7 @@ const useAxiosFetch = (initialUrl: string, initialData: ExerciseResponse[] = [])
 };
 
 // Hook to fetch all exercises
-export const useFetchExercises = () => useAxiosFetch('/api/exercises');
+export const useFetchExercises = () => useAxiosFetch('/exercises');
 
 // General hook for handling CRUD operations
 const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
@@ -51,24 +51,24 @@ const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
 // Hook to post a new exercise
 export const usePostExercise = () => {
   const { operation } = useAxiosCRUD('post');
-  return (exerciseData: ExerciseInput) => operation('/api/exercises', exerciseData);
+  return (exerciseData: ExerciseInput) => operation('/exercises', exerciseData);
 };
 
 // Hook to patch an exercise
 export const usePatchExercise = () => {
   const { operation } = useAxiosCRUD('patch');
-  return (exerciseData: Exercise, uid: number) => operation(`/api/exercises/${uid}`, exerciseData);
+  return (exerciseData: Exercise, uid: number) => operation(`/exercises/${uid}`, exerciseData);
 };
 
 // Hook to delete an exercise
 export const useDeleteExercise = () => {
   const { operation } = useAxiosCRUD('delete');
-  return (uid: number) => operation(`/api/exercises/${uid}`);
+  return (uid: number) => operation(`/exercises/${uid}`);
 };
 
 export const fetchExercisesByIds = async (ids: number[]) => {
   const results = await Promise.all(
-    ids.map(id => axios.get<ExerciseResponse>(`/api/exercises/${id}`))
+    ids.map(id => axios.get<ExerciseResponse>(`/exercises/${id}`))
   );
   return results.map(r => r.data);
 };
