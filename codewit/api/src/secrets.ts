@@ -1,5 +1,5 @@
 const HOST = process.env.API_HOST ?? 'localhost';
-const PORT = process.env.API_PORT ? Number(process.env.API_PORT) : 3000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const REDIS_HOST = process.env.REDIS_HOST ?? 'localhost';
 const REDIS_PORT = process.env.REDIS_PORT ? Number(process.env.REDIS_PORT) : 6379;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
