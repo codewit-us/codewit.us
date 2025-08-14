@@ -31,18 +31,17 @@ const app = express();
 //   prefix: "codewit:",
 // })
 
-// app.use(
-//   session({
-//     store: redisStore,
-//     secret: COOKIE_KEY,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       // 7 days
-//       maxAge: 1000 * 60 * 60 * 24 * 7,
-//     },
-//   })
-// );
+app.use(
+  session({
+    secret: COOKIE_KEY,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      // 7 days
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    },
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
