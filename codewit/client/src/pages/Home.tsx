@@ -64,7 +64,7 @@ interface Landing {
 
 export default function Home() {
   const { data, loading, error } = useAxiosFetch<Landing>(
-    "/api/courses/landing",
+    "/courses/landing",
     {
       student: [],
       instructor: [],
