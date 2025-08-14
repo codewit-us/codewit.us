@@ -27,7 +27,7 @@ const UnauthorizedState = () => (
   <div className="h-2/3 flex flex-col items-center justify-center">
     <h2 className="text-xl font-bold text-white mb-4">Please Sign In</h2>
     <p className="text-zinc-400">Sign in to access your courses</p>
-    <a href="/api/oauth2/google">
+    <a href="/oauth2/google">
       <button
         type="button"
         className="mt-4 px-5 py-2.5 flex items-center text-sm font-medium text-white bg-accent-500 rounded-lg hover:bg-accent-600 focus:ring-4 focus:ring-accent-300"
