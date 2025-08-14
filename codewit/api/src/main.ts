@@ -62,10 +62,5 @@ app.use('/attempts', checkAuth, attemptRouter);
 app.use(catchError);
 
 app.listen(PORT, HOST, async () => {
-  try {
-    await sequelize.sync({ force: false, alter: false });
     console.log(`[ ready ] http://${HOST}:${PORT}`);
-  } catch (error) {
-    console.error('Sequelize sync error:', error);
-  }
 });
