@@ -18,8 +18,12 @@ import {
   setExercisesForDemoSchema,
   updateDemoSchema,
 } from '@codewit/validations';
+import { DemoAttempt } from "@codewit/interfaces";
 import { fromZodError } from 'zod-validation-error';
 import { checkAdmin } from '../middleware/auth';
+import { asyncHandle } from '../middleware/catch';
+import { Demo, DemoTags, Language, sequelize, Tag, UserExerciseCompletion } from '../models';
+import { QueryTypes } from 'sequelize';
 
 const demoRouter = Router();
 
@@ -46,6 +50,169 @@ demoRouter.get('/:uid', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+function parse_non_zero_int(given: string): number | null {
+  let parsed = parseInt(given, 10);
+
+  if (isNaN(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed;
+}
+
+demoRouter.get("/:uid/attempt", asyncHandle(async (req, res) => {
+  let maybe_module_id = typeof req.query.module_id === "string" ?
+    parse_non_zero_int(req.query.module_id) :
+    null;
+
+  const demo_record = await Demo.findByPk(req.params.uid, {
+    include: [
+      {
+        association: Demo.associations.exercises,
+        include: [
+          Language,
+          {
+            model: UserExerciseCompletion,
+            where: {
+              userUid: req.user.uid
+            },
+            required: false
+          }
+        ]
+      },
+      Tag,
+      Language
+    ],
+    order: [[Tag, DemoTags, "ordering", "ASC"]]
+  });
+
+  if (demo_record == null) {
+    return res.status(404).json({error: "DemoNotFound"});
+  }
+
+  let tags = [];
+
+  for (let tag of demo_record.tags) {
+    tags.push(tag.name);
+  }
+
+  let exercises = [];
+
+  for (let exercise of demo_record.exercises) {
+    let completion = 0.0;
+
+    if (exercise["UserExerciseCompletions"]?.length ?? 0 != 0) {
+      completion = exercise["UserExerciseCompletions"][0].completion ?? 0.0;
+    }
+
+    exercises.push({
+      uid: exercise.uid,
+      prompt: exercise.prompt,
+      language: exercise.language.name,
+      skeleton: exercise.starterCode,
+      completion,
+    });
+  }
+
+  let resources = null;
+  let related_demos = null;
+
+  if (maybe_module_id != null) {
+    let [resources_result, demos_results] = await Promise.all([
+      sequelize.query<{
+        uid: number,
+        url: string,
+        title: string,
+        source: string,
+        liked: boolean
+      }>(`
+        select resources.uid,
+               resources.url,
+               resources.title,
+               resources.source,
+               resc_likes."userUid" is not null as liked
+        from resources
+          join "ModuleResources" as mod_resc on
+            resources.uid = mod_resc."resourceUid" and
+            mod_resc."moduleUid" = $1
+          left join "ResourceLikes" as resc_likes on
+            resources.uid = resc_likes."resourceUid" and
+            resc_likes."userUid" = $2`,
+        {
+          type: QueryTypes.SELECT,
+          bind: [maybe_module_id, req.user.uid]
+        }
+      ),
+      sequelize.query<{
+        uid: number,
+        title: string,
+        topic: string,
+        youtube_id: string,
+        youtube_thumbnail: string,
+        completion: number
+      }>(`
+        select demos.uid,
+               demos.title,
+               demos.topic,
+               demos.youtube_id,
+               demos.youtube_thumbnail,
+               demo_cmplt.completion
+        from demos
+          join "ModuleDemos" as mod_demos on
+            demos.uid = mod_demos."demoUid"
+          left join "UserDemoCompletions" as demo_cmplt on
+            demos.uid = demo_cmplt."demoUid" and
+            demo_cmplt."userUid" = $2
+        where mod_demos."moduleUid" = $1 and
+              demos.uid != $3`,
+        {
+          type: QueryTypes.SELECT,
+          bind: [maybe_module_id, req.user.uid, demo_record.uid]
+        }
+      )
+    ]);
+
+    resources = [];
+
+    for (let resc of resources_result) {
+      resources.push({...resc});
+    }
+
+    related_demos = [];
+
+    for (let demo of demos_results) {
+      let completion = demo.completion ?? 0.0;
+
+      related_demos.push({
+        uid: demo.uid,
+        title: demo.title,
+        topic: demo.topic,
+        youtube_id: demo.youtube_id,
+        youtube_thumbnail: demo.youtube_thumbnail,
+        completion
+      });
+    }
+  }
+
+  res.json({
+    demo: {
+      uid: demo_record.uid,
+      title: demo_record.title,
+      topic: demo_record.topic,
+      language: demo_record.language.name,
+      youtube_id: demo_record.youtube_id,
+      youtube_thumbnail: demo_record.youtube_thumbnail,
+      // does not seem to be an easy way to get this without another query
+      // stuff
+      liked: await demo_record.hasLikedBy(req.user.uid),
+      tags,
+      exercises,
+    },
+    resources,
+    related_demos,
+  } as DemoAttempt);
+}));
 
 demoRouter.post('/', checkAdmin, async (req, res) => {
   try {
@@ -106,35 +273,84 @@ demoRouter.patch('/:uid', checkAdmin, async (req, res) => {
   }
 });
 
-demoRouter.post('/:uid/like', async (req, res) => {
-  try {
-    const user_uid = req.user?.uid;
-    const demo = await likeDemo(Number(req.params.uid), user_uid);
-    if (demo) {
-      res.json(demo);
-    } else {
-      res.status(404).json({ message: 'Demo not found' });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+demoRouter.post('/:uid/like', asyncHandle(async (req, res) => {
+  let demo_uid = parse_non_zero_int(req.params.uid);
 
-demoRouter.delete('/:uid/like', async (req, res) => {
-  try {
-    const user_uid = req.user?.uid;
-    const demo = await removeLikeDemo(Number(req.params.uid), user_uid);
-    if (demo) {
-      res.json(demo);
-    } else {
-      res.status(404).json({ message: 'Demo not found' });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+  if (demo_uid == null) {
+    return res.status(400).json({error: "InvalidDemoUid"});
   }
-});
+
+  try {
+    await sequelize.transaction(async transaction => {
+      let [_, metadata] = await sequelize.query(
+        `\
+        insert into "DemoLikes" ("demoUid", "userUid", "createdAt", "updatedAt") values \
+        ($1, $2, $3, $3) \
+        on conflict on constraint "DemoLikes_pkey" do nothing`,
+        {
+          bind: [demo_uid, req.user.uid, new Date()],
+          type: QueryTypes.INSERT,
+          transaction,
+        }
+      );
+
+      if (metadata === 1) {
+        let [_, metadata] = await sequelize.query(
+          `update demos set likes = likes + 1 where uid = $1`,
+          {
+            bind: [demo_uid],
+            type: QueryTypes.UPDATE,
+            transaction,
+          }
+        );
+      }
+
+      return res.status(200).end();
+    });
+  } catch (err) {
+    // documentation did not list this so hopefully this will continue work
+    if (err.name === "SequelizeForeignKeyConstraintError") {
+      if (err.index === "DemoLikes_demoUid_fkey") {
+        return res.status(404).json({error: "DemoNotFound"});
+      }
+    }
+
+    throw err;
+  }
+}));
+
+demoRouter.delete('/:uid/like', asyncHandle(async (req, res) => {
+  let demo_uid = parse_non_zero_int(req.params.uid);
+
+  if (demo_uid == null) {
+    return res.status(400).json({error: "InvalidDemoUid"});
+  }
+
+  await sequelize.transaction(async transaction => {
+    // it would seem that no type information is provided if the query is raw
+    let [_, metadata]: [any ,any] = await sequelize.query(
+      `delete from "DemoLikes" where "demoUid" = $1 and "userUid" = $2`,
+      {
+        bind: [demo_uid, req.user.uid],
+        type: QueryTypes.RAW,
+        transaction
+      }
+    );
+
+    if (metadata.rowCount === 1) {
+      let [_result, _metadata] = await sequelize.query(
+        `update demos set likes = likes - 1 where uid = $1`,
+        {
+          bind: [demo_uid],
+          type: QueryTypes.UPDATE,
+          transaction
+        }
+      );
+    }
+
+    return res.status(200).end();
+  });
+}));
 
 demoRouter.patch('/:uid/exercises', checkAdmin, async (req, res) => {
   try {
