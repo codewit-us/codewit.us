@@ -14,35 +14,35 @@ import { COOKIE_KEY, HOST, PORT, REDIS_HOST, REDIS_PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
 import { catchError, asyncHandle } from "./middleware/catch";
-import { RedisStore } from "connect-redis";
-import { createClient } from "redis";
+// import { RedisStore } from "connect-redis";
+// import { createClient } from "redis";
 
 const app = express();
 
-let redisClient = createClient(
-  {
-    url: `redis://${REDIS_HOST}:${REDIS_PORT}`,
-  }
-)
-redisClient.connect().catch(console.error)
+// let redisClient = createClient(
+//   {
+//     url: `redis://${REDIS_HOST}:${REDIS_PORT}`,
+//   }
+// )
+// redisClient.connect().catch(console.error)
 
-let redisStore = new RedisStore({
-  client: redisClient,
-  prefix: "codewit:",
-})
+// let redisStore = new RedisStore({
+//   client: redisClient,
+//   prefix: "codewit:",
+// })
 
-app.use(
-  session({
-    store: redisStore,
-    secret: COOKIE_KEY,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      // 7 days
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    },
-  })
-);
+// app.use(
+//   session({
+//     store: redisStore,
+//     secret: COOKIE_KEY,
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       // 7 days
+//       maxAge: 1000 * 60 * 60 * 24 * 7,
+//     },
+//   })
+// );
 
 app.use(passport.initialize());
 app.use(passport.session());
