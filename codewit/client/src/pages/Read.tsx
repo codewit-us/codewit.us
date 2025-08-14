@@ -207,7 +207,7 @@ function RightPanel({demo}: RightPanelProps) {
         attempt   : null,
         evaluation: {
           state : 'error',
-          error : 'Unexpected error: ' + err?.message,
+          error : 'Unexpected error: ' + message,
         },
       } as AttemptWithEval);
     }

@@ -36,6 +36,12 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD,
   port: Number(process.env.DB_PORT),
   dialect: 'postgres',
+  pool: {
+    max: 10,
+    min: 0,
+    idle: 10000,
+    acquire: 30000,
+  }
 });
 
 [

@@ -1,0 +1,50 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose-deploy.yml -o ./k8s
+    kompose.service.expose: "true"
+    kompose.service.ingress: "true"
+    kompose.service.type: ClusterIP
+    kompose.version: 1.36.0 (HEAD)
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/server-snippet: |-
+      location ~* "^/api(/|$)(.*)" {
+        set $url http://app.default.svc.cluster.local:3000/$2$is_args$args;
+        proxy_pass $url;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+
+      location ~* "^/codeeval(/|$)(.*)" {
+        set $url http://codeeval.default.svc.cluster.local:3002/$2$is_args$args;
+        proxy_pass $url;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header Cookie $http_cookie;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      }
+  labels:
+    io.kompose.service: frontend
+  name: frontend
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: codewitus.kvelivela.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: frontend
+                port:
+                  number: 3001
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - codewitus.kvelivela.com
+      secretName: codewitus-tls

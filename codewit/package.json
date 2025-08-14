@@ -5,7 +5,11 @@
   "scripts": {
     "migrate": "npx sequelize-cli db:migrate",
     "backend-dev": "npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all && nx run api:serve:development",
-    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port 3001",
+    "frontend-dev": "nx run client:serve:development --host 0.0.0.0 --port $PORT",
+    "build:client": "nx build client --configuration=production",
+    "build:api": "nx build api --configuration=production",
+    "start:api": "node dist/api/main.js",
+    "start:client": "npx serve -l 3001 dist/apps/client",
     "seed-admins": "nx run api:seed-admins-builder && node dist/api/seed-admins.js",
     "seed-data": "nx run api:seed-db-builder && node dist/api/seed-db.js",
     "seed-admins-force": "nx run api:seed-admins-builder && node dist/api/seed-admins.js --force",
@@ -25,6 +29,7 @@
     "clsx": "^2.1.1",
     "commander": "^12.0.0",
     "connect-redis": "^8.0.0",
+    "cypress": "^13.12.0",
     "express": "~4.18.1",
     "express-session": "^1.18.0",
     "flowbite-react": "^0.10.2",
@@ -96,7 +101,7 @@
     "jest": "^29.4.1",
     "jest-environment-node": "^29.4.1",
     "jsdom": "~22.1.0",
-    "nx": "^18.0.1",
+    "nx": "18.0.1",
     "postcss": "^8.5.1",
     "prettier": "^2.6.2",
     "tailwindcss": "^3.4.1",
@@ -106,6 +111,7 @@
     "typescript": "~5.3.2",
     "vite": "^5.0.0",
     "vite-plugin-dts": "~2.3.0",
-    "vitest": "^1.0.4"
+    "vitest": "^1.0.4",
+    "serve":"14.2.4"
   }
 }

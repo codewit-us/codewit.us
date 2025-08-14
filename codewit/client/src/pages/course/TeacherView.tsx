@@ -21,7 +21,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
     throw new Error("courseId param not given");
   }
 
-  const { data: course, loading: course_loading, error: course_error } = useAxiosFetch<TeacherCourse | null>(`/api/courses/${courseId}`, null);
+  const { data: course, loading: course_loading, error: course_error } = useAxiosFetch<TeacherCourse | null>(`/courses/${courseId}`, null);
   const { data: students, loading, error } = useCourseProgress(courseId);
 
   useEffect(() => {
