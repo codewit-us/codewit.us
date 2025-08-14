@@ -15,7 +15,7 @@ if (!API_HOST) {
 // const BACKEND_URL = `http://${API_HOST}:${API_PORT}/api`;
 // if API_HOST is not set, use http://app:3000
 
-const BACKEND_URL = API_HOST ? `http://${API_HOST}/api` : 'http://app:3000/api';
+const BACKEND_URL = API_HOST ? `https://${API_HOST}/api` : 'http://app:3000/api';
 
 export default defineConfig(({ mode }) => ({
   root: __dirname,
