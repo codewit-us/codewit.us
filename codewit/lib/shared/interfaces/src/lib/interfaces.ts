@@ -69,7 +69,12 @@ interface DemoResponse {
   language: string,
   youtube_id: string,
   youtube_thumbnail: string,
-  exercises: number[]
+  exercises: DemoExercise[]
+}
+
+interface DemoExercise {
+  uid: number,
+  prompt: string,
 }
 
 interface DemoFormData {
