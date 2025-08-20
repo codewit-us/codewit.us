@@ -27,6 +27,7 @@ import type { EvaluationResponse } from '../interfaces/evaluation';
 import { cn } from '../utils/styles';
 import { ErrorView } from '../components/error/Error';
 import { toast } from 'react-toastify';
+import { DefaultMarkdown } from '../components/markdown';
 
 function demo_query_key(demo_uid: string, module_id: string | null): ["demo_attempt", string, string | null] {
   return ["demo_attempt", demo_uid, module_id];
@@ -302,6 +303,7 @@ function HelpfulLinks({links}: HelpfulLinksProps) {
         <a
           key={link.uid}
           href={link.url}
+          target="_blank"
           className="flex items-center p-2 rounded-md hover:bg-gray-800/50 transition-all duration-200 group/link hover:border-accent-500/30"
         >
           <div className="flex-grow">
@@ -468,33 +470,38 @@ function RightPanel({info, course_id}: RightPanelProps) {
         </div>,
       }}
     >
-      <form className="flex-1 flex flex-col h-full px-2" onSubmit={e => {
-        e.preventDefault();
-
-        form.handleSubmit();
-      }}>
-        <form.Field name="code" children={(field) => {
-          return <Editor
-            value={field.state.value}
-            language={info.demo.exercises[exercise_index].language}
-            theme="hc-black"
-            className="border-2 rounded-lg border-gray-800 focus-within:border-accent-500 overflow-hidden"
-            wrapperProps={{
-              // this is needed to properly resize the editor otherwise it only resize when the handle reaches
-              // the bottom of the editor which would hide the buttons
-              className: "overflow-hidden"
-            }}
-            onChange={(v) => field.handleChange(v ?? "")}
-          />;
-        }}/>
-        <div className="flex flex-row gap-1 pt-2 pb-3">
-          <ActionBtn type="button" className="w-1/3 border-accent-500" disabled={isPending} onClick={() => form.resetField("code")}>
-            <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
-            <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
-          </ActionBtn>
-          {action_btn}
+      <div className="px-2 h-full overflow-auto">
+        <div className="w-full space-y-2">
+          <DefaultMarkdown text={info.demo.exercises[exercise_index].prompt}/>
         </div>
-      </form>
+        <form className="flex-1 flex flex-col h-full mt-2" onSubmit={e => {
+          e.preventDefault();
+
+          form.handleSubmit();
+        }}>
+          <form.Field name="code" children={(field) => {
+            return <Editor
+              value={field.state.value}
+              language={info.demo.exercises[exercise_index].language}
+              theme="hc-black"
+              className="border-2 rounded-lg border-gray-800 focus-within:border-accent-500 overflow-hidden"
+              wrapperProps={{
+                // this is needed to properly resize the editor otherwise it only resize when the handle reaches
+                // the bottom of the editor which would hide the buttons
+                className: "overflow-hidden"
+              }}
+              onChange={(v) => field.handleChange(v ?? "")}
+            />;
+          }}/>
+          <div className="flex flex-row gap-1 pt-2 pb-3">
+            <ActionBtn type="button" className="w-1/3 border-accent-500" disabled={isPending} onClick={() => form.resetField("code")}>
+              <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
+              <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
+            </ActionBtn>
+            {action_btn}
+          </div>
+        </form>
+      </div>
     </Resizable>
     <div className="flex-1 overflow-y-auto mt-2 px-2">
       {last_attempt && (
