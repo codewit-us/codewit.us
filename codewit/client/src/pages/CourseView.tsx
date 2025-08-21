@@ -68,14 +68,8 @@ export default function CourseView({onCourseChange}: CourseView) {
   const { data: course, loading, error, setData } = useAxiosFetch<GetCourse | null>(`/api/courses/${course_id}?student_view=1&r=${refresh}`, null);
 
   useEffect(() => {
-    if (course != null) {
-      if (course.type === "StudentView") {
-        onCourseChange(course.title);
-      } else {
-        onCourseChange("");
-      }
-    } else {
-      onCourseChange("");
+    if (course?.type === "StudentView") {
+      onCourseChange(course.title);
     }
   }, [course, onCourseChange]);
 

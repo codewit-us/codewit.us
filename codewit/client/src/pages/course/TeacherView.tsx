@@ -27,8 +27,6 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   useEffect(() => {
     if (course != null) {
       onCourseChange(course.title);
-    } else {
-      onCourseChange("");
     }
   }, [course, onCourseChange]);
 
