@@ -412,11 +412,17 @@ courseRouter.patch('/:uid', checkAdmin, async (req, res) => {
       validatedBody.data.roster
     );
 
-    if (course) {
-      res.json(course);
-    } else {
-      res.status(404).json({ message: 'Course not found' });
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    if (validatedBody.data.enrolling === false) {
+      await Course.update(
+        { auto_enroll: false },
+        { where: { id: req.params.uid } }
+      );
+      await CourseRegistration.destroy({ where: { courseId: req.params.uid } });
     }
+
+    res.json(course);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
