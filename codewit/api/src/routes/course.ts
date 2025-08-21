@@ -305,16 +305,6 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
   }
 }));
 
-courseRouter.get('/teacher/:id', async (req, res) => {
-  try {
-    const courses = await getTeacherCourses(req.params.id);
-    res.json(courses);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
 courseRouter.post('/', checkAdmin, async (req, res) => {
   try {
     const validatedBody = createCourseSchema.safeParse(req.body);
