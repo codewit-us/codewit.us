@@ -11,11 +11,9 @@ const CreateButton: React.FC<CreateButtonProps> = ({
   onClick,
 })=> {
   return (
-  <div className="flex justify-end mb-2">
+  <div className="flex justify-end">
     <button className="flex bg-accent-500 text-white px-4 py-1 rounded-md" onClick={onClick}>
-      <PlusIcon 
-        className="w-6 h-6 mr-2"
-      />
+      <PlusIcon className="w-6 h-6 mr-2"/>
       {title}
     </button>
   </div>

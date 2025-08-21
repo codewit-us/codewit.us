@@ -103,7 +103,7 @@ export default function Home() {
     student_list = <StudentCourseList courses={data.student}/>;
   }
 
-  return <div className="h-container-full max-w-full overflow-auto bg-zinc-900">
+  return <div className="h-full max-w-full bg-zinc-900">
     <div className="max-w-7xl mx-auto px-10 py-4 space-y-2">
       {instructor_list}
       {student_list}

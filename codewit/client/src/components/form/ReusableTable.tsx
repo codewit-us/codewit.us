@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Table, Pagination } from "flowbite-react";
 import LoadingPage from "../loading/LoadingPage";
 import type { CustomFlowbiteTheme } from "flowbite-react";
+import { cn } from "../../utils/styles";
 
 interface Column {
   header: string;
@@ -9,11 +10,12 @@ interface Column {
 }
 
 interface ReusableTableProps<T> {
-  columns: Column[];
-  data: T[];
-  onEdit: (item: T) => void;
-  onDelete: (item: T) => void;
-  itemsPerPage?: number;
+  columns: Column[],
+  data: T[],
+  className?: string,
+  itemsPerPage?: number,
+  onEdit: (item: T) => void,
+  onDelete: (item: T) => void,
 }
 
 const getNestedValue = (obj: any, path: string): any => {
@@ -45,9 +47,10 @@ const paginationTheme: CustomFlowbiteTheme["pagination"] = {
 const ReusableTable = <T extends { id?: string | number; uid?: string | number }>({
   columns,
   data,
+  className,
+  itemsPerPage = 15,
   onEdit,
   onDelete,
-  itemsPerPage = 14,
 }: ReusableTableProps<T>) => {
 
   useEffect(() => {
@@ -70,74 +73,57 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
     return <LoadingPage />;
   }
 
-  return (
-    <div className="rounded-md border border-gray-700 bg-gray-900 text-gray-400 h-full">
-      <div className="overflow-y-auto h-[80vh] rounded-t-md">
-        <Table
-          hoverable
-          striped
-          className="border-gray-700 bg-gray-900 text-gray-400"
-        >
-          <Table.Head className="bg-gray-800 text-white sticky top-0 z-10">
-            {columns.map((col) => (
-              <Table.HeadCell
-                key={col.header}
-                className="text-gray-300 font-semibold"
-              >
-                {col.header}
-              </Table.HeadCell>
-            ))}
-            <Table.HeadCell
-              className="text-gray-300 font-semibold"
-            >
-                Actions
+  return <div className={cn("flex flex-col rounded-md border border-gray-700 bg-gray-900 text-gray-400 h-full", className)}>
+    <div className="flex-1 overflow-y-auto rounded-t-md">
+      <Table hoverable striped className="border-gray-700 bg-gray-900 text-gray-400">
+        <Table.Head className="bg-gray-800 text-white sticky top-0 z-10">
+          {columns.map((col) => (
+            <Table.HeadCell key={col.header} className="text-gray-300 font-semibold">
+              {col.header}
             </Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y divide-gray-700">
-            {currentData.map((item, index) => (
-              <Table.Row
-                key={index}
-                className="hover:bg-gray-800 transition-colors duration-300"
-              >
-                {columns.map((col) => (
-                  <Table.Cell key={col.accessor} className="text-gray-400">
-                    {(() => {
-                      const value = getNestedValue(item, col.accessor);
-                      return value !== null && value !== undefined
-                        ? String(value)
-                        : "-";
-                    })()}
-                  </Table.Cell>
-                ))}
-                <Table.Cell className="text-right space-x-2">
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="text-sm font-medium text-blue-500 hover:text-blue-400 hover:underline transition-all rounded-md"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => onDelete(item)}
-                    className="text-sm font-medium text-red-500 hover:text-red-400 hover:underline transition-all rounded-md"
-                  >
-                    Delete
-                  </button>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
-      </div>
-      <div className="flex justify-center items-center bg-gray-800 text-white py-2 rounded-b-md">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page) => setCurrentPage(page)}
-          theme={paginationTheme}
-        />
-      </div>
+          ))}
+          <Table.HeadCell className="text-gray-300 font-semibold">
+              Actions
+          </Table.HeadCell>
+        </Table.Head>
+        <Table.Body className="divide-y divide-gray-700">
+          {currentData.map((item, index) => {
+            return <Table.Row key={index} className="hover:bg-gray-800 transition-colors duration-300">
+              {columns.map((col) => {
+                const value = getNestedValue(item, col.accessor);
+
+                return <Table.Cell key={col.accessor} className="text-gray-400">
+                  {value !== null && value !== undefined ? String(value) : "-"}
+                </Table.Cell>;
+              })}
+              <Table.Cell className="text-right space-x-2">
+                <button
+                  onClick={() => onEdit(item)}
+                  className="text-sm font-medium text-blue-500 hover:text-blue-400 hover:underline transition-all rounded-md"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDelete(item)}
+                  className="text-sm font-medium text-red-500 hover:text-red-400 hover:underline transition-all rounded-md"
+                >
+                  Delete
+                </button>
+              </Table.Cell>
+            </Table.Row>
+          })}
+        </Table.Body>
+      </Table>
     </div>
-  );
+    <div className="flex flex-none justify-center items-center bg-gray-800 text-white py-2 rounded-b-md">
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+        theme={paginationTheme}
+      />
+    </div>
+  </div>;
 };
 
 export default ReusableTable;

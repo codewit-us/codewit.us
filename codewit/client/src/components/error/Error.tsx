@@ -23,7 +23,7 @@ const Error = ({ message = "Oops! Page does not exist. We will return you to the
   const displayStatusCode = stateStatusCode || statusCode;
 
   return (
-    <div className="flex flex-col justify-center items-center bg-zinc-900 w-full h-container-full px-4 text-center">
+    <div className="flex flex-col justify-center items-center bg-zinc-900 w-full h-full px-4 text-center">
       <div className=" text-white rounded-md shadow-lg w-full max-w-xl mx-auto">
         <h1 className="inline-flex mb-4 text-7xl font-extrabold tracking-tight text-red-600 ">
           {displayStatusCode} 
@@ -43,7 +43,7 @@ type ErrorViewProps = PropsWithChildren<{
 }>;
 
 export function ErrorView({title = "Error", children}: ErrorViewProps) {
-  return <div className="flex flex-col justify-center items-center bg-zinc-900 w-full h-container-full px-4 text-center">
+  return <div className="flex flex-col justify-center items-center bg-zinc-900 w-full h-full px-4 text-center">
     <div className=" text-white rounded-md shadow-lg w-full max-w-xl mx-auto">
       {typeof title === "string" ?
         <h1 className="inline-flex mb-4 text-7xl font-extrabold tracking-tight text-red-600 ">

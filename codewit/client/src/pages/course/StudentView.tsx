@@ -28,7 +28,7 @@ export default function StudentView({course}: StudentViewProps) {
   });
 
   if (course.modules.length === 0) {
-    return <div className="h-container-full max-w-full flex items-center justify-center bg-zinc-900">
+    return <div className="h-full max-w-full flex items-center justify-center bg-zinc-900">
       <div className="w-1/2 flex flex-col flex-nowrap items-center bg-foreground-500 rounded-2xl p-4">
         <h2 className="text-2xl text-white">No Modules for Course</h2>
         <p className="text-center text-white">
@@ -83,7 +83,7 @@ export default function StudentView({course}: StudentViewProps) {
     </div>);
   }
 
-  return <div className="h-container-full max-w-full overflow-auto bg-zinc-900">
+  return <div className="h-full max-w-full overflow-auto bg-zinc-900">
     <div className="max-w-7xl mx-auto px-10 py-4 space-y-2">
       {modules}
     </div>

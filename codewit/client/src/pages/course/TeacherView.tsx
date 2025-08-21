@@ -44,7 +44,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   const Topics = course.modules.map(m => m.topic);
 
   return (
-    <div className="h-container-full overflow-auto flex flex-col w-full bg-black items-center gap-2">
+    <div className="h-full overflow-auto flex flex-col w-full bg-black items-center gap-2">
 
       {/* ───────── header + invite link ───────── */}
       <div className="bg-foreground-600 w-3/4 mt-4 rounded-md p-4">
