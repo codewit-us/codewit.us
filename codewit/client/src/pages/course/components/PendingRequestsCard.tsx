@@ -1,5 +1,5 @@
 // client/src/pages/course/components/PendingRequestsCard.tsx
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -52,11 +52,6 @@ export default function PendingRequestsCard({ courseId, pending }: Props) {
     setSelected(allChecked ? new Set() : new Set(pending.map((p) => p.uid)));
   }
 
-  const selectAllLabel = useMemo(
-    () => (allChecked ? `Clear All` : `Select All`),
-    [allChecked, pending.length]
-  );
-
   return (
     <div className="bg-foreground-600 rounded-md p-4 space-y-3 w-full">
       <div className="flex items-center justify-end">
@@ -66,7 +61,7 @@ export default function PendingRequestsCard({ courseId, pending }: Props) {
           onClick={toggleAll}
           className="px-3 py-1.5 rounded-md border border-foreground-400/30 bg-foreground-500/30 hover:bg-foreground-500/50 transition"
         >
-          {selectAllLabel}
+          {allChecked ? 'Clear All' : 'Select All'}
         </button>
       </div>
 
@@ -116,26 +111,24 @@ export default function PendingRequestsCard({ courseId, pending }: Props) {
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        title={isRowSelected ? "Enroll this user" : "Select this row to enable"}
+                        title="Enroll this user"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (!isRowSelected) return;
                           mutateBulk({ action: 'enroll', uids: [p.uid] });
                         }}
-                        disabled={!isRowSelected || isPending}
+                        disabled={isPending}
                         className="px-2 py-1 text-xs rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-40"
                       >
                         Enroll
                       </button>
                       <button
                         type="button"
-                        title={isRowSelected ? "Deny this request" : "Select this row to enable"}
+                        title={"Deny this request"}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (!isRowSelected) return;
                           mutateBulk({ action: 'deny', uids: [p.uid] });
                         }}
-                        disabled={!isRowSelected || isPending}
+                        disabled={isPending}
                         className="px-2 py-1 text-xs rounded-md bg-red-600 hover:bg-red-700 disabled:opacity-40"
                       >
                         Deny
