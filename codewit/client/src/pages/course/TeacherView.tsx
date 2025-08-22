@@ -9,7 +9,7 @@ import { useAxiosFetch } from "../../hooks/fetching";
 import { useEffect, useState } from "react";
 import PendingRequestsCard from './components/PendingRequestsCard';
 import type { Course } from '@codewit/interfaces';
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
@@ -26,7 +26,6 @@ export type Pending = {
 
 export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   const { courseId } = useParams();
-  const queryClient = useQueryClient();
 
   if (courseId == null) {
     throw new Error("courseId param not given");
@@ -42,7 +41,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
     return data;
   }
 
-  const { data: pending = [] } = useQuery<Pending[]>({
+  const { data: pending = [], refetch: refetchPending } = useQuery<Pending[]>({
     queryKey: ['pending', courseId],
     queryFn: () => fetchPending(courseId),
   });
@@ -55,10 +54,8 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   useEffect(() => {
     if (course != null) {
       onCourseChange(course.title);
-      // Initialize toggles if server included flags
-      const c: any = course as any;
-      if (typeof c.enrolling === 'boolean')   setEnrolling(c.enrolling);
-      if (typeof c.auto_enroll === 'boolean') setAutoEnroll(c.auto_enroll);
+      setEnrolling(course.enrolling);
+      setAutoEnroll(course.auto_enroll);
     } else {
       onCourseChange("");
     }
@@ -86,10 +83,8 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
 
       if (!data.enrolling) {
         // server purged pending registrations; refresh list
-        await queryClient.invalidateQueries({ queryKey: ['pending', courseId] });
+        await refetchPending();
       }
-      // toast is nice but not noisy
-      // (optional) toast.success('Enrollment settings updated');
     } catch {
       toast.error('Failed to update enrollment settings');
     } finally {
@@ -103,10 +98,12 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   }
 
   async function toggleAutoEnroll() {
-    if (!enrolling) return; // safety
+    if (!enrolling) return; 
     const next = !autoEnroll;
     await persistFlags(enrolling, next);
   }
+
+  const moduleCount = course.modules.length;
 
   return (
     <div className="min-h-screen w-full bg-black flex flex-col items-center gap-8 py-8">
@@ -142,7 +139,6 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
         {/* ───────── enrollment controls (single row) ───────── */}
         <div className="mt-4 space-y-2">
           <div className="flex items-center gap-6 flex-wrap">
-            {/* Open for Enrollment */}
             <div className="flex items-center gap-3">
               <span className="text-sm text-foreground-200">Open for Enrollment</span>
               <button
@@ -211,7 +207,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
         <h1 className="font-bold text-foreground-200 pb-10 text-[16px]">
           Student Progress
         </h1>
-
+        
         <div
           className={
             pending.length > 0
@@ -220,33 +216,50 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
           }
         >
           <table className="min-w-full table-auto border-separate border-spacing-y-1">
+            <colgroup>
+              {/* Name column */}
+              <col style={{ width: 220 }} />
+              {/* One col per module; min 100px so small screens scroll instead of overlapping */}
+              {course.modules.map((_, i) => (
+                <col key={i} style={{ minWidth: 100 }} />
+              ))}
+            </colgroup>
+
             <thead className="bg-foreground-600 sticky top-0 z-20">
+              {/* Row 1: Name (rowSpan=2) + umbrella 'Modules' header (colSpan=N) */}
               <tr>
-                <th className="text-[16px] font-bold text-left text-foreground-200 bg-foreground-600 sticky left-0 z-30">
+                <th
+                  rowSpan={2}
+                  className="text-[16px] font-bold text-left text-foreground-200 bg-foreground-600 sticky left-0 z-30"
+                >
                   Name
                 </th>
-                <th className="text-left px-4 py-2 text-foreground-200 text-[14px] align-top bg-foreground-600 sticky top-0 z-20">
-                  {/* Single-row grid: evenly spaced, aligned to the bar width, no wrap-to-front */}
-                  <div
-                    className="grid w-full justify-items-center items-start text-[15px] font-bold text-foreground-300"
-                    style={{ gridTemplateColumns: `repeat(${course.modules.length}, minmax(90px, 1fr))` }}
-                  >
-                    {course.modules.map((mod, i) => (
-                      <div
-                        key={i}
-                        className="px-1 whitespace-nowrap overflow-hidden text-ellipsis text-center"
-                        title={mod.topic}
-                      >
-                        {mod.topic}
-                      </div>
-                    ))}
-                  </div>
+                <th
+                  colSpan={moduleCount}
+                  className="text-center px-4 py-2 text-foreground-200 text-[14px] align-top bg-foreground-600"
+                >
+                  Modules
                 </th>
               </tr>
+
+              {/* Row 2: one <th> per module */}
+              <tr>
+                {course.modules.map((mod, i) => (
+                  <th
+                    key={i}
+                    className="px-2 py-1 text-foreground-300 text-xs font-semibold text-center whitespace-nowrap overflow-hidden text-ellipsis"
+                    title={mod.topic}
+                  >
+                    {mod.topic}
+                  </th>
+                ))}
+              </tr>
             </thead>
+
             <tbody>
               {students.map((student) => (
                 <tr key={student.studentUid} className="hover:bg-foreground-500/10">
+                  {/* sticky name cell */}
                   <td className="pr-4 whitespace-nowrap bg-foreground-600 sticky left-0 z-10">
                     <span className="text-sm font-medium text-white">
                       {student.studentName}
@@ -255,8 +268,18 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
                       </span>
                     </span>
                   </td>
-                  <td className="px-4 py-2 w-full align-middle">
-                    <div className="relative w-full h-4 bg-alternate-background-500 rounded-full overflow-hidden">
+
+                  {/* progress bar spans across all module columns */}
+                  <td colSpan={moduleCount} className="px-4 py-2 w-full align-middle">
+                    <div
+                      className="relative w-full h-4 bg-alternate-background-500 rounded-full overflow-hidden"
+                      style={{
+                        backgroundImage:
+                          'linear-gradient(to right, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 1px, transparent 1px)',
+                        backgroundSize: `calc(100% / ${moduleCount}) 100%`,
+                        backgroundRepeat: 'repeat-x',
+                      }}
+                    >
                       <div
                         className="absolute top-0 left-0 h-4 bg-accent-500 rounded-full transition-all duration-300"
                         style={{ width: `${student.completion}%` }}
@@ -266,9 +289,10 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
                         alt="completion indicator"
                         className="absolute top-1/2 transform -translate-y-1/2 h-4"
                         style={{
-                          left: student.completion === 0
-                            ? '0.25rem'
-                            : `calc(${student.completion}% - 10px)`,
+                          left:
+                            student.completion === 0
+                              ? '0.25rem'
+                              : `calc(${student.completion}% - 10px)`,
                         }}
                       />
                     </div>
