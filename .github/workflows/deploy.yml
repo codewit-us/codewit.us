@@ -1,0 +1,91 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main", "feature/production-build-deployment"]
+
+concurrency:
+  group: cicd-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: ${{ secrets.REGISTRY_NAME }}
+      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: web
+            image_name: web
+            context: ./codewit/client
+            dockerfile: ./codewit/Dockerfile.frontend
+            deployment: web        # K8s Deployment name
+            container: web         # Container name in the Deployment
+          - name: api
+            image_name: api
+            context: ./codewit/api
+            dockerfile: ./codewit/Dockerfile.backend
+            deployment: api
+            container: api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DigitalOcean Container Registry (short-lived)
+        run: doctl registry login --expiry-seconds 1200
+
+      # Compute a readable tag with DATE + branch + run number
+      - name: Compute image tag and namespace
+        id: meta
+        shell: bash
+        run: |
+          DATE=$(date +'%m%d%Y')
+          # sanitize branch -> lowercase and keep [a-z0-9.-], convert others to '-'
+          SAFE_BRANCH=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9.-' '-')
+          TAG="${SAFE_BRANCH}-${DATE}-r${{ github.run_number }}"
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "namespace=$SAFE_BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Build image (${{ matrix.image_name }})
+        run: |
+          docker build \
+            -f "${{ matrix.dockerfile }}" \
+            -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" \
+            "${{ matrix.context }}"
+
+      - name: Push image (${{ matrix.image_name }})
+        run: docker push "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}"
+
+      # - name: Tag on GitHub for backup (optional)
+      #   if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+      #   run: |
+      #     git tag "${{ matrix.image_name }}-${{ steps.meta.outputs.tag }}" || true
+      #     git push origin "${{ matrix.image_name }}-${{ steps.meta.outputs.tag }}" || true
+
+      # - name: Save kubeconfig with short-lived credentials
+      #   run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 "${{ env.CLUSTER_NAME }}"
+
+      # - name: Ensure namespace exists
+      #   run: |
+      #     kubectl get ns "${{ steps.meta.outputs.namespace }}" >/dev/null 2>&1 || \
+      #     kubectl create namespace "${{ steps.meta.outputs.namespace }}"
+
+      # - name: Set image in Kubernetes (${{ matrix.deployment }})
+      #   run: |
+      #     kubectl -n "${{ steps.meta.outputs.namespace }}" set image deployment/${{ matrix.deployment }} \
+      #       ${{ matrix.container }}=${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }} \
+      #       --record
+
+      #     kubectl -n "${{ steps.meta.outputs.namespace }}" rollout status deployment/${{ matrix.deployment }} --timeout=120s
