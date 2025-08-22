@@ -22,13 +22,13 @@ jobs:
         include:
           - name: web
             image_name: web
-            context: ./codewit/client
+            context: .
             dockerfile: ./codewit/Dockerfile.frontend
             deployment: web        # K8s Deployment name
             container: web         # Container name in the Deployment
           - name: api
             image_name: api
-            context: ./codewit/api
+            context: .
             dockerfile: ./codewit/Dockerfile.backend
             deployment: api
             container: api
