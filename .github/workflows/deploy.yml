@@ -43,11 +43,6 @@ jobs:
       - name: Log in to DigitalOcean Container Registry (short-lived)
         run: doctl registry login --expiry-seconds 1200
 
-      - name: List files
-        run: |
-          cd codewit
-          ls -al
-
       # Compute a readable tag with DATE + branch + run number
       - name: Compute image tag and namespace
         id: meta
@@ -63,7 +58,7 @@ jobs:
 
       - name: Build image (${{ matrix.image_name }})
         run: |
-          ls -al
+          cd codewit
           docker build \
             -f "${{ matrix.dockerfile }}" \
             -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
