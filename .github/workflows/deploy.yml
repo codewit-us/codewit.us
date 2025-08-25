@@ -22,12 +22,12 @@ jobs:
         include:
           - name: web
             image_name: web
-            dockerfile: ./Dockerfile.frontend
+            dockerfile: Dockerfile.frontend
             deployment: web
             container: web
           - name: api
             image_name: api
-            dockerfile: ./Dockerfile.backend
+            dockerfile: Dockerfile.backend
             deployment: api
             container: api
 
@@ -45,7 +45,6 @@ jobs:
 
       - name: List files
         run: |
-          ls -al
           cd codewit
           ls -al
 
