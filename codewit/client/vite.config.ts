@@ -31,8 +31,8 @@ export default defineConfig(({ mode }) => ({
     port: 3001,
     host: 'localhost',
     allowedHosts: [
-      'codewit-api-711de55249e1.herokuapp.com',
-      'codewit-dev-c2a3ef30f1fe.herokuapp.com',
+      'codewit.us',
+      'codewit.dev',
       'localhost'
     ],
     proxy: {
