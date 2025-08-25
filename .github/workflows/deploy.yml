@@ -22,12 +22,12 @@ jobs:
         include:
           - name: web
             image_name: web
-            dockerfile: ./codewit/Dockerfile.frontend
-            deployment: web        # K8s Deployment name
-            container: web         # Container name in the Deployment
+            dockerfile: ./Dockerfile.frontend
+            deployment: web
+            container: web
           - name: api
             image_name: api
-            dockerfile: ./codewit/Dockerfile.backend
+            dockerfile: ./Dockerfile.backend
             deployment: api
             container: api
 
@@ -45,6 +45,8 @@ jobs:
 
       - name: List files
         run: |
+          ls -al
+          cd codewit
           ls -al
 
       # Compute a readable tag with DATE + branch + run number
