@@ -15,6 +15,8 @@ services:
       - codewitus_db
     build:
       dockerfile: Dockerfile.backend
+      args:
+        MODE: prod   # Pass build-time ARG
     environment:
       - DB_HOST=codewitus_db
       - DB_USER=codewitus_user
@@ -55,6 +57,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        MODE: prod   # Pass build-time ARG
     restart: unless-stopped
     ports:
       - 3001:3001
@@ -83,13 +87,18 @@ services:
       - frontend
       - app
       - codewitus_db
-    image: rohith2801/codewit.us-codeeval:latest
+    build:
+      context: ../../codeval/
+      dockerfile: Dockerfile
+      args:
+        MODE: prod   # Pass build-time ARG
     restart: unless-stopped
     environment:
       - HOST=0.0.0.0
       - PORT=3002
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - ENABLE_CPP=false
     ports:
       - 3002:3002
     networks:
