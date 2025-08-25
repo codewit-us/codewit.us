@@ -63,6 +63,7 @@ jobs:
 
       - name: Build image (${{ matrix.image_name }})
         run: |
+          ls -al
           docker build \
             -f "${{ matrix.dockerfile }}" \
             -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
