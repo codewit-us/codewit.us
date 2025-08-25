@@ -22,13 +22,11 @@ jobs:
         include:
           - name: web
             image_name: web
-            context: .
             dockerfile: ./codewit/Dockerfile.frontend
             deployment: web        # K8s Deployment name
             container: web         # Container name in the Deployment
           - name: api
             image_name: api
-            context: .
             dockerfile: ./codewit/Dockerfile.backend
             deployment: api
             container: api
@@ -44,6 +42,10 @@ jobs:
 
       - name: Log in to DigitalOcean Container Registry (short-lived)
         run: doctl registry login --expiry-seconds 1200
+
+      - name: List files
+        run: |
+          ls -al
 
       # Compute a readable tag with DATE + branch + run number
       - name: Compute image tag and namespace
@@ -62,8 +64,7 @@ jobs:
         run: |
           docker build \
             -f "${{ matrix.dockerfile }}" \
-            -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" \
-            "${{ matrix.context }}"
+            -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
 
       - name: Push image (${{ matrix.image_name }})
         run: docker push "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}"
