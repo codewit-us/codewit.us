@@ -23,13 +23,13 @@ jobs:
           - name: web
             image_name: web
             dockerfile: Dockerfile.frontend
-            deployment: web
-            container: web
+            deployment: frontend
+            container: frontend
           - name: api
             image_name: api
             dockerfile: Dockerfile.backend
-            deployment: api
-            container: api
+            deployment: app
+            container: app
 
     steps:
       - name: Checkout code
@@ -72,18 +72,13 @@ jobs:
       #     git tag "${{ matrix.image_name }}-${{ steps.meta.outputs.tag }}" || true
       #     git push origin "${{ matrix.image_name }}-${{ steps.meta.outputs.tag }}" || true
 
-      # - name: Save kubeconfig with short-lived credentials
-      #   run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 "${{ env.CLUSTER_NAME }}"
+      - name: Save kubeconfig with short-lived credentials
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 "${{ env.CLUSTER_NAME }}"
 
-      # - name: Ensure namespace exists
-      #   run: |
-      #     kubectl get ns "${{ steps.meta.outputs.namespace }}" >/dev/null 2>&1 || \
-      #     kubectl create namespace "${{ steps.meta.outputs.namespace }}"
+      - name: Set image in Kubernetes (${{ matrix.deployment }})
+        run: |
+          kubectl -n "${{ steps.meta.outputs.namespace }}" set image deployment/${{ matrix.deployment }} \
+            ${{ matrix.container }}=${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }} \
+            --record
 
-      # - name: Set image in Kubernetes (${{ matrix.deployment }})
-      #   run: |
-      #     kubectl -n "${{ steps.meta.outputs.namespace }}" set image deployment/${{ matrix.deployment }} \
-      #       ${{ matrix.container }}=${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }} \
-      #       --record
-
-      #     kubectl -n "${{ steps.meta.outputs.namespace }}" rollout status deployment/${{ matrix.deployment }} --timeout=120s
+          kubectl -n "${{ steps.meta.outputs.namespace }}" rollout status deployment/${{ matrix.deployment }} --timeout=120s
