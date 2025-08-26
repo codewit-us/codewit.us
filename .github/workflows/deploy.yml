@@ -77,8 +77,8 @@ jobs:
 
       - name: Set image in Kubernetes (${{ matrix.deployment }})
         run: |
-          kubectl -n "${{ steps.meta.outputs.namespace }}" set image deployment/${{ matrix.deployment }} \
+          kubectl -n default set image deployment/${{ matrix.deployment }} \
             ${{ matrix.container }}=${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }} \
             --record
 
-          kubectl -n "${{ steps.meta.outputs.namespace }}" rollout status deployment/${{ matrix.deployment }} --timeout=120s
+          kubectl -n default rollout status deployment/${{ matrix.deployment }} --timeout=120s
