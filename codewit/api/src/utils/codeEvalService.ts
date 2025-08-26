@@ -22,5 +22,5 @@ export const executeCodeEvaluation = async (
   payload: EvaluationPayload,
   cookies?: string
 ): Promise<EvaluationResponse> => {
-  return await post<EvaluationResponse>(httpClient, '/codeeval/execute', payload, cookies);
+  return await post<EvaluationResponse>(httpClient, '/execute', payload, cookies);
 };
