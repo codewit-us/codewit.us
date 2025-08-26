@@ -45,7 +45,7 @@ export const useFetchStudentCourses = () => {
       }
 
       try {
-        const response = await axios.get(`/courses/student/by-uid/${user.uid}`);
+        const response = await axios.get(`/api/courses/student/by-uid/${user.uid}`);
         setData(response.data);
       } catch (err) {
         setError(true);
@@ -62,7 +62,7 @@ export const useFetchStudentCourses = () => {
 };
 
 // Hook to fetch all courses
-export const useFetchCourses = () => useAxiosFetch('/courses');
+export const useFetchCourses = () => useAxiosFetch('/api/courses');
 
 // General hook to handle CRUD operations
 const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
@@ -86,19 +86,19 @@ const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
 // Hook to post a new course
 export const usePostCourse = () => {
   const { operation } = useAxiosCRUD('post');
-  return (courseData: Course) => operation('/courses', courseData);
+  return (courseData: Course) => operation('/api/courses', courseData);
 };
 
 // Hook to patch an existing course
 export const usePatchCourse = () => {
   const { operation } = useAxiosCRUD('patch');
-  return (courseData: Course, uid: number | string) => operation(`/courses/${uid}`, courseData);
+  return (courseData: Course, uid: number | string) => operation(`/api/courses/${uid}`, courseData);
 };
 
 // Hook to delete a course
 export const useDeleteCourse = () => {
   const { operation } = useAxiosCRUD('delete');
-  return (uid: number | string) => operation(`/courses/${uid}`);
+  return (uid: number | string) => operation(`/api/courses/${uid}`);
 };
 
 export const useCourseProgress = (courseId: string) => {
@@ -110,7 +110,7 @@ export const useCourseProgress = (courseId: string) => {
     const controller = new AbortController();
     (async () => {
       try {
-        const res = await axios.get(`/courses/${courseId}/progress`, {
+        const res = await axios.get(`/api/courses/${courseId}/progress`, {
           signal: controller.signal,
         });
         setData(res.data);

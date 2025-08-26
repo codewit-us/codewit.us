@@ -13,7 +13,7 @@ export function useCourseRole(courseId: string | number | undefined) {
 
     setLoading(true);
     axios
-      .get<{ role: CourseRole }>(`/courses/${courseId}/role`)
+      .get<{ role: CourseRole }>(`/api/courses/${courseId}/role`)
       .then(res => setRole(res.data.role))
       .catch(err => {
         setRole(null);
