@@ -33,6 +33,7 @@ import {
 import { asyncHandle } from "../middleware/catch";
 import {  } from "../models";
 import { formatCourseResponse } from '../utils/responseFormatter';
+import { Op } from 'sequelize';
 
 interface UserStatus {
   is_instructor: boolean,
@@ -136,9 +137,11 @@ courseRouter.get('/:courseId/progress', checkAuth, async (req, res) => {
         const avg = totalModules ? (completedModules / totalModules) * 100 : 0;
 
         return {
-          studentUid  : student.uid,
-          studentName : student.username,
-          completion  : avg,
+          studentUid       : student.uid,
+          studentName      : student.username,
+          completion       : avg,
+          modulesCompleted : completedModules,
+          modulesTotal     : totalModules, 
         };
       })
     );
