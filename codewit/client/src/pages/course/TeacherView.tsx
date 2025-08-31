@@ -50,6 +50,13 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   const [enrolling, setEnrolling]   = useState<boolean>(false);
   const [autoEnroll, setAutoEnroll] = useState<boolean>(false);
   const [savingFlags, setSavingFlags] = useState<boolean>(false);
+  const [exporting, setExporting] = useState(false);
+
+  function csvEscape(val: unknown) {
+    if (val == null) return '';
+    const s = String(val);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
 
   useEffect(() => {
     if (course != null) {
@@ -101,6 +108,73 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
     if (!enrolling) return; 
     const next = !autoEnroll;
     await persistFlags(enrolling, next);
+  }
+
+  async function handleExportCsv() {
+    try {
+      setExporting(true);
+
+      if (!students || students.length === 0) {
+        toast.info('No students to export.');
+        return;
+      }
+
+      // Roster lookup for email
+      const rosterArr = (course as any)?.roster ?? [];
+      const rosterByUid = new Map<number, any>(
+        Array.isArray(rosterArr) ? rosterArr.map((u: any) => [u.uid, u]) : []
+      );
+
+      const header = [
+        'Name',
+        'Email',
+        'Modules Completed',
+        'Modules Total',
+        'Completion %'
+      ].join(',') + '\n';
+
+      const lines: string[] = [header];
+
+      const sorted = [...students].sort((a, b) =>
+        (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
+      );
+
+      for (const s of (sorted as any[])) {
+        const email = (rosterByUid.get(s.studentUid)?.email ?? '').trim();
+
+        lines.push([
+          csvEscape(s.studentName ?? ''),
+          csvEscape(email),
+          csvEscape(s.modulesCompleted ?? ''),
+          csvEscape(s.modulesTotal ?? ''),
+          csvEscape(Number(s.completion ?? 0).toFixed(2))
+        ].join(',') + '\n');
+      }
+
+      const blob = new Blob(lines, { type: 'text/csv;charset=utf-8' });
+
+      // Filename construction: course-<id>-students-summary-YYYYMMDD.csv
+      const now = new Date();
+      const y = now.getUTCFullYear();
+      const m = String(now.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(now.getUTCDate()).padStart(2, '0');
+      const filename = `course-${courseId}-students-summary-${y}${m}${d}.csv`;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Export ready: ${filename}`);
+    } catch {
+      toast.error('Export failed.');
+    } finally {
+      setExporting(false);
+    }
   }
 
   const moduleCount = course.modules.length;
@@ -204,17 +278,32 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
 
       {/* ───────── progress table ───────── */}
       <div className="bg-foreground-600 w-3/4 rounded-md p-4">
-        <h1 className="font-bold text-foreground-200 pb-10 text-[16px]">
-          Student Progress
-        </h1>
-        
-        <div
-          className={
-            pending.length > 0
-              ? "max-h-[500px] overflow-y-auto overflow-x-auto"
-              : "overflow-x-auto"
-          }
-        >
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="font-bold text-foreground-200 text-[16px]">
+            Student Progress
+          </h1>
+          <button
+            onClick={handleExportCsv}
+            disabled={exporting || students.length === 0}
+            className={[
+              "flex items-center gap-2 border border-accent-500 text-accent-500 font-bold rounded-md px-3 py-1",
+              (exporting || students.length === 0)
+                ? "opacity-60 cursor-not-allowed"
+                : "hover:bg-accent-600/20"
+            ].join(" ")}
+            title={
+              exporting
+                ? "Export in progress"
+                : students.length === 0
+                  ? "No students to export"
+                  : "Download student summary CSV"
+            }
+          >
+            {exporting ? 'Exporting…' : 'Export CSV'}
+          </button>
+        </div>
+
+        <div className={pending.length > 0 ? "max-h-[500px] overflow-y-auto overflow-x-auto" : "overflow-x-auto"}>
           <table className="min-w-full table-auto border-separate border-spacing-y-1">
             <colgroup>
               {/* Name column */}
@@ -226,7 +315,6 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
             </colgroup>
 
             <thead className="bg-foreground-600 sticky top-0 z-20">
-              {/* Row 1: Name (rowSpan=2) + umbrella 'Modules' header (colSpan=N) */}
               <tr>
                 <th
                   rowSpan={2}
@@ -241,8 +329,6 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
                   Modules
                 </th>
               </tr>
-
-              {/* Row 2: one <th> per module */}
               <tr>
                 {course.modules.map((mod, i) => (
                   <th
@@ -259,7 +345,6 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
             <tbody>
               {students.map((student) => (
                 <tr key={student.studentUid} className="hover:bg-foreground-500/10">
-                  {/* sticky name cell */}
                   <td className="pr-4 whitespace-nowrap bg-foreground-600 sticky left-0 z-10">
                     <span className="text-sm font-medium text-white">
                       {student.studentName}
@@ -269,7 +354,6 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
                     </span>
                   </td>
 
-                  {/* progress bar spans across all module columns */}
                   <td colSpan={moduleCount} className="px-4 py-2 w-full align-middle">
                     <div
                       className="relative w-full h-4 bg-alternate-background-500 rounded-full overflow-hidden"
