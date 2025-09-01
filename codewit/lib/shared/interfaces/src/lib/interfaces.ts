@@ -176,6 +176,8 @@ export interface StudentProgress {
   studentUid: number;
   studentName: string;
   completion: number;
+  modulesCompleted: number;
+  modulesTotal: number;
 }
 
 export interface TeacherCourse{
