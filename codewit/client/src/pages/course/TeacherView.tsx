@@ -106,7 +106,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   const moduleCount = course.modules.length;
 
   return (
-    <div className="min-h-screen w-full bg-black flex flex-col items-center gap-8 py-8">
+    <div className="w-full flex flex-col items-center bg-black gap-8 py-8">
       {/* ───────── header + invite link ───────── */}
       <div className="bg-foreground-600 w-3/4 rounded-md p-4">
         <span className="text-[16px] font-bold text-foreground-200">

@@ -97,7 +97,7 @@ export default function Read() {
   }
 
   return (
-    <div className="h-container-full w-full overflow-auto flex flex-col md:flex-row bg-black">
+    <div className="h-full w-full overflow-auto flex flex-col md:flex-row bg-black">
       <LeftPanel info={data} module_id={module_id} course_id={course_id}/>
       {data.demo.exercises.length === 0 ?
         <div className="flex flex-col items-center justify-center w-full">
@@ -173,47 +173,45 @@ function LeftPanel({info, module_id, course_id}: LeftPanelProps) {
       </div>,
     }}
   >
-    <div className="w-full h-full">
+    <div className="w-full h-full flex flex-col">
       <VideoPlayer youtube_id={info.demo.youtube_id} title={info.demo.title} />
-      <div className="ml-2">
-        <div className="flex justify-between items-center mt-4">
-          <h2 data-testid="demo-title" className="text-3xl font-bold text-white">{info.demo.title}</h2>
-          <button
-            onClick={() => mutate({uid: info.demo.uid, like_demo: !is_liked})}
-            type="button"
-            data-testid="like-button"
-            className={cn(
-              "group px-2 py-1 text-md font-medium text-center flex items-center rounded-lg border-2 hover:bg-accent-400 focus:outline-none",
-              {"text-green-500 border-green-500": is_liked},
-              {"text-accent-400 border-accent-400": !is_liked}
-            )}
-          >
-            {is_liked ?
-              <HandThumbUpIcon className="w-6 h-6 mr-2 group-hover:text-white" />
-              :
-              <HandThumbUpIcon className="w-6 h-6 mr-2 group-hover:text-white" />
-            }
-            <span  className="group-hover:text-white">Like</span>
-          </button>
-        </div>
-        <div className="mt-2 flex items-center space-x-2 text-white">
-          {/*
-          // we have a way of specifying who the presenter is for the video
-          // then this can be used
-          <span className = "inline-flex justify-center items-center gap-1 text-lg font-medium"> 
-            by 
-            <UserCircleIcon className="w-7 h-7" />
-            Jessica
-          </span>
-          */}
-          {info.demo.tags.map(tag => (
-            <span key={tag} data-testid="author-tags" className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag}</span>
-          ))}
-        </div>
-        <div className="mt-4 h-[26vh] overflow-y-auto">
-          <RelatedDemos demos={info.related_demos} module_id={module_id} course_id={course_id}/>
-          <HelpfulLinks links={info.resources}/>
-        </div>
+      <div className="flex justify-between items-center pl-2 mt-4">
+        <h2 data-testid="demo-title" className="text-3xl font-bold text-white">{info.demo.title}</h2>
+        <button
+          onClick={() => mutate({uid: info.demo.uid, like_demo: !is_liked})}
+          type="button"
+          data-testid="like-button"
+          className={cn(
+            "group px-2 py-1 text-md font-medium text-center flex items-center rounded-lg border-2 hover:bg-accent-400 focus:outline-none",
+            {"text-green-500 border-green-500": is_liked},
+            {"text-accent-400 border-accent-400": !is_liked}
+          )}
+        >
+          {is_liked ?
+            <HandThumbUpIcon className="w-6 h-6 mr-2 group-hover:text-white" />
+            :
+            <HandThumbUpIcon className="w-6 h-6 mr-2 group-hover:text-white" />
+          }
+          <span  className="group-hover:text-white">Like</span>
+        </button>
+      </div>
+      <div className="pl-2 mt-2 flex items-center space-x-2 text-white">
+        {/*
+        // we have a way of specifying who the presenter is for the video
+        // then this can be used
+        <span className = "inline-flex justify-center items-center gap-1 text-lg font-medium"> 
+          by 
+          <UserCircleIcon className="w-7 h-7" />
+          Jessica
+        </span>
+        */}
+        {info.demo.tags.map(tag => (
+          <span key={tag} data-testid="author-tags" className="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded">{tag}</span>
+        ))}
+      </div>
+      <div className="pl-2 flex-1 mt-4 overflow-y-auto">
+        <RelatedDemos demos={info.related_demos} module_id={module_id} course_id={course_id}/>
+        <HelpfulLinks links={info.resources}/>
       </div>
     </div>
   </Resizable>;
