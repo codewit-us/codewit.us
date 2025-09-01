@@ -8,7 +8,7 @@ import { default as ErrorEle } from '../../components/error/Error';
 import { useAxiosFetch } from "../../hooks/fetching";
 import { useEffect, useState } from "react";
 import PendingRequestsCard from './components/PendingRequestsCard';
-import type { Course } from '@codewit/interfaces';
+import type { Course, StudentProgress } from '@codewit/interfaces';
 import { useQuery } from "@tanstack/react-query";
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -119,10 +119,15 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
         return;
       }
 
+      if (!course) {
+        toast.error('Course not loaded.');
+        return;
+      }
+
       // Roster lookup for email
-      const rosterArr = (course as any)?.roster ?? [];
-      const rosterByUid = new Map<number, any>(
-        Array.isArray(rosterArr) ? rosterArr.map((u: any) => [u.uid, u]) : []
+      const rosterArr = course.roster ?? [];
+      const rosterByUid = new Map<number, Course['roster'][number]>(
+        rosterArr.map((u) => [u.uid, u])
       );
 
       const header = [
@@ -135,11 +140,11 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
 
       const lines: string[] = [header];
 
-      const sorted = [...students].sort((a, b) =>
+      const sorted: StudentProgress[] = [...students].sort((a, b) =>
         (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
       );
 
-      for (const s of (sorted as any[])) {
+      for (const s of sorted) {
         const email = (rosterByUid.get(s.studentUid)?.email ?? '').trim();
 
         lines.push([

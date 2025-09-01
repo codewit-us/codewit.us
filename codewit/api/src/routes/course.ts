@@ -33,7 +33,6 @@ import {
 import { asyncHandle } from "../middleware/catch";
 import {  } from "../models";
 import { formatCourseResponse } from '../utils/responseFormatter';
-import { Op } from 'sequelize';
 
 interface UserStatus {
   is_instructor: boolean,
