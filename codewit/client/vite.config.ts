@@ -27,49 +27,6 @@ export default defineConfig(({ mode }) => ({
       process.env.YT_CHANNEL_ID
     ),
   },
-  server: {
-    port: 3001,
-    host: 'localhost',
-    allowedHosts: [
-      'codewit.us',
-      'codewit.dev',
-      'localhost'
-    ],
-    proxy: {
-      '/demos': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/exercises': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/modules': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/resources': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/courses': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/oauth2': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/users': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/attempts': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-    },
-  },
 
   preview: {
     port: 4300,
@@ -77,6 +34,16 @@ export default defineConfig(({ mode }) => ({
   },
 
   plugins: [react(), nxViteTsPaths()],
+  server: {
+    host: true,
+    allowedHosts: [
+      'nginx',
+      'localhost',
+      '127.0.0.1',
+      'codewit.us',
+      'codewit.dev',
+    ],
+  },
 
   // Uncomment this if you are using workers.
   // worker: {

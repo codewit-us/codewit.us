@@ -1,6 +1,6 @@
 import { createHttpClient, post } from '../utils/httpClient';
 
-const codeEvalUrl = process.env.CODEEVAL_URL || 'http://nginx';
+const codeEvalUrl = process.env.CODEEVAL_URL || 'http://codeeval:3002';
 const httpClient = createHttpClient(codeEvalUrl);
 
 export interface EvaluationPayload {
