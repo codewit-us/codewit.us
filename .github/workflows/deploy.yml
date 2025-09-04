@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      REGISTRY: ${{ secrets.REGISTRY_NAME }}
-      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+      REGISTRY: ${{ secrets.REGISTRY_NAME }}     # e.g. registry.digitalocean.com/your-registry
+      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}  # your DO K8s cluster name
 
     strategy:
       fail-fast: false
@@ -25,11 +25,13 @@ jobs:
             dockerfile: Dockerfile.frontend
             deployment: frontend
             container: frontend
+            target: runner
           - name: api
             image_name: api
             dockerfile: Dockerfile.backend
             deployment: app
             container: app
+            target: runner
 
     steps:
       - name: Checkout code
@@ -49,28 +51,50 @@ jobs:
         shell: bash
         run: |
           DATE=$(date +'%m%d%Y')
-          # sanitize branch -> lowercase and keep [a-z0-9.-], convert others to '-'
           SAFE_BRANCH=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9.-' '-')
           TAG="${SAFE_BRANCH}-${DATE}-r${{ github.run_number }}"
-
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "namespace=$SAFE_BRANCH" >> "$GITHUB_OUTPUT"
 
+      # Build deployable image (runner stage)
       - name: Build image (${{ matrix.image_name }})
         run: |
           cd codewit
           docker build \
             -f "${{ matrix.dockerfile }}" \
+            --target "${{ matrix.target }}" \
             -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
+
+      # Build migrator image locally for API only (DO NOT PUSH)
+      - name: Build migrator image (local only; api)
+        if: matrix.name == 'api'
+        run: |
+          cd codewit
+          docker build \
+            -f Dockerfile.backend \
+            --target migrator \
+            -t codewit-migrator:${{ steps.meta.outputs.tag }} .
 
       - name: Push image (${{ matrix.image_name }})
         run: docker push "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}"
 
-      # - name: Tag on GitHub for backup (optional)
-      #   if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
-      #   run: |
-      #     git tag "${{ matrix.image_name }}-${{ steps.meta.outputs.tag }}" || true
-      #     git push origin "${{ matrix.image_name }}-${{ steps.meta.outputs.tag }}" || true
+      # Run migrations & seeds against PUBLIC DB using secrets (api only)
+      - name: Run DB migrations (api; no push)
+        if: matrix.name == 'api'
+        env:
+          SEQ_ENV: prod
+        run: |
+          set -euo pipefail
+          echo "Running migrations against public DB host..."
+          docker run --rm \
+            -e NODE_ENV=production \
+            -e SEQ_ENV="${SEQ_ENV}" \
+            -e DB_HOST="${{ secrets.DB_HOST }}" \
+            -e DB_PORT="${{ secrets.DB_PORT }}" \
+            -e DB_USER="${{ secrets.DB_USER }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+            -e DB_NAME="${{ secrets.DB_NAME }}" \
+            codewit-migrator:${{ steps.meta.outputs.tag }}
 
       - name: Save kubeconfig with short-lived credentials
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 "${{ env.CLUSTER_NAME }}"
@@ -80,5 +104,4 @@ jobs:
           kubectl -n default set image deployment/${{ matrix.deployment }} \
             ${{ matrix.container }}=${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }} \
             --record
-
           kubectl -n default rollout status deployment/${{ matrix.deployment }} --timeout=120s

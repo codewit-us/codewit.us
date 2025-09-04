@@ -35,8 +35,7 @@ const ModuleForm = (): JSX.Element => {
     uid: undefined,
     language: "cpp",
     topic: "",
-    resources: [],
-    completion: 0,
+    resources: []
   });
 
   const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);
@@ -113,7 +112,7 @@ const ModuleForm = (): JSX.Element => {
   };
 
   const resetForm = () => {
-    setFormData({ demos: [], uid: undefined, language: "cpp", topic: "", resources: [], completion: 0 });
+    setFormData({ demos: [], uid: undefined, language: "cpp", topic: "", resources: [] });
     setIsEditing(false);
   };
 
