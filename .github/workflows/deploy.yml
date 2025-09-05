@@ -90,16 +90,17 @@ jobs:
         env:
           SEQ_ENV: prod
         run: |
-          set -euo pipefail
-          echo "Running migrations against public DB host..."
-          docker run --rm \
-            -e NODE_ENV=production \
-            -e SEQ_ENV="${{ env.SEQ_ENV }}" \
-            -e DB_HOST="${{ secrets.DB_HOST }}" \
-            -e DB_PORT="${{ secrets.DB_PORT }}" \
-            -e DB_USER="${{ secrets.DB_USER }}" \
-            -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-            -e DB_NAME="${{ secrets.DB_NAME }}" \
+          cat > .migrate.env <<'EOF'
+          NODE_ENV=prod
+          SEQ_ENV=prod
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          EOF
+
+          docker run --rm --env-file .migrate.env \
             codewit-migrator:${{ steps.meta.outputs.tag }}
 
       - name: Save kubeconfig with short-lived credentials
