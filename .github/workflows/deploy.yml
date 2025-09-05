@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      REGISTRY: ${{ secrets.REGISTRY_NAME }}     # e.g. registry.digitalocean.com/your-registry
-      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}  # your DO K8s cluster name
+      REGISTRY: ${{ secrets.REGISTRY_NAME }}
+      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
 
     strategy:
       fail-fast: false

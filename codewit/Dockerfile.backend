@@ -8,14 +8,23 @@ RUN npm ci
 
 # Copy the rest (include CLI config files)
 COPY . .
-# Ensure these exist in your repo:
-# .sequelizerc, config/config.js
 
 # Build your API
 ARG MODE=production
 ENV MODE=$MODE
 ENV NODE_ENV=$MODE
 RUN npm run build:api
+
+# --- dev (local development + hot reload) ---
+# Uses dev deps from builder, does NOT build, runs nodemon/ts-node (or your dev script)
+FROM builder AS dev
+ENV MODE=development
+ENV NODE_ENV=development
+ENV SEQ_ENV=development
+
+EXPOSE 3000 9229
+
+CMD ["npm", "run", "backend-dev"]
 
 # --- migrator (inherits dev deps from builder, so has sequelize-cli) ---
 FROM builder AS migrator
