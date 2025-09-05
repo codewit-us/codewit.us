@@ -60,16 +60,10 @@ jobs:
       - name: Build image (${{ matrix.image_name }})
         run: |
           cd codewit
-          if [ "${{ matrix.name }}" = "api" ]; then
-            docker build \
-              -f "${{ matrix.dockerfile }}" \
-              --target runner \
-              -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
-          else
-            docker build \
-              -f "${{ matrix.dockerfile }}" \
-              -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
-          fi
+          docker build \
+            -f "${{ matrix.dockerfile }}" \
+            --target "${{ matrix.target }}" \
+            -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
 
       # Build migrator image locally for API only (DO NOT PUSH)
       - name: Build migrator image (local only; api)

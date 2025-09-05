@@ -1,16 +1,47 @@
-FROM node:20-alpine
-
-ARG MODE=prod
-ENV MODE=$MODE
-ENV NODE_ENV=$MODE
-
+# ---------- base ----------
+FROM node:20-alpine AS base
 WORKDIR /codewit
+ENV CI=true
+# set a default port (override with -e PORT=xxxx)
+ENV PORT=3001
 
-COPY package.json ./
-RUN npm install
+# ---------- deps for dev/build ----------
+FROM base AS deps-dev
+COPY package.json package-lock.json ./
+RUN npm ci
 
+# ---------- deps for prod runtime (small) ----------
+FROM base AS deps-prod
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# ---------- dev (hot-reload) ----------
+# Use this for local development
+FROM deps-dev AS dev
+ENV NODE_ENV=development
+# copy the whole workspace for dev iteration
 COPY . .
+# expose your Vite dev port (or whatever you use)
+EXPOSE ${PORT}
+# run the dev server (adjust script/port as needed)
+CMD ["sh", "-c", "npm run frontend-dev"]
 
-EXPOSE $PORT
+# ---------- builder (production build) ----------
+FROM deps-dev AS builder
+ENV NODE_ENV=production
+COPY . .
+# force Vite's production mode
+RUN npm run build:client -- --mode production
 
-CMD [ "sh", "-c", "if [ \"$MODE\" = 'dev' ]; then npm run frontend-dev; else npm run build:client && npm run start:client; fi" ]
+# ---------- runner (serve static prod build) ----------
+FROM base AS runner
+ENV NODE_ENV=production
+# use slim prod deps only if your runtime needs node libs (usually not for static)
+# If not needed, you can skip copying node_modules entirely.
+COPY --from=deps-prod /codewit/node_modules ./node_modules
+# bring only the built assets
+COPY --from=builder /codewit/client/dist ./client/dist
+# simple static server (swap for nginx if you prefer)
+RUN npm i -g serve@14
+EXPOSE ${PORT}
+CMD ["serve", "-s", "client/dist", "-l", "3001"]
