@@ -31,7 +31,7 @@ const ExerciseSelect = ({ onSelectExercises, initialExercises }: ExerciseSelectP
   useEffect(() => {
     const fetchExercises = async () => {
       try {
-        const response = await axios.get('/exercises');
+        const response = await axios.get('/api/exercises');
         const exerciseOptions = response.data.map((exercise: ExerciseResponse) => ({
           value: exercise.uid,
           label: exercise.prompt
