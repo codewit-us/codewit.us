@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-ARG MODE=dev
+ARG MODE=prod
 ENV MODE=$MODE
 ENV NODE_ENV=$MODE
 
