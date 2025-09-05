@@ -32,7 +32,7 @@ spec:
               value: nginx
             - name: API_PORT
               value: "80"
-          image: registry.digitalocean.com/codewitus/frontend:latest
+          image: registry.digitalocean.com/codewitus/web:feature-production-build-deployment--08222025-r2
           name: frontend
           ports:
             - containerPort: 3001

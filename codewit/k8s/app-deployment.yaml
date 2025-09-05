@@ -56,7 +56,7 @@ spec:
               value: GOOGLE_CLIENT_SECRET
             - name: COOKIE_KEY
               value: COOKIE_KEY
-          image: registry.digitalocean.com/codewitus/app:latest
+          image: registry.digitalocean.com/codewitus/api:feature-production-build-deployment--08222025-r2
           name: app
           ports:
             - containerPort: 3000

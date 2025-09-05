@@ -34,7 +34,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: codewitus.kvelivela.com
+    - host: codewit.us
       http:
         paths:
           - backend:
@@ -46,5 +46,5 @@ spec:
             pathType: Prefix
   tls:
     - hosts:
-        - codewitus.kvelivela.com
-      secretName: codewitus-tls
+        - codewit.us
+      secretName: codewit-tls

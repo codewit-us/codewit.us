@@ -2,65 +2,28 @@
 DOCKER_REGISTRY=registry.digitalocean.com/codewitus
 K8S_DIR=./k8s
 TAG=latest
-CLUSTER_NAME=codewit-us
+CLUSTER_NAME=DIGITALOCEAN_CLUSTER_NAME
 BUILD_SERVICES=app frontend codeeval
-DO_TOKEN=DIGITALOCEAN_TOKEN
-KUBE_CONTEXT=codewitus
+DO_TOKEN=DIGITALOCEAN_ACCESS_TOKEN
+KUBE_CONTEXT=codewit
 
 # === TARGETS ===
 
-.PHONY: all build push deploy clean ksync kube-login registry-login auth
+.PHONY: all kube-login auth dashboard
 
-all: build push deploy
-
-## Docker build
-build:
-	@for service in $(BUILD_SERVICES); do \
-	  if [ $$service = "app" ]; then \
-	    echo "🔨 Building backend..."; \
-	    docker build --build-arg MODE=prod --platform linux/amd64 -t $(DOCKER_REGISTRY)/app:$(TAG) -f Dockerfile.backend . ; \
-	  elif [ $$service = "frontend" ]; then \
-	    echo "🔨 Building frontend..."; \
-	    docker build --build-arg MODE=prod --platform linux/amd64 -t $(DOCKER_REGISTRY)/frontend:$(TAG) -f Dockerfile.frontend . ; \
-	  elif [ $$service = "codeeval" ]; then \
-	    echo "🔨 Building codeeval..."; \
-	    docker build --build-arg MODE=prod --platform linux/amd64 -t $(DOCKER_REGISTRY)/codeeval:$(TAG) -f ../../codeval/Dockerfile ../../codeval/ ; \
-	  fi \
-	done
-
-## Push Docker images
-push: auth registry-login
-	@for service in $(BUILD_SERVICES); do \
-	  echo "📤 Pushing $$service..."; \
-	  docker push $(DOCKER_REGISTRY)/$$service:$(TAG) ; \
-	done
-
-## Apply Kubernetes manifests
-deploy: kube-login
-	@echo "🚀 Deploying to Kubernetes..."
-	kubectl apply -f $(K8S_DIR)
-
-## Clean local images
-clean:
-	@for service in $(BUILD_SERVICES); do \
-	  echo "🧹 Removing $$service..."; \
-	  docker rmi $(DOCKER_REGISTRY)/$$service:$(TAG) || true ; \
-	done
-
-## (Re)generate Kubernetes manifests
-ksync:
-	@echo "🔁 Re-generating Kubernetes manifests from docker-compose-deploy.yml..."
-	rm -rf $(K8S_DIR)
-	mkdir -p $(K8S_DIR)
-	kompose convert -f docker-compose-deploy.yml -o $(K8S_DIR)
-
-## Log in to DigitalOcean registry
-registry-login:
-	@echo "🔐 Logging into DigitalOcean Container Registry..."
-	doctl registry login
+## Show token and start port-forward for Kubernetes Dashboard
+dashboard: kube-login
+	@echo "===================================="
+	@echo "Fetching login token for admin-user..."
+	@kubectl -n kubernetes-dashboard create token admin-user
+	@echo "===================================="
+	@echo "Access the dashboard at: https://localhost:8443/"
+	@echo "Use the above token when prompted."
+	@echo "===================================="
+	kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8443:443
 
 ## Log in to Kubernetes cluster
-kube-login:
+kube-login: auth
 	@echo "🔐 Fetching kubeconfig for cluster $(CLUSTER_NAME)..."
 	doctl kubernetes cluster kubeconfig save $(CLUSTER_NAME)
 
@@ -79,5 +42,5 @@ kube-login:
 ## Initialize DigitalOcean auth if needed
 auth:
 	@echo "🌐 Authenticating doctl with DigitalOcean..."
-	doctl auth init --access-token $(DO_TOKEN) --context codewitus
-	doctl auth switch --context codewitus
+	doctl auth init --access-token $(DO_TOKEN) --context codewit
+	doctl auth switch --context codewit
