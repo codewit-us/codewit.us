@@ -9,7 +9,14 @@ KUBE_CONTEXT=codewit
 
 # === TARGETS ===
 
-.PHONY: all kube-login auth dashboard
+.PHONY: all kube-login auth dashboard gc
+
+## Run DigitalOcean Container Registry garbage collection
+gc: auth
+	@echo "===================================="
+	@echo "Starting DigitalOcean registry garbage collection..."
+	@doctl registry garbage-collection start --include-untagged-manifests codewitus
+	@echo "===================================="
 
 ## Show token and start port-forward for Kubernetes Dashboard
 dashboard: kube-login

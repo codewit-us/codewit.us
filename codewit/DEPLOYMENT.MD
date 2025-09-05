@@ -28,9 +28,13 @@ Make sure the following tools are installed:
     | `BUILD_SERVICES`  | List of services to build and deploy (`app`, `frontend`, `codeeval`) |
 
 2. Merge your PR to `main` branch and it will trigger the CI/CD pipeline to build and deploy the services.
-6. To access kubernetes dashboard, run the following command:
+3. To access kubernetes dashboard, run the following command:
     ```bash
     make dashboard
+    ```
+4. To run garbage collection on the container registry, run the following command:
+    ```bash
+    make gc
     ```
 
 ## 🛠️ Makefile Targets
@@ -67,3 +71,9 @@ Starts port-forwarding for the Kubernetes Dashboard and prints the login token.
 ```bash
 make dashboard
 ```
+
+---
+
+### `make gc`
+
+Runs garbage collection on the container registry to remove unused images and reduce storage usage.
