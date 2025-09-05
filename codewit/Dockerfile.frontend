@@ -2,7 +2,6 @@
 FROM node:20-alpine AS base
 WORKDIR /codewit
 ENV CI=true
-# set a default port (override with -e PORT=xxxx)
 ENV PORT=3001
 
 # ---------- deps for dev/build ----------
@@ -10,38 +9,40 @@ FROM base AS deps-dev
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# ---------- deps for prod runtime (small) ----------
+# ---------- deps for prod runtime ----------
 FROM base AS deps-prod
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
 # ---------- dev (hot-reload) ----------
-# Use this for local development
+# Use this ONLY locally: docker build --target dev ...
 FROM deps-dev AS dev
 ENV NODE_ENV=development
-# copy the whole workspace for dev iteration
 COPY . .
-# expose your Vite dev port (or whatever you use)
 EXPOSE ${PORT}
-# run the dev server (adjust script/port as needed)
-CMD ["sh", "-c", "npm run frontend-dev"]
+CMD ["npm", "run", "frontend-dev"]
 
 # ---------- builder (production build) ----------
 FROM deps-dev AS builder
 ENV NODE_ENV=production
 COPY . .
-# force Vite's production mode
-RUN npm run build:client -- --mode production
+# Force production mode for Vite/Nx
+RUN npm run build:client
 
 # ---------- runner (serve static prod build) ----------
 FROM base AS runner
 ENV NODE_ENV=production
-# use slim prod deps only if your runtime needs node libs (usually not for static)
-# If not needed, you can skip copying node_modules entirely.
-COPY --from=deps-prod /codewit/node_modules ./node_modules
-# bring only the built assets
-COPY --from=builder /codewit/client/dist ./client/dist
-# simple static server (swap for nginx if you prefer)
+
+# If your runtime doesn't need node_modules, you can skip copying them.
+# COPY --from=deps-prod /codewit/node_modules ./node_modules
+
+# Keep the output path consistent with your start script.
+# Option A: serve client/dist (adjust start:client accordingly)
+COPY --from=builder /codewit/dist/apps/client ./dist/apps/client
+
+# tiny static server (or swap to nginx if preferred)
 RUN npm i -g serve@14
+
 EXPOSE ${PORT}
-CMD ["serve", "-s", "client/dist", "-l", "3001"]
+# match your package.json start:client (serves dist/apps/client at 3001)
+CMD ["npm", "run", "start:client"]
