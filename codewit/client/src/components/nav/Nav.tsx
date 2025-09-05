@@ -35,7 +35,7 @@ const NavBar = ({
   return (
     <Navbar
       fluid={true}
-      className="bg-foreground-600 p-1 border-b border-background-400"
+      className="border-b bg-foreground-600 border-background-400 dark:bg-foreground-600 dark:border-background-400"
     >
       <Link to="/" className="block min-w-[9.1rem]">
         <img
@@ -57,29 +57,18 @@ const NavBar = ({
         <div className="flex items-center gap-4">
           {name && (
             <div className="flex items-center gap-2 text-accent-500">
-            {
-              admin ? (
-                <AcademicCapIcon className="h-6 w-6" />
-              ) : (
-                <UserCircleIcon className="h-6 w-6" />
-              )
-            }
+              {admin ? <AcademicCapIcon className="h-6 w-6" /> : <UserCircleIcon className="h-6 w-6" />}
               <span className="text-[20px] font-medium">{name}</span>
             </div>
           )}
 
-          <Button
-            size="sm"
+          <button
             data-testid="navbar-toggle"
+            className="h-9 px-3 relative flex items-center justify-center text-sm text-accent-600 hover:text-accent-700 bg-transparent dark:bg-transparent rounded-lg text-center font-medium focus:outline-none focus:ring-4"
             onClick={toggleNavbar}
-            className="text-accent-600 hover:text-accent-700"
           >
-            {isOpen ? (
-              <XMarkIcon className="h-6 w-6" />
-            ) : (
-              <Bars3Icon className="h-6 w-6" />
-            )}
-          </Button>
+            {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+          </button>
         </div>
       </div>
 
@@ -91,8 +80,9 @@ const NavBar = ({
         <div className="flex justify-end p-2">
           <Button
             size="sm"
+            className="text-accent-500 hover:text-accent-700 bg-transparent dark:bg-transparent"
+            color="dark"
             onClick={toggleNavbar}
-            className="p-2 text-accent-500 hover:text-accent-700"
           >
             <XMarkIcon className="h-6 w-6" />
           </Button>

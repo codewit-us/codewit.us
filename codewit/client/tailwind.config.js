@@ -1,9 +1,11 @@
 /* v8 ignore next 98 */
 const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
 const { join } = require('path');
+const flowbite = require("flowbite-react/tailwind");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  base: "",
   content: [
     join(
       __dirname,
@@ -109,5 +111,6 @@ module.exports = {
     require('@tailwindcss/typography'),
     require('flowbite/plugin'),
     require('daisyui'),
+    flowbite.plugin(),
   ],
 };

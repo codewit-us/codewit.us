@@ -6,14 +6,20 @@ import {
   Module,
   DemoTags,
   sequelize,
+  DemoExercises,
 } from '../models';
 import { DemoResponse } from '../typings/response.types';
 import { formatDemoResponse } from '../utils/responseFormatter';
 
 async function getAllDemos(): Promise<DemoResponse[]> {
   const demos = await Demo.findAll({
-    include: [Exercise, Tag, Language],
-    order: [[Tag, DemoTags, 'ordering', 'ASC']],
+    include: [Exercise, Tag, Language,],
+    order: [
+      [Language, "name", "DESC"],
+      ["title", "ASC"],
+      [Tag, DemoTags, 'ordering', 'ASC'],
+      [Exercise, DemoExercises, "order", "ASC"],
+    ],
   });
 
   return formatDemoResponse(demos);
@@ -22,7 +28,10 @@ async function getAllDemos(): Promise<DemoResponse[]> {
 async function getDemoById(uid: number): Promise<DemoResponse | null> {
   const demo =  await Demo.findByPk(uid, {
     include: [Exercise, Tag, Language],
-    order: [[Tag, DemoTags, 'ordering', 'ASC']],
+    order: [
+      [Tag, DemoTags, 'ordering', 'ASC'],
+      [Exercise, DemoExercises, "order", "ASC"]
+    ],
   });
   return demo ? formatDemoResponse(demo) : null;
 }
@@ -78,13 +87,25 @@ async function createDemo(
       );
     }
 
-    if (exercises && exercises.length > 0) {
-      await demo.addExercises(exercises, { transaction });
+    if (exercises != null && exercises.length > 0) {
+      await Promise.all(exercises.map((id, index) => DemoExercises.create(
+        {
+          demoUid: demo.uid,
+          exerciseUid: id,
+          order: index,
+        },
+        {
+          transaction
+        }
+      )));
     }
 
     await demo.reload({
       include: [Exercise, Tag, Language],
-      order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      order: [
+        [Tag, DemoTags, 'ordering', 'ASC'],
+        [Exercise, DemoExercises, "order", "ASC"],
+      ],
       transaction,
     });
 
@@ -108,7 +129,9 @@ async function updateDemo(
       transaction,
     });
 
-    if (!demo) throw new Error("Demo not found");
+    if (!demo) {
+      throw new Error("Demo not found");
+    }
 
     if (tags) {
       await demo.setTags([], { transaction });
@@ -134,18 +157,49 @@ async function updateDemo(
       await demo.setLanguage(languageInstance, { transaction });
     }
 
-    if (title) demo.title = title;
-    if (youtube_id) demo.youtube_id = youtube_id;
-    if (youtube_thumbnail) demo.youtube_thumbnail = youtube_thumbnail;
-    if (topic) demo.topic = topic;
+    if (title) {
+      demo.title = title;
+    }
 
-    if (exercises) {
-      const currentExercises = await demo.getExercises({ transaction });
-      const currentIds = currentExercises.map(e => e.uid);
-      const toAdd = exercises.filter(id => !currentIds.includes(id));
-      const toRemove = currentIds.filter(id => !exercises.includes(id));
-      if (toAdd.length > 0) await demo.addExercises(toAdd, { transaction });
-      if (toRemove.length > 0) await demo.removeExercises(toRemove, { transaction });
+    if (youtube_id) {
+      demo.youtube_id = youtube_id;
+    }
+
+    if (youtube_thumbnail) {
+      demo.youtube_thumbnail = youtube_thumbnail;
+    }
+
+    if (topic) {
+      demo.topic = topic;
+    }
+
+    if (exercises != null) {
+      const current = await demo.getExercises({ transaction });
+      let to_drop = new Set(current.map((e => e.uid)));
+      let awaiting = [];
+
+      for (let index = 0; index < exercises.length; index += 1) {
+        to_drop.delete(exercises[index]);
+
+        awaiting.push(DemoExercises.upsert(
+          {
+            demoUid: demo.uid,
+            exerciseUid: exercises[index],
+            order: index
+          },
+          {
+            transaction
+          }
+        ));
+      }
+
+      if (to_drop.size > 0) {
+        let as_list = Array.from(to_drop);
+
+        awaiting.push(demo.removeExercises(as_list, {transaction}));
+      }
+
+      await Promise.all(awaiting);
     }
 
     await demo.save({ transaction });
@@ -183,7 +237,10 @@ async function updateDemo(
 
     await demo.reload({
       include: [Exercise, Tag, Language],
-      order: [[Tag, DemoTags, 'ordering', 'ASC']],
+      order: [
+        [Tag, DemoTags, 'ordering', 'ASC'],
+        [Exercise, DemoExercises, "order", "ASC"]
+      ],
       transaction,
     });
 

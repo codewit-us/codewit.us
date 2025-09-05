@@ -12,8 +12,13 @@ import {
   updateCourse,
 } from '../controllers/course';
 import { fromZodError } from 'zod-validation-error';
-import { createCourseSchema, updateCourseSchema } from '@codewit/validations';
-import { checkAdmin, checkAuth } from '../middleware/auth';
+import { 
+  createCourseSchema, 
+  updateCourseSchema, 
+  updateEnrollmentFlagsSchema,
+  bulkRegistrationSchema 
+} from '@codewit/validations';
+import { checkAdmin, checkAuth,checkInstructorOrAdmin } from '../middleware/auth';
 import {
   Course,
   User,
@@ -127,16 +132,15 @@ courseRouter.get('/:courseId/progress', checkAuth, async (req, res) => {
         const compMap = new Map<number, number>();
         compRows.forEach(r => compMap.set(r.moduleUid, r.completion));
 
-        const sum = moduleIds.reduce(
-          (acc, id) => acc + (compMap.get(id) ?? 0), 0
-        );
-        const avg = totalModules ? sum / totalModules : 0;
+        const completedModules = moduleIds.filter(id => (compMap.get(id) ?? 0) >= 1).length;
+        const avg = totalModules ? (completedModules / totalModules) * 100 : 0;
 
         return {
-          studentUid  : student.uid,
-          studentName : student.username,
-          // 0‒1  (UI multiplies by 100)
-          completion  : avg,
+          studentUid       : student.uid,
+          studentName      : student.username,
+          completion       : avg,
+          modulesCompleted : completedModules,
+          modulesTotal     : totalModules, 
         };
       })
     );
@@ -305,15 +309,64 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
   }
 }));
 
-courseRouter.get('/teacher/:id', async (req, res) => {
-  try {
-    const courses = await getTeacherCourses(req.params.id);
-    res.json(courses);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+courseRouter.get('/:uid/registrations', checkAuth, checkInstructorOrAdmin, asyncHandle(async (req, res) => {
+    const rows = await CourseRegistration.findAll({
+      where   : { courseId: req.params.uid },
+      include : [{
+        model      : User,
+        as         : 'user',
+        attributes : ['uid', 'username', 'email'],
+      }],
+      order   : [['createdAt', 'ASC']],
+    }) as (CourseRegistration & {
+      user      : Pick<User, 'uid' | 'username' | 'email'>,
+      createdAt : Date
+    })[];
+
+    const pending = rows.map(r => ({
+      uid       : r.user.uid,
+      username  : r.user.username,
+      email     : r.user.email,
+      requested : r.createdAt,
+    }));
+
+    res.json(pending);
+  })
+);
+
+courseRouter.post('/:uid/registrations/bulk', checkAuth, checkInstructorOrAdmin, asyncHandle(async (req, res) => {
+    const parsed = bulkRegistrationSchema.safeParse(req.body);
+    if (parsed.success === false) {
+      return res
+        .status(400)
+        .json({ message: fromZodError(parsed.error).toString() });
+    }
+
+    const { action, uids } = parsed.data;
+
+    await sequelize.transaction(async (t) => {
+      await CourseRegistration.destroy({
+        where       : { courseId: req.params.uid, userUid: uids },
+        transaction : t,
+      });
+
+      if (action === 'enroll') {
+        // insert rows into CourseRoster (still raw SQL because there’s no model)
+        await sequelize.query(
+          `
+          insert into "CourseRoster" ("courseId","userUid","createdAt","updatedAt")
+          select $1, u, now(), now()
+          from   unnest($2::int[]) as u
+          on conflict do nothing
+          `,
+          { bind: [ req.params.uid, uids ], type: QueryTypes.INSERT, transaction: t }
+        );
+      }
+    });
+
+    return res.status(200).json({ action, uids });
+  })
+);
 
 courseRouter.post('/', checkAdmin, async (req, res) => {
   try {
@@ -361,16 +414,44 @@ courseRouter.patch('/:uid', checkAdmin, async (req, res) => {
       validatedBody.data.roster
     );
 
-    if (course) {
-      res.json(course);
-    } else {
-      res.status(404).json({ message: 'Course not found' });
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    if (validatedBody.data.enrolling === false) {
+      await CourseRegistration.destroy({ where: { courseId: req.params.uid } });
     }
+
+    res.json(course);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+courseRouter.patch('/:uid/enrollment', checkAuth, checkInstructorOrAdmin, asyncHandle(async (req, res) => {
+  const result = updateEnrollmentFlagsSchema.safeParse(req.body);
+
+  if (result.success === false) {
+    return res
+      .status(400)
+      .json({ message: fromZodError(result.error).toString() });
+  }
+
+  const { enrolling, auto_enroll } = result.data;
+
+  await sequelize.transaction(async t => {
+    await Course.update(
+      { enrolling, auto_enroll: enrolling ? auto_enroll : false },
+      { where: { id: req.params.uid }, transaction: t }
+    );
+
+    if (!enrolling) {
+      await CourseRegistration.destroy({ where: { courseId: req.params.uid }, transaction: t });
+    }
+  });
+
+  res.status(200).json({ enrolling, auto_enroll: enrolling ? auto_enroll : false });
+
+}));
 
 courseRouter.delete('/:uid', checkAdmin, async (req, res) => {
   try {

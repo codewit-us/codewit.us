@@ -69,7 +69,12 @@ interface DemoResponse {
   language: string,
   youtube_id: string,
   youtube_thumbnail: string,
-  exercises: number[]
+  exercises: DemoExercise[]
+}
+
+interface DemoExercise {
+  uid: number,
+  prompt: string,
 }
 
 interface DemoFormData {
@@ -171,6 +176,8 @@ export interface StudentProgress {
   studentUid: number;
   studentName: string;
   completion: number;
+  modulesCompleted: number;
+  modulesTotal: number;
 }
 
 export interface TeacherCourse{
