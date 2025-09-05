@@ -15,7 +15,8 @@ module.exports = {
     join(__dirname, '../lib/shared/components/**/*.{ts,tsx}'),
     ...createGlobPatternsForDependencies(__dirname),
     './src/**/*.{js,jsx,ts,tsx}',
-    flowbite.content({base: "../"}),
+    '../../node_modules/flowbite-react/lib/**/*.js',
+    './node_modules/flowbite/**/*.js',
   ],
   theme: {
     screens: {
@@ -108,6 +109,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/typography'),
+    require('flowbite/plugin'),
     require('daisyui'),
     flowbite.plugin(),
   ],

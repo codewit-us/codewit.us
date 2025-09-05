@@ -1,13 +1,55 @@
-FROM node:20-alpine
-
+# --- builder (keeps dev deps, has sequelize-cli available) ---
+FROM node:20-alpine AS builder
 WORKDIR /codewit
 
-COPY package* .
+# Copy manifests first for caching
+COPY package.json package-lock.json ./
+RUN npm ci
 
-RUN npm install
-
-EXPOSE 3000
-
+# Copy the rest (include CLI config files)
 COPY . .
 
-CMD npm run backend-dev
+# Build your API
+ARG MODE=production
+ENV MODE=$MODE
+ENV NODE_ENV=$MODE
+RUN npm run build:api
+
+# --- dev (local development + hot reload) ---
+# Uses dev deps from builder, does NOT build, runs nodemon/ts-node (or your dev script)
+FROM builder AS dev
+ENV MODE=development
+ENV NODE_ENV=development
+ENV SEQ_ENV=development
+
+EXPOSE 3000 9229
+
+CMD ["npm", "run", "backend-dev"]
+
+# --- migrator (inherits dev deps from builder, so has sequelize-cli) ---
+FROM builder AS migrator
+# default command can be overridden by docker-compose
+CMD ["sh", "-c", "npx sequelize-cli db:migrate --env ${SEQ_ENV:-production}"]
+
+# --- runner (production-only deps + built output) ---
+FROM node:20-alpine AS runner
+WORKDIR /codewit
+
+# Copy only what runtime needs
+COPY package.json package-lock.json ./
+# Bring full deps from builder, then prune inside this stage so migrator still has dev deps
+COPY --from=builder /codewit/node_modules ./node_modules
+RUN npm prune --omit=dev
+
+# App files
+COPY --from=builder /codewit/dist/api ./dist/api
+
+# If your runtime ORM config needs these, include them; harmless otherwise:
+COPY --from=builder /codewit/.sequelizerc ./.sequelizerc
+COPY --from=builder /codewit/api/src/config ./config
+
+ARG PORT=3000
+ENV PORT=$PORT
+EXPOSE $PORT
+
+CMD ["node", "dist/api/main.js"]

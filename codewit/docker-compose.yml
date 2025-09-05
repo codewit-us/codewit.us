@@ -9,12 +9,20 @@ services:
       - POSTGRES_DB=codewitus_db
     networks:
       - codewitus
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h 127.0.0.1 -p 5432"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   app:
     depends_on:
       - codewitus_db
     build:
       dockerfile: Dockerfile.backend
+      target: dev
+      args:
+        MODE: dev
     environment:
       - DB_HOST=codewitus_db
       - DB_USER=codewitus_user
@@ -22,10 +30,10 @@ services:
       - DB_NAME=codewitus_db
       - DB_PORT=5432
       - API_PORT=3000
-      - API_HOST=0.0.0.0
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - FRONTEND_URL=http://localhost:80
+      - NODE_ENV=dev
     env_file:
       - .env
     restart: unless-stopped
@@ -48,6 +56,32 @@ services:
     stdin_open: true
     tty: true
 
+    # Runs migrations & seeds, exits 0 on success (no restart)
+  migrator:
+    build:
+      dockerfile: Dockerfile.backend
+      target: migrator
+      args:
+        MODE: dev
+    depends_on:
+      codewitus_db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=codewitus_db
+      - DB_USER=codewitus_user
+      - DB_PASSWORD=12345
+      - DB_NAME=codewitus_db
+      - DB_PORT=5432
+      - NODE_ENV=dev
+      - SEQ_ENV=dev
+    command: >
+      sh -c "
+        npx sequelize-cli db:migrate --env dev &&
+        npx sequelize-cli db:seed:all --env dev
+      "
+    restart: "no"
+    networks: [codewitus]
+
   frontend:
     depends_on:
       - app
@@ -55,6 +89,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      target: dev
+      args:
+        MODE: dev
     restart: unless-stopped
     ports:
       - 3001:3001
@@ -83,13 +120,18 @@ services:
       - frontend
       - app
       - codewitus_db
-    image: rohith2801/codewit.us-codeeval:latest
+    build:
+      context: ../../codeval/
+      dockerfile: Dockerfile
+      args:
+        MODE: dev
     restart: unless-stopped
     environment:
       - HOST=0.0.0.0
       - PORT=3002
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - ENABLE_CPP=false
     ports:
       - 3002:3002
     networks:

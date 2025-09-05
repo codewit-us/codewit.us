@@ -376,7 +376,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
         attempt   : null,
         evaluation: {
           state : 'error',
-          error : 'Unexpected error: ' + err?.message,
+          error : 'Unexpected error: ' + err.message,
         },
       } as AttemptWithEval);
     }

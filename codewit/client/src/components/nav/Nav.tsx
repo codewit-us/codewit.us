@@ -18,6 +18,7 @@ const NavBar = ({
   admin,
   handleLogout,
   courseTitle,
+  courseId,
 }: {
   name: string;
   admin: boolean;

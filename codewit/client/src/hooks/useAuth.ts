@@ -8,7 +8,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('/oauth2/google/userInfo')
+    axios.get('/api/oauth2/google/userInfo')
       .then(response => {
         setUser(response.data.user);
         localStorage.setItem('userId', response.data.user.googleId);
@@ -22,7 +22,7 @@ export function useAuth() {
   }, []);
 
   const handleLogout = () => {
-    axios.get('/oauth2/google/logout')
+    axios.get('/api/oauth2/google/logout')
       .then(() => {
         setUser(null);
         window.location.href = '/';

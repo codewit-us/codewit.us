@@ -1,13 +1,48 @@
-FROM node:20-alpine
-
+# ---------- base ----------
+FROM node:20-alpine AS base
 WORKDIR /codewit
+ENV CI=true
+ENV PORT=3001
 
-COPY package* .
+# ---------- deps for dev/build ----------
+FROM base AS deps-dev
+COPY package.json package-lock.json ./
+RUN npm ci
 
-RUN npm install
+# ---------- deps for prod runtime ----------
+FROM base AS deps-prod
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
-EXPOSE 3001
-
+# ---------- dev (hot-reload) ----------
+# Use this ONLY locally: docker build --target dev ...
+FROM deps-dev AS dev
+ENV NODE_ENV=development
 COPY . .
+EXPOSE ${PORT}
+CMD ["npm", "run", "frontend-dev"]
 
-CMD npm run frontend-dev
+# ---------- builder (production build) ----------
+FROM deps-dev AS builder
+ENV NODE_ENV=production
+COPY . .
+# Force production mode for Vite/Nx
+RUN npm run build:client
+
+# ---------- runner (serve static prod build) ----------
+FROM base AS runner
+ENV NODE_ENV=production
+
+# If your runtime doesn't need node_modules, you can skip copying them.
+# COPY --from=deps-prod /codewit/node_modules ./node_modules
+
+# Keep the output path consistent with your start script.
+# Option A: serve client/dist (adjust start:client accordingly)
+COPY --from=builder /codewit/dist/apps/client ./dist/apps/client
+
+# tiny static server (or swap to nginx if preferred)
+RUN npm i -g serve@14
+
+EXPOSE ${PORT}
+# match your package.json start:client (serves dist/apps/client at 3001)
+CMD ["npx", "serve", "-l", "3001", "dist/apps/client"]

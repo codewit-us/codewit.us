@@ -10,6 +10,12 @@ interface DefaultMarkdownProps {
   text: string
 }
 
+function toCodeString(children: React.ReactNode): string {
+  if (typeof children === "string") return children;
+  if (Array.isArray(children)) return children.join("");
+  return String(children ?? "");
+}
+
 export function DefaultMarkdown({text}: DefaultMarkdownProps) {
   return <Markdown
     components={{
@@ -66,10 +72,11 @@ export function DefaultMarkdown({text}: DefaultMarkdownProps) {
       pre: ({className, node, ...props}) => {
         return <pre className="w-full overflow-x-auto rounded-lg p-1 border-gray-300 bg-gray-50 dark:border-gray-500 dark:bg-gray-800" {...props}/>;
       },
-      code: ({className, node, children, ...props}) => {
+      code: ({inline, className, node, children, ...props}: any) => {
         let match = lang_regex.exec(className ?? "");
+        const content = toCodeString(children).replace(/\n$/, ""); // trim trailing newline
 
-        if (match) {
+        if (!inline && match) {
           return <SyntaxHighligher
             language={match[1]}
             PreTag="div"
@@ -81,8 +88,10 @@ export function DefaultMarkdown({text}: DefaultMarkdownProps) {
               background: "none",
               overflow: "none"
             }}
-            children={children}
-          />;
+            {...props}
+          >
+            {content}
+          </SyntaxHighligher>
         } else {
           return <code className="px-1 rounded-lg bg-gray-50 dark:bg-gray-800" children={children} {...props}/>;
         }
