@@ -45,4 +45,4 @@ RUN npm i -g serve@14
 
 EXPOSE ${PORT}
 # match your package.json start:client (serves dist/apps/client at 3001)
-CMD ["npm", "run", "start:client"]
+CMD ["npx", "serve", "-l", "3001", "dist/apps/client"]
