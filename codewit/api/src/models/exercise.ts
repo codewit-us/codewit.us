@@ -57,7 +57,7 @@ class Exercise extends Model<
           primaryKey: true,
         },
         prompt: {
-          type: DataTypes.STRING,
+          type: DataTypes.TEXT,
           allowNull: false,
         },
         topic: {
