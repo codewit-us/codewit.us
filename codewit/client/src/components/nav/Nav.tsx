@@ -1,7 +1,7 @@
 // codewit/client/src/components/nav/Nav.tsx
 import { useState } from 'react';
 import { Navbar, Button } from 'flowbite-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useSearchParams} from 'react-router-dom';
 import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { UserCircleIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import GoogleLogo from '../logo/GoogleLogo';
@@ -22,10 +22,8 @@ const NavBar = ({
   const [isOpen, setIsOpen] = useState(false);
   const toggleNavbar = () => setIsOpen(!isOpen);
 
-  const { search } = useLocation();
-
-  const params = new URLSearchParams(search);
-  const slugFromQuery = params.get('course_id');
+  const [searchParams] = useSearchParams();
+  const slugFromQuery = searchParams.get('course_id');
 
   const courseSlug = slugFromQuery || courseId || null;
 

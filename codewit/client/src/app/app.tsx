@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import NavBar from '../components/nav/Nav';
@@ -24,6 +24,7 @@ const TOP_LEVEL = new Set(['', 'create', 'usermanagement', 'read', 'settings', '
 export function App() {
   const { user, loading, handleLogout } = useAuth();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   
   const isLandingPage = location.pathname === '/';
   const isUserManagement = location.pathname.startsWith('/usermanagement');
@@ -75,7 +76,7 @@ export function App() {
       return;
     }
     // read page: ?course_id=...
-    const qp = new URLSearchParams(location.search).get('course_id');
+    const qp = searchParams.get('course_id');
     if (qp && qp !== courseId) setCourseId(qp);
   }, [location.pathname, location.search, courseId]);
 
