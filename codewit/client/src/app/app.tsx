@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import NavBar from '../components/nav/Nav';
@@ -17,11 +17,18 @@ import Error from '../components/error/Error';
 import LoadingPage from '../components/loading/LoadingPage';
 import TeacherView from '../pages/course/TeacherView';
 import DashboardGate from '../components/guards/DashboardGate';
+import axios from 'axios';
+
+const TOP_LEVEL = new Set(['', 'create', 'usermanagement', 'read', 'settings', 'login', 'error']);
 
 export function App() {
   const { user, loading, handleLogout } = useAuth();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  
   const isLandingPage = location.pathname === '/';
+  const isUserManagement = location.pathname.startsWith('/usermanagement');
+  
   const [courseTitle, setCourseTitle] = useState<string>(() =>
      localStorage.getItem('courseTitle') || '',
    );
@@ -36,8 +43,42 @@ export function App() {
     }
     if (courseId) { 
       localStorage.setItem('courseId', courseId);
-  }
+    }
   }, [courseTitle, courseId]);
+
+   // Get course from /api/courses/landing
+  useEffect(() => {
+    if (user?.isAdmin && !courseId) {
+      axios.get('/api/courses/landing')
+        .then(({ data }) => {
+          const first = data?.instructor?.[0];
+          if (first?.id && first?.title) {
+            setCourseId(first.id);
+            setCourseTitle(first.title);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user?.isAdmin, courseId]);
+  
+  // Derive courseId from the current URL for students (and /read)
+  useEffect(() => {
+    const segs = location.pathname.split('/').filter(Boolean);
+
+    // "/:courseId"
+    if (segs.length === 1 && !TOP_LEVEL.has(segs[0])) {
+      if (segs[0] !== courseId) setCourseId(segs[0]);
+      return;
+    }
+    // "/:courseId/dashboard"
+    if (segs.length === 2 && segs[1] === 'dashboard' && !TOP_LEVEL.has(segs[0])) {
+      if (segs[0] !== courseId) setCourseId(segs[0]);
+      return;
+    }
+    // read page: ?course_id=...
+    const qp = searchParams.get('course_id');
+    if (qp && qp !== courseId) setCourseId(qp);
+  }, [location.pathname, location.search, courseId]);
 
   if (loading) {
     return <LoadingPage />;

@@ -29,7 +29,7 @@ const UserManagement: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [page, setPage] = useState(0);
-  
+
 
   const searchUser = useSearchUser();
   const setAdmin = useSetAdmin();
@@ -38,9 +38,10 @@ const UserManagement: React.FC = () => {
   const goToPage = (n: number) => {
     setPage(n);
   };
+  const totalPages = Math.max(1, Math.ceil((filteredUsers?.length ?? 0) / pageSize));
 
   useEffect(() => {
-    if (allUsers.length) {
+    if (Array.isArray(allUsers) && allUsers.length) {
       setFilteredUsers(allUsers); 
       setPage(0);
     }
@@ -49,7 +50,7 @@ const UserManagement: React.FC = () => {
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
       // Empty search = reset to full list
-      setFilteredUsers(allUsers);
+      setFilteredUsers(allUsers ?? []);
       return; 
     }
 
@@ -179,7 +180,7 @@ const UserManagement: React.FC = () => {
       </div>
       <div className="w-full max-w-7xl flex justify-between items-center mt-4 px-2">
         <p className="text-sm text-gray-400">
-          Page {page + 1} of {Math.ceil(filteredUsers.length / pageSize)}
+          Page {Math.min(page + 1, totalPages)} of {totalPages}
         </p>
         <div className="flex gap-2">
           <button

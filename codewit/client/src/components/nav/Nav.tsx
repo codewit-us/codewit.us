@@ -1,16 +1,9 @@
 // codewit/client/src/components/nav/Nav.tsx
 import { useState } from 'react';
 import { Navbar, Button } from 'flowbite-react';
-import { Link, useLocation } from 'react-router-dom';
-import {
-  ArrowLeftStartOnRectangleIcon,
-  Bars3Icon,
-  XMarkIcon,
-} from '@heroicons/react/24/solid';
-import {
-  UserCircleIcon
-} from '@heroicons/react/24/outline';
-import { AcademicCapIcon } from '@heroicons/react/24/outline';
+import { Link, useSearchParams} from 'react-router-dom';
+import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
+import { UserCircleIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 import GoogleLogo from '../logo/GoogleLogo';
 
 const NavBar = ({
@@ -18,6 +11,7 @@ const NavBar = ({
   admin,
   handleLogout,
   courseTitle,
+  courseId,
 }: {
   name: string;
   admin: boolean;
@@ -26,10 +20,16 @@ const NavBar = ({
   courseId?: string;
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
+  const toggleNavbar = () => setIsOpen(!isOpen);
 
-  const toggleNavbar = () => {
-    setIsOpen(!isOpen);
-  };
+  const [searchParams] = useSearchParams();
+  const slugFromQuery = searchParams.get('course_id');
+
+  const courseSlug = slugFromQuery || courseId || null;
+
+  const courseHref = courseSlug
+    ? (admin ? `/${courseSlug}/dashboard` : `/${courseSlug}`)
+    : null;
 
   return (
     <Navbar
@@ -37,19 +37,19 @@ const NavBar = ({
       className="border-b bg-foreground-600 border-background-400 dark:bg-foreground-600 dark:border-background-400"
     >
       <Link to="/" className="block min-w-[9.1rem]">
-        <img
-          src="/logo-dark.png"
-          className="w-[9.1rem] h-[2.5rem]"
-          alt="CodeWitUs Logo"
-        />
+        <img src="/logo-dark.png" className="w-[9.1rem] h-[2.5rem]" alt="CodeWitUs Logo" />
       </Link>
 
       <div className="flex items-center justify-between flex-grow">
         <div className="flex items-center">
-          {courseTitle && (
-            <span className="ml-10 text-[16px] font-bold text-foreground-200">
+          {courseTitle && courseHref && (
+            <Link
+              to={courseHref}
+              className="ml-10 text-[16px] font-bold text-foreground-200 hover:underline underline-offset-4"
+              aria-label={admin ? 'Go to Teacher Dashboard' : 'Go to Course'}
+            >
               {courseTitle}
-            </span>
+            </Link>
           )}
         </div>
 
@@ -71,11 +71,8 @@ const NavBar = ({
         </div>
       </div>
 
-      <div
-        className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
+      {/* drawer … unchanged */}
+      <div className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex justify-end p-2">
           <Button
             size="sm"
@@ -87,24 +84,15 @@ const NavBar = ({
           </Button>
         </div>
         <div className="flex flex-col px-4 space-y-4">
-          <Link
-            to="/"
-            className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600"
-          >
+          <Link to="/" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
             Home
           </Link>
           {admin && (
             <>
-              <Link
-                to="/create"
-                className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600"
-              >
+              <Link to="/create" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
                 Create
               </Link>
-              <Link
-                to="/usermanagement"
-                className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600"
-              >
+              <Link to="/usermanagement" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
                 Manage Users
               </Link>
             </>
@@ -122,11 +110,7 @@ const NavBar = ({
               </Button>
             </div>
           ) : (
-            <form
-              action="http://localhost:3001/oauth2/google"
-              method="get"
-              className="w-full"
-            >
+            <form action="http://localhost:3001/oauth2/google" method="get" className="w-full">
               <button
                 type="submit"
                 className="w-full bg-white text-gray-600 hover:bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 flex items-center gap-3 shadow-md transition-all"
