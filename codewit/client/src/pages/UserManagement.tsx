@@ -95,7 +95,7 @@ const UserManagement: React.FC = () => {
 
   return (
     <div 
-      className="flex flex-col items-center w-full h-container-full bg-zinc-900 p-6 overflow-y-auto"
+      className="flex flex-col items-center w-full h-full bg-zinc-900 p-6 overflow-y-auto"
     >
       <div className="mb-6 w-full max-w-7xl">
         <div className="flex">

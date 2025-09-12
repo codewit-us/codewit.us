@@ -85,76 +85,77 @@ export function App() {
   }
 
   return (
-    <div className="w-full h-screen bg-background-500">
+    <div className="w-screen h-screen flex flex-col flex-nowrap bg-background-500">
       <NavBar
         name={user ? user.username : ''}
         admin={user ? user.isAdmin : false}
         handleLogout={handleLogout}
-        courseTitle={(isLandingPage || isUserManagement) ? '' : (courseTitle || '')}
-        courseId={courseId}
+        courseTitle={isLandingPage ? '' : courseTitle}
       />
-      <Routes>
-        <Route
-          path="/"
-          element={ <Home /> }
-        />
-        <Route
-          path="/:course_id"
-          element={<CourseView onCourseChange={setCourseTitle} />}
-        />
-        <Route path="/read/:uid" element={<Read />} />
-        <Route
-          path="/usermanagement"
-          element={
-            user && user.isAdmin ? (
-              <UserManagement  />
-            ) : (
-              <Navigate
-                to="/error"
-                state={{
-                  message:
-                    'Oops! Page does not exist. We will return you to the main page.',
-                  statusCode: 401,
-                }}
-              />
-            )
-          }
-        />
-        <Route
-          path="/create"
-          element={
-            user && user.isAdmin ? (
-              <Create />
-            ) : (
-              <Navigate
-                to="/error"
-                state={{
-                  message:
-                    'Oops! Page does not exist. We will return you to the main page.',
-                  statusCode: 401,
-                }}
-              />
-            )
-          }
-        >
-          <Route index element={<DemoForms />} />
-          <Route path="demo" element={<DemoForms />} />
-          <Route path="exercise" element={<ExerciseForms />} />
-          <Route path="module" element={<ModuleForm />} />
-          <Route path="resource" element={<ResourceForm />} />
-          <Route path="course" element={<CourseForm />} />
-        </Route>
-        <Route
-          path="/:courseId/dashboard"
-          element={
-            <DashboardGate>
-              <TeacherView onCourseChange={setCourseTitle} />
-            </DashboardGate>
-          }
-        />
-        <Route path="/error" element={<Error />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <div className="relative flex-1 overflow-auto">
+        <Routes>
+          <Route
+            path="/"
+            element={<Home />}
+          />
+          <Route
+            path="/:course_id"
+            element={<CourseView onCourseChange={setCourseTitle} />}
+          />
+          <Route path="/read/:uid" element={<Read />} />
+          <Route
+            path="/usermanagement"
+            element={
+              user && user.isAdmin ? (
+                <UserManagement />
+              ) : (
+                <Navigate
+                  to="/error"
+                  state={{
+                    message:
+                      'Oops! Page does not exist. We will return you to the main page.',
+                    statusCode: 401,
+                  }}
+                />
+              )
+            }
+          />
+          <Route
+            path="/create"
+            element={
+              user && user.isAdmin ? (
+                <Create />
+              ) : (
+                <Navigate
+                  to="/error"
+                  state={{
+                    message:
+                      'Oops! Page does not exist. We will return you to the main page.',
+                    statusCode: 401,
+                  }}
+                />
+              )
+            }
+          >
+            <Route index element={<DemoForms />} />
+            <Route path="demo" element={<DemoForms />} />
+            <Route path="exercise" element={<ExerciseForms />} />
+            <Route path="module" element={<ModuleForm />} />
+            <Route path="resource" element={<ResourceForm />} />
+            <Route path="course" element={<CourseForm />} />
+          </Route>
+          <Route
+            path="/:courseId/dashboard"
+            element={
+              <DashboardGate>
+                <TeacherView onCourseChange={setCourseTitle} />
+              </DashboardGate>
+            }
+          />
+          <Route path="/error" element={<Error />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
     </div>
   );
 }

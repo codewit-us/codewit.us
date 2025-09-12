@@ -122,6 +122,12 @@ User.belongsToMany(Course, { through: 'CourseRoster', as: 'studentCourses' });
 Course.belongsToMany(User, { through: CourseRegistration, as: "registered"});
 User.belongsToMany(Course, { through: CourseRegistration, as: "registered"});
 
+CourseRegistration.belongsTo(User ,  { as: 'user',  foreignKey: 'userUid'  });
+User.hasMany(CourseRegistration, { as: 'requests', foreignKey: 'userUid' });
+
+CourseRegistration.belongsTo(Course, { as: 'course', foreignKey: 'courseId' });
+Course.hasMany(CourseRegistration, { as: 'requests', foreignKey: 'courseId' });
+
 Demo.belongsToMany(User, { through: 'DemoLikes', as: 'likedBy' });
 User.belongsToMany(Demo, { through: 'DemoLikes', as: 'likedDemos' });
 
