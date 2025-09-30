@@ -8,6 +8,7 @@ import courseRouter from './routes/course';
 import authrouter from './routes/auth';
 import userRouter from './routes/user';
 import attemptRouter from './routes/attempt';
+import courseImportRouter from './routes/courseImport'
 import passport from 'passport';
 import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT, REDIS_HOST, REDIS_PORT } from './secrets';
@@ -58,6 +59,7 @@ app.use('/modules', checkAuth, moduleRouter);
 app.use('/resources', checkAuth, resourceRouter);
 app.use('/courses', checkAuth, courseRouter);
 app.use('/attempts', checkAuth, attemptRouter);
+app.use('/', checkAuth, courseImportRouter);
 
 app.use(catchError);
 
