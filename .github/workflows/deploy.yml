@@ -1,0 +1,108 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main", "feature/production-build-deployment"]
+
+concurrency:
+  group: cicd-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      REGISTRY: ${{ secrets.REGISTRY_NAME }}
+      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: web
+            image_name: web
+            dockerfile: Dockerfile.frontend
+            deployment: frontend
+            container: frontend
+            target: runner
+          - name: api
+            image_name: api
+            dockerfile: Dockerfile.backend
+            deployment: app
+            container: app
+            target: runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DigitalOcean Container Registry (short-lived)
+        run: doctl registry login --expiry-seconds 1200
+
+      # Compute a readable tag with DATE + branch + run number
+      - name: Compute image tag and namespace
+        id: meta
+        shell: bash
+        run: |
+          DATE=$(date +'%m%d%Y')
+          SAFE_BRANCH=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9.-' '-')
+          TAG="${SAFE_BRANCH}-${DATE}-r${{ github.run_number }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "namespace=$SAFE_BRANCH" >> "$GITHUB_OUTPUT"
+
+      # Build deployable image (runner stage)
+      - name: Build image (${{ matrix.image_name }})
+        run: |
+          cd codewit
+          docker build \
+            -f "${{ matrix.dockerfile }}" \
+            --target "${{ matrix.target }}" \
+            -t "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}" .
+
+      # Build migrator image locally for API only (DO NOT PUSH)
+      - name: Build migrator image (local only; api)
+        if: matrix.name == 'api'
+        run: |
+          cd codewit
+          docker build \
+            -f Dockerfile.backend \
+            --target migrator \
+            -t codewit-migrator:${{ steps.meta.outputs.tag }} .
+
+      - name: Push image (${{ matrix.image_name }})
+        run: docker push "${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }}"
+
+      # Run migrations & seeds against PUBLIC DB using secrets (api only)
+      - name: Run DB migrations (api; no push)
+        if: matrix.name == 'api'
+        env:
+          SEQ_ENV: prod
+        run: |
+          cat > .migrate.env <<'EOF'
+          NODE_ENV=prod
+          SEQ_ENV=prod
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          EOF
+
+          docker run --rm --env-file .migrate.env \
+            codewit-migrator:${{ steps.meta.outputs.tag }}
+
+      - name: Save kubeconfig with short-lived credentials
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 "${{ env.CLUSTER_NAME }}"
+
+      - name: Set image in Kubernetes (${{ matrix.deployment }})
+        run: |
+          kubectl -n default set image deployment/${{ matrix.deployment }} \
+            ${{ matrix.container }}=${{ env.REGISTRY }}/${{ matrix.image_name }}:${{ steps.meta.outputs.tag }} \
+            --record
+          kubectl -n default rollout status deployment/${{ matrix.deployment }} --timeout=120s

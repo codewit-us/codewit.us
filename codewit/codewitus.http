@@ -1,0 +1,12 @@
+POST http://localhost/codeeval/execute
+Content-Type: application/json
+Cookie: connect.sid=s%3AtlfdbIRxfOvXgEhEhm6n6rZ_PN9_B3Jh.0MpyMeWiKToN0All4CvimHB0e50OzjDjDlbGPBhG4U8
+
+{
+    "language": "java",
+    "code": "public class Main {\n    public int add(int a, int b) {\n        return a + b;\n    }\n}",
+    "stdin": "",
+    "expectedOutput": "",
+    "runTests": true,
+    "testCode": "import org.junit.Test;\nimport static org.junit.Assert.*;\n\npublic class MainTest {\n    @Test\n    public void testAdd() {\n        Main main = new Main();\n        assertEquals(5, main.add(2, 3));\n        assertEquals(0, main.add(-1, 1));\n    }\n}"
+}

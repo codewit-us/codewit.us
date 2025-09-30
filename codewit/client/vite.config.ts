@@ -6,61 +6,26 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
-// const API_PORT = process.env.API_PORT
-// const API_HOST = process.env.API_HOST
-// if (!API_HOST || !API_PORT) {
-//   throw new Error('BACKEND_URL is not set');
-// }
+const API_PORT = process.env.API_PORT
+const API_HOST = process.env.API_HOST
+if (!API_HOST) {
+  console.log('BACKEND_URL is not set');
+}
 
 // const BACKEND_URL = `http://${API_HOST}:${API_PORT}/api`;
-const BACKEND_URL = 'http://app:3000';
+// if API_HOST is not set, use http://app:3000
 
-export default defineConfig({
+const BACKEND_URL = API_HOST ? `http://${API_HOST}/` : 'http://app:3000/api';
+
+export default defineConfig(({ mode }) => ({
   root: __dirname,
   cacheDir: '../node_modules/.vite/client',
+  base: mode === 'production' ? './' : '/',
   define: {
     'import.meta.env.VITE_KEY': JSON.stringify(process.env.YT_KEY),
     'import.meta.env.VITE_CHANNEL_ID': JSON.stringify(
       process.env.YT_CHANNEL_ID
     ),
-  },
-  server: {
-    port: 3001,
-    host: 'localhost',
-    proxy: {
-      '/demos': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/exercises': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/modules': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/resources': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/courses': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/oauth2': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/users': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-      '/attempts': {
-        target: BACKEND_URL,
-        changeOrigin: true,
-      },
-    },
   },
 
   preview: {
@@ -69,6 +34,16 @@ export default defineConfig({
   },
 
   plugins: [react(), nxViteTsPaths()],
+  server: {
+    host: true,
+    allowedHosts: [
+      'nginx',
+      'localhost',
+      '127.0.0.1',
+      'codewit.us',
+      'codewit.dev',
+    ],
+  },
 
   // Uncomment this if you are using workers.
   // worker: {
@@ -105,4 +80,4 @@ export default defineConfig({
       },
     ],
   },
-});
+}));

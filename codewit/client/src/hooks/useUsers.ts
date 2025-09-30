@@ -27,7 +27,7 @@ const useAxiosFetch = (initialUrl: string, initialData: User[] = []) => {
 };
 
 // Hook to fetch all users
-export const useFetchUsers = () => useAxiosFetch('/users');
+export const useFetchUsers = () => useAxiosFetch('/api/users');
 
 // General hook to handle CRUD operations
 const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
@@ -51,11 +51,11 @@ const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
 // Hook to set user as admin
 export const useSetAdmin = () => {
   const { operation } = useAxiosCRUD('patch');
-  return (uid: number, isAdmin: boolean) => operation(`/users/${uid}`, { isAdmin });
+  return (uid: number, isAdmin: boolean) => operation(`/api/users/${uid}`, { isAdmin });
 };
 
 // Hook to search for a user by email
 export const useSearchUser = () => {
   const { operation } = useAxiosCRUD('get');
-  return (email: string) => operation(`/users/${email}`);
+  return (email: string) => operation(`/api/users/${email}`);
 };

@@ -28,7 +28,7 @@ const ResourceSelect = ({
       <Select
         id="resource-select"
         value={resourceOptions.filter(option => 
-          selectedResources.includes(option.value)
+          selectedResources.some(resource => resource.uid === option.value)
         )}
         onChange={handleResourceChange}
         options={resourceOptions}

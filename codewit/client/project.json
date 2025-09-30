@@ -3,6 +3,26 @@
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "client/src",
   "projectType": "application",
-  "targets": {},
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/client",
+        "configFile": "client/vite.config.ts"
+      },
+      "configurations": {
+        "production": {
+          "mode": "production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": {
+        "buildTarget": "client:build"
+      }
+    }
+  },
   "tags": []
 }
