@@ -6,6 +6,7 @@ interface AxiosFetch<T> {
   setData: (value: T | ((prev: T) => T)) => void,
   loading: boolean,
   error: boolean,
+  refetch: () => void,
 }
 
 // General hook to handle fetching data with axios
@@ -47,6 +48,11 @@ export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch
     }
   };
 
+  const refetch = () => {
+    const controller = new AbortController();
+    fetchData(controller);
+  };
+
   useEffect(() => {
     let controller = new AbortController();
 
@@ -57,5 +63,16 @@ export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch
     };
   }, [initialUrl]);
 
-  return { data, setData, loading: initial_loading || active_requests > 0, error };
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent<string>;
+      if (custom.detail === initialUrl) {
+        refetch();
+      }
+    };
+    window.addEventListener('cw:refetch', handler as EventListener);
+    return () => window.removeEventListener('cw:refetch', handler as EventListener);
+  }, [initialUrl]);
+
+  return { data, setData, loading: initial_loading || active_requests > 0, error, refetch };
 };
