@@ -8,29 +8,27 @@ import courseRouter from './routes/course';
 import authrouter from './routes/auth';
 import userRouter from './routes/user';
 import attemptRouter from './routes/attempt';
-import exerciseImportRouter from './routes/exerciseImport'
+import exerciseImportRouter from './routes/exerciseImport';
 import passport from 'passport';
 import session from 'express-session';
 import { COOKIE_KEY, HOST, PORT, REDIS_HOST, REDIS_PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
-import { catchError, asyncHandle } from "./middleware/catch";
-import { RedisStore } from "connect-redis";
-import { createClient } from "redis";
+import { catchError, asyncHandle } from './middleware/catch';
+import { RedisStore } from 'connect-redis';
+import { createClient } from 'redis';
 
 const app = express();
 
-let redisClient = createClient(
-  {
-    url: `redis://${REDIS_HOST}:${REDIS_PORT}`,
-  }
-)
-redisClient.connect().catch(console.error)
+let redisClient = createClient({
+  url: `redis://${REDIS_HOST}:${REDIS_PORT}`,
+});
+redisClient.connect().catch(console.error);
 
 let redisStore = new RedisStore({
   client: redisClient,
-  prefix: "codewit:",
-})
+  prefix: 'codewit:',
+});
 
 app.use(
   session({
@@ -64,5 +62,5 @@ app.use('/exercises', checkAuth, exerciseImportRouter);
 app.use(catchError);
 
 app.listen(PORT, HOST, async () => {
-    console.log(`[ ready ] http://${HOST}:${PORT}`);
+  console.log(`[ ready ] http://${HOST}:${PORT}`);
 });

@@ -19,7 +19,6 @@ export default function ImportExercisesPanel() {
 
       const res = await axios.post("/exercises/import-csv", form, {
         withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
       });
 
       const json = res.data ?? {};
@@ -31,8 +30,9 @@ export default function ImportExercisesPanel() {
       // if any component uses useAxiosFetch('/exercises'), this triggers a refetch
       window.dispatchEvent(new CustomEvent('cw:refetch', { detail: '/exercises' }));
     } catch (err: any) {
+      const data = err?.response?.data;
       const msg =
-        err?.response?.data?.message ||
+        (typeof data === 'object' ? (data.message || JSON.stringify(data)) : data) ||
         err?.message ||
         "Import failed. Please try again.";
       toast.error(msg);

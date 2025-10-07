@@ -7,7 +7,7 @@ import { asyncHandle } from '../middleware/catch';
 const upload = multer({
   storage: multer.memoryStorage(),
   // 5 MB file size limit
-  limits : { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 const router = Router();
