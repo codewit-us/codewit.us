@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { parse } from 'csv-parse/sync';
-import { sequelize, Exercise } from '../models';
+import { sequelize, Exercise, Language } from '../models';
 import { Transaction } from 'sequelize';
 
 export async function importExercisesCsv(req: Request, res: Response) {
@@ -15,30 +15,63 @@ export async function importExercisesCsv(req: Request, res: Response) {
       skip_empty_lines: true,
       bom: true,
       trim: true,
-    }) as { prompt?: string; topic?: string; languageUid?: string | number }[];
+    }) as Record<string, unknown>[];
 
-    const errors: { row: number; message: string }[] = [];
+    const langs = await Language.findAll({ attributes: ['uid', 'name'] });
+    const nameToUid = new Map(
+      langs.map(l => [String((l as any).name).toLowerCase(), Number((l as any).uid)])
+    );
+
+    const errors: { row: number; field?: string; message: string }[] = [];
     const data: { prompt: string; topic: string; languageUid: number }[] = [];
 
     rows.forEach((r, i) => {
-      const row = i + 2; 
-      const prompt = (r.prompt ?? '').trim();
-      const topic = (r.topic ?? '').trim();
-      const langNum = Number(r.languageUid);
+      const rowNum = i + 2; 
+      const get = (k: string) => String((r[k] ?? '') as any).trim();
 
-      if (!prompt) errors.push({ row, message: 'prompt is required' });
-      if (!topic) errors.push({ row, message: 'topic is required' });
-      if (!Number.isFinite(langNum) || langNum <= 0) {
-        errors.push({ row, message: 'languageUid must be a positive number' });
+      const prompt = get('prompt');
+      const topic  = get('topic');
+
+      let langUid: number | undefined;
+      const rawUid = get('languageUid');
+      if (rawUid !== '') {
+        const n = Number(rawUid);
+        if (Number.isFinite(n) && n >= 1) {
+          langUid = n;
+        } else {
+          errors.push({ row: rowNum, field: 'languageUid', message: 'languageUid must be a positive integer (e.g., 1=cpp, 2=java, 3=python)' });
+        }
+      } else {
+        const langName = get('language').toLowerCase();
+        if (langName) {
+          const mapped = nameToUid.get(langName);
+          if (typeof mapped === 'number') {
+            langUid = mapped;
+          } else {
+            errors.push({ row: rowNum, field: 'language', message: `Unknown language name: "${get('language')}"` });
+          }
+        } else {
+          errors.push({ row: rowNum, field: 'language|languageUid', message: 'Provide languageUid or language' });
+        }
       }
 
-      if (!errors.some(e => e.row === row)) {
-        data.push({ prompt, topic, languageUid: langNum });
+      if (!prompt) errors.push({ row: rowNum, field: 'prompt', message: 'prompt is required' });
+      if (!topic)  errors.push({ row: rowNum, field: 'topic',  message: 'topic is required' });
+
+      if (!errors.some(e => e.row === rowNum)) {
+        data.push({ prompt, topic, languageUid: langUid! });
       }
     });
 
     if (errors.length) {
-      return res.status(400).json({ ok: false, message: 'Validation failed', errors, rows: rows.length });
+      return res.status(400).json({
+        ok: false,
+        message: 'Validation failed',
+        errors,
+        rows: rows.length,
+        headers: rows[0] ? Object.keys(rows[0]) : [],
+        languages: langs.map(l => ({ uid: (l as any).uid, name: (l as any).name })), 
+      });
     }
 
     let created = 0, updated = 0;
@@ -54,8 +87,8 @@ export async function importExercisesCsv(req: Request, res: Response) {
           languageUid: r.languageUid,
           topic: r.topic,
           prompt: r.prompt,
-          referenceTest: '',
-          starterCode: '',  
+          referenceTest: '', 
+          starterCode: '', 
         };
 
         if (existing) {

@@ -79,65 +79,50 @@ async function updateExercise(
   uid: number,
   prompt?: string,
   referenceTest?: string,
-  tags?: string[],
-  language?: string,
+  tags?: string[],       
+  language?: string, 
   topic?: string,
-  starterCode?: string
-): Promise<ExerciseResponse> {
-  return await sequelize.transaction(async (transaction) => {
-    const exercise = await Exercise.findByPk(uid, {
-      include: [Tag, Language],
-      transaction,
-    });
-    if (exercise) {
-      if (prompt) exercise.prompt = prompt;
-      if (tags) {
-        await exercise.setTags([], { transaction });
+  starterCode?: string | null
+) {
+  const exercise = await Exercise.findByPk(uid);
+  if (!exercise) return null;
 
-        await Promise.all(
-          tags.map(async (tag, idx) => {
-            const [tagInstance] = await Tag.findOrCreate({
-              where: { name: tag },
-              transaction,
-            });
-            await exercise.addTag(tagInstance, {
-              through: { ordering: idx + 1 },
-              transaction,
-            });
-          })
-        );
-      }
+  const updates: Record<string, unknown> = {};
 
-      if (language) {
-        const [newLanguage] = await Language.findOrCreate({
-          where: { name: language },
-          transaction,
-        });
-        await exercise.setLanguage(newLanguage, { transaction });
-      }
+  if (typeof prompt === 'string') updates.prompt = prompt;
+  if (typeof topic === 'string') updates.topic = topic;
+  if (typeof referenceTest === 'string') updates.referenceTest = referenceTest;
 
-      if (topic) {
-        exercise.topic = topic;
-      }
+  if (starterCode === null) {
+    updates.starterCode = null;
+  } else if (typeof starterCode === 'string') {
+    updates.starterCode = starterCode;
+  }
 
-      if (referenceTest) {
-        exercise.referenceTest = referenceTest;
-      }
-
-      if (starterCode) {
-        exercise.starterCode = starterCode;
-      }
-
-      await exercise.save({ transaction });
-      await exercise.reload({
-        include: [Tag, Language],
-        order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
-        transaction,
+  if (typeof language === 'string' && language.trim() !== '') {
+    const maybeNum = Number(language);
+    if (Number.isFinite(maybeNum) && maybeNum >= 1) {
+      updates.languageUid = maybeNum;
+    } else {
+      const langRow = await Language.findOne({
+        where: { name: language.trim().toLowerCase() },
+        attributes: ['uid'],
       });
+      if (!langRow) {
+        throw new Error(`Unknown language: ${language}`);
+      }
+      updates.languageUid = (langRow as any).uid;
     }
+  }
 
-    return formatExerciseResponse(exercise);
+  await exercise.update(updates);
+
+  const reloaded = await Exercise.findByPk(uid, {
+    include: [Tag, Language],
+    order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
   });
+
+  return formatExerciseResponse(reloaded);
 }
 
 async function deleteExercise(uid: number): Promise<ExerciseResponse | null> {
