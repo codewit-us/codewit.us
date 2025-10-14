@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
 import { Resource } from '@codewit/interfaces';
 
-const resourceBaseUrl = '/resources';
+const resourceBaseUrl = '/api/resources';
 
 // General hook to handle fetching data with axios
 const useAxiosFetch = <T>(initialUrl: string, initialData: T) => {

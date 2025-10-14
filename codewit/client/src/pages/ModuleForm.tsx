@@ -35,7 +35,7 @@ const ModuleForm = (): JSX.Element => {
     uid: undefined,
     language: "cpp",
     topic: "",
-    resources: [],
+    resources: []
   });
 
   const [resourceOptions, setResourceOptions] = useState<SelectedTag[]>([]);

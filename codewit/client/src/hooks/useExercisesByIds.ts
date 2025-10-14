@@ -11,7 +11,7 @@ export default function useExercisesByIds(ids: number[]) {
     if (!ids.length) return;
     setLoading(true);
     axios
-      .get<Exercise[]>('/exercises', { params: { ids } })
+      .get<Exercise[]>('/api/exercises', { params: { ids } })
       .then(r => setData(r.data))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
