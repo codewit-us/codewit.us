@@ -84,6 +84,13 @@ const topicTree = {
   "testing": {
     "assert": {},
     "unit test": {}
+  },
+  "data analysis": {
+    "load dataframe": {},
+    "describe dataframe": {},
+    "melt dataframe": {},
+    "pivot dataframe": {},
+    "query dataframe": {}
   }
 }
 
