@@ -1,45 +1,48 @@
 import { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { EXERCISES_KEY } from "../hooks/useExercises";
 
-export default function ImportExercisesPanel() {
+type ImportResponse = { ok: boolean; created: number; updated: number };
+
+export default function ImportExercisesPanel({
+  onImported,
+}: { onImported?: () => void }) {
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const qc = useQueryClient();
 
-  async function sendImport() {
+  const importMutation = useMutation<ImportResponse, any, File>({
+    mutationFn: async (f: File) => {
+      const form = new FormData();
+      form.append("file", f);
+      const res = await axios.post<ImportResponse>("/exercises/import-csv", form, {
+        withCredentials: true,
+      });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Import complete — ${data.created} created, ${data.updated} updated.`);
+      qc.invalidateQueries({ queryKey: EXERCISES_KEY });
+      onImported?.();
+    },
+    onError: (err: any) => {
+      const data = err?.response?.data;
+      const msg =
+        (typeof data === "object" ? (data.message || JSON.stringify(data)) : data) ||
+        err?.message ||
+        "Import failed. Please try again.";
+      toast.error(msg);
+    },
+  });
+
+  const sendImport = () => {
     if (!file) {
       toast.error("Choose a CSV.");
       return;
     }
-
-    setLoading(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-
-      const res = await axios.post("/exercises/import-csv", form, {
-        withCredentials: true,
-      });
-
-      const json = res.data ?? {};
-      const created = Number(json?.created ?? 0);
-      const updated = Number(json?.updated ?? 0);
-
-      toast.success(`Import complete — ${created} created, ${updated} updated.`);
-      
-      // if any component uses useAxiosFetch('/exercises'), this triggers a refetch
-      window.dispatchEvent(new CustomEvent('cw:refetch', { detail: '/exercises' }));
-    } catch (err: any) {
-      const data = err?.response?.data;
-      const msg =
-        (typeof data === 'object' ? (data.message || JSON.stringify(data)) : data) ||
-        err?.message ||
-        "Import failed. Please try again.";
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  }
+    importMutation.mutate(file);
+  };
 
   return (
     <div className="bg-foreground-600 rounded-md p-4 space-y-3">
@@ -61,11 +64,11 @@ export default function ImportExercisesPanel() {
         </span>
 
         <button
-          disabled={loading}
+          disabled={importMutation.isPending}
           onClick={sendImport}
           className="flex bg-accent-500 text-white px-4 py-1 rounded-md disabled:opacity-60"
         >
-          Import
+          {importMutation.isPending ? "Importing…" : "Import"}
         </button>
       </div>
     </div>

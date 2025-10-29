@@ -5,7 +5,6 @@ import { Editor } from "@monaco-editor/react";
 import { 
   ExerciseInput,
   ExerciseResponse,
-  SelectedTag 
 } from "@codewit/interfaces";
 import TagSelect from "../components/form/TagSelect";
 import LanguageSelect from "../components/form/LanguageSelect";
@@ -13,30 +12,30 @@ import CreateButton from "../components/form/CreateButton";
 import ReusableTable from "../components/form/ReusableTable";
 import ReusableModal from "../components/form/ReusableModal";
 import { toast } from "react-toastify";
-import {
-  usePostExercise,
-  usePatchExercise,
-  useFetchExercises,
-  useDeleteExercise,
-} from "../hooks/useExercise";
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useExercisesQuery, EXERCISES_KEY } from '../hooks/useExercises';
+import ImportExercisesPanel from './ImportExercisesPanel';
+import axios from "axios";
 import InputLabel from "../components/form/InputLabel";
 import { isFormValid } from "../utils/formValidationUtils";
+
+type UiTag = { label: string; value: string };
 
 interface ExerciseFormState extends ExerciseInput {
   /** UI helper: language in <select> before saving */
   selectedLanguage: string;
   /** UI helper: tags in react-select before saving */
-  selectedTags: SelectedTag[];
+  selectedTags: UiTag[];
   /* local flags */
   isEditing: boolean;
   editingUid: number;
 }
 
 const ExerciseForms = (): JSX.Element => {
-  const { data: exercises, setData: setExercises } = useFetchExercises();
-  const postExercise = usePostExercise();
-  const patchExercise = usePatchExercise();
-  const deleteExercise = useDeleteExercise();
+  const qc = useQueryClient();
+
+  const { data: exercises = [], isLoading, isFetching, error } = useExercisesQuery();
+
   const [formData, setFormData] = useState<ExerciseFormState>({
     prompt: "",
     topic: "",
@@ -48,9 +47,28 @@ const ExerciseForms = (): JSX.Element => {
     selectedTags: [],
     isEditing: false,
     editingUid: -1,
-   });
-  
+  });
   const [modalOpen, setModalOpen] = useState(false);
+
+  // --- Mutations (write paths) ---------------------------------------------
+
+  const postExercise = useMutation<ExerciseResponse, Error, any>({
+    mutationFn: (payload) =>
+      axios.post<ExerciseResponse>("/exercises", payload, { withCredentials: true }).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: EXERCISES_KEY }),
+  });
+
+  const patchExercise = useMutation<ExerciseResponse, Error, { uid: number; payload: any }>({
+    mutationFn: ({ uid, payload }) =>
+      axios.patch<ExerciseResponse>(`/exercises/${uid}`, payload, { withCredentials: true }).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: EXERCISES_KEY }),
+  });
+
+  const deleteExercise = useMutation<unknown, Error, number>({
+    mutationFn: (uid) =>
+      axios.delete(`/exercises/${uid}`, { withCredentials: true }).then(r => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: EXERCISES_KEY }),
+  });
 
   const handleSubmit = async () => {
     const { editingUid, isEditing } = formData;
@@ -58,36 +76,26 @@ const ExerciseForms = (): JSX.Element => {
     const exerciseData = {
       prompt: formData.prompt.trim(),
       topic: formData.topic,
-      tags: formData.selectedTags.map((tag) => String(tag.value)),
+      tags: formData.selectedTags.map((t) => t.value),
       language: formData.selectedLanguage,
       referenceTest: formData.referenceTest,
       starterCode: formData.starterCode,
     };
 
     try {
-      let response: ExerciseResponse;
       if (isEditing && editingUid !== -1) {
-        // still full Exercise on PATCH
-        response = await patchExercise(          
-        // add uid for server
-        { ...exerciseData, uid: editingUid },  
-          editingUid
-        );
-        setExercises((prev) =>
-          prev.map((ex) => (ex.uid === editingUid ? response : ex))
-        );
+        await patchExercise.mutateAsync({ uid: editingUid, payload: exerciseData });
         toast.success("Exercise successfully updated!");
       } else {
-        response = await postExercise(exerciseData);
-        setExercises((prev) => [...prev, response]);
+        await postExercise.mutateAsync(exerciseData);
         toast.success("Exercise successfully created!");
       }
 
       resetForm();
       setModalOpen(false);
-    } catch (error) {
+    } catch (err) {
       toast.error("Error saving the exercise. Please try again.");
-      console.error("Error saving the exercise:", error);
+      console.error("Error saving the exercise:", err);
     }
   };
 
@@ -107,7 +115,7 @@ const ExerciseForms = (): JSX.Element => {
     setFormData({
       prompt: exercise.prompt,
       topic: exercise.topic,
-      selectedTags: exercise.tags.map((tag) => ({ label: tag, value: Number(tag) })),
+      selectedTags: exercise.tags.map((tag) => ({ label: tag, value: tag })),
       selectedLanguage: exercise.language || "java",
       referenceTest: exercise.referenceTest || "",
       starterCode: exercise.starterCode || "",
@@ -121,16 +129,15 @@ const ExerciseForms = (): JSX.Element => {
 
   const handleDelete = async (exercise: ExerciseResponse) => {
     try {
-      await deleteExercise(exercise.uid);
-      setExercises((prev) => prev.filter((ex) => ex.uid !== exercise.uid));
+      await deleteExercise.mutateAsync(exercise.uid);
       toast.success("Exercise successfully deleted!");
-    } catch (error) {
+    } catch (err) {
       toast.error("Error deleting exercise.");
-      console.error("Error deleting exercise:", error);
+      console.error("Error deleting exercise:", err);
     }
   };
 
-  const handleTagSelect = (tags: SelectedTag[]) => {
+  const handleTagSelect = (tags: UiTag[]) => {
     setFormData((prev) => ({ ...prev, selectedTags: tags }));
   };
 
@@ -175,12 +182,25 @@ const ExerciseForms = (): JSX.Element => {
     <div className="flex flex-col h-full bg-zinc-900 p-6">
       <CreateButton onClick={() => setModalOpen(true)} title="Create Exercise" />
 
-      <ReusableTable
-        columns={columns}
-        data={exercises}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {/* NEW: CSV Import lives with Exercises UI */}
+      <div className="mb-4">
+        <ImportExercisesPanel
+          onImported={() => qc.invalidateQueries({ queryKey: EXERCISES_KEY })}
+        />
+      </div>
+
+      {isLoading || isFetching ? (
+        <div className="text-gray-300 mt-4">Loading…</div>
+      ) : error ? (
+        <div className="text-red-500 mt-4">Failed to load exercises.</div>
+      ) : (
+        <ReusableTable
+          columns={columns}
+          data={exercises}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
 
       <ReusableModal
         isOpen={modalOpen}
@@ -242,7 +262,7 @@ const ExerciseForms = (): JSX.Element => {
 
           <div className="flex flex-row gap-3">
             <TagSelect
-              selectedTags={formData.selectedTags.map((tag) => ({ ...tag, value: String(tag.value) }))}
+              selectedTags={formData.selectedTags}
               setSelectedTags={handleTagSelect}
               isMulti
             />
@@ -253,7 +273,11 @@ const ExerciseForms = (): JSX.Element => {
           </div>
 
           <TagSelect
-            selectedTags={[{ value: formData.topic, label: formData.topic }]}
+            selectedTags={
+              formData.topic
+                ? [{ label: formData.topic, value: formData.topic }]
+                : []
+            }
             setSelectedTags={handleTopicSelect}
             isMulti={false}
           />

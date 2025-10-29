@@ -1,7 +1,6 @@
 // codewit/client/src/pages/Create.tsx
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { VideoCameraIcon, BookOpenIcon, LinkIcon, QueueListIcon, CommandLineIcon } from '@heroicons/react/24/outline';
-import ImportExercisesPanel from './ImportExercisesPanel'  
 
 const Create = (): JSX.Element => {
   const location = useLocation();
@@ -38,15 +37,7 @@ const Create = (): JSX.Element => {
           </Link>
         </div>
       </div>
-
       <div className="flex-1 h-full overflow-visible bg-foreground-800">
-        {/* Show the import panel only on the Course tab */}
-        {location.pathname.startsWith('/create/exercise') && (
-          <div className="p-4">
-            <ImportExercisesPanel />
-          </div>
-        )}
-
         <Outlet />
       </div>
     </div>

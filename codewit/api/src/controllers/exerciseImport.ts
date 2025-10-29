@@ -78,21 +78,25 @@ export async function importExercisesCsv(req: Request, res: Response) {
 
     await sequelize.transaction(async (t: Transaction) => {
       for (const r of data) {
-        const existing = await Exercise.findOne({
-          where: { languageUid: r.languageUid, prompt: r.prompt },
+        const candidates = await Exercise.findAll({
+          where: { languageUid: r.languageUid, topic: r.topic },
           transaction: t,
+          attributes: ['uid', 'prompt', 'topic', 'languageUid'],
         });
+
+        const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+        const existing = candidates.find(e => norm(String((e as any).prompt)) === norm(r.prompt));
 
         const payload = {
           languageUid: r.languageUid,
           topic: r.topic,
           prompt: r.prompt,
-          referenceTest: '', 
-          starterCode: '', 
+          referenceTest: '',
+          starterCode: '',
         };
 
         if (existing) {
-          await existing.update(payload as any, { transaction: t });
+          await (existing as any).update(payload, { transaction: t });
           updated++;
         } else {
           await Exercise.create(payload as any, { transaction: t });

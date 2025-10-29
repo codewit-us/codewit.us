@@ -7,16 +7,5 @@
     "@types/passport": "^1.0.17",
     "typescript": "^5.9.2",
     "vite-plugin-dts": "^4.5.3"
-  },
-  "dependencies": {
-    "connect-redis": "^9.0.0",
-    "csv-parse": "^6.1.0",
-    "express": "^4.21.2",
-    "express-session": "^1.18.2",
-    "multer": "^2.0.2",
-    "passport": "^0.7.0",
-    "redis": "^5.8.2",
-    "sequelize": "^6.37.7",
-    "x": "^0.1.2"
   }
 }

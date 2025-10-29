@@ -14,8 +14,16 @@ import {
 } from '@codewit/validations';
 import { fromZodError } from 'zod-validation-error';
 import { checkAdmin } from '../middleware/auth';
+import multer from 'multer';
+import { asyncHandle } from '../middleware/catch';
+import { importExercisesCsv } from '../controllers/exerciseImport';
 
 const exerciseRouter = Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});
 
 exerciseRouter.get('/:uid', async (req, res) => {
   try {
@@ -96,6 +104,11 @@ exerciseRouter.post('/', checkAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+exerciseRouter.post('/import-csv', checkAdmin,
+  upload.single('file'),
+  asyncHandle(importExercisesCsv)
+);
 
 exerciseRouter.patch('/:uid', checkAdmin, async (req, res) => {
   try {
