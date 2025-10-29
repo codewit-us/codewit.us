@@ -79,50 +79,68 @@ async function updateExercise(
   uid: number,
   prompt?: string,
   referenceTest?: string,
-  tags?: string[],       
-  language?: string, 
+  tags?: string[],
+  language?: string,
   topic?: string,
   starterCode?: string | null
 ) {
-  const exercise = await Exercise.findByPk(uid);
-  if (!exercise) return null;
+  return await sequelize.transaction(async (transaction) => {
+    const exercise = await Exercise.findByPk(uid, { transaction });
+    if (!exercise) return null;
 
-  const updates: Record<string, unknown> = {};
+    const updates: Record<string, unknown> = {};
 
-  if (typeof prompt === 'string') updates.prompt = prompt;
-  if (typeof topic === 'string') updates.topic = topic;
-  if (typeof referenceTest === 'string') updates.referenceTest = referenceTest;
+    if (typeof prompt === 'string') updates.prompt = prompt;
+    if (typeof topic === 'string') updates.topic = topic;
+    if (typeof referenceTest === 'string') updates.referenceTest = referenceTest;
 
-  if (starterCode === null) {
-    updates.starterCode = null;
-  } else if (typeof starterCode === 'string') {
-    updates.starterCode = starterCode;
-  }
-
-  if (typeof language === 'string' && language.trim() !== '') {
-    const maybeNum = Number(language);
-    if (Number.isFinite(maybeNum) && maybeNum >= 1) {
-      updates.languageUid = maybeNum;
-    } else {
-      const langRow = await Language.findOne({
-        where: { name: language.trim().toLowerCase() },
-        attributes: ['uid'],
-      });
-      if (!langRow) {
-        throw new Error(`Unknown language: ${language}`);
-      }
-      updates.languageUid = (langRow as any).uid;
+    if (starterCode === null) {
+      updates.starterCode = null;
+    } else if (typeof starterCode === 'string') {
+      updates.starterCode = starterCode;
     }
-  }
 
-  await exercise.update(updates);
+    if (typeof language === 'string' && language.trim() !== '') {
+      const maybeNum = Number(language);
+      if (Number.isFinite(maybeNum) && maybeNum >= 1) {
+        updates.languageUid = maybeNum;
+      } else {
+        const langRow = await Language.findOne({
+          where: { name: language.trim().toLowerCase() },
+          attributes: ['uid'],
+          transaction,
+        });
+        if (!langRow) throw new Error(`Unknown language: ${language}`);
+        updates.languageUid = (langRow as any).uid;
+      }
+    }
 
-  const reloaded = await Exercise.findByPk(uid, {
-    include: [Tag, Language],
-    order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
+    if (Object.keys(updates).length) {
+      await exercise.update(updates, { transaction });
+    }
+
+    if (Array.isArray(tags)) {
+      await exercise.setTags([], { transaction });
+      for (let i = 0; i < tags.length; i++) {
+        const [tagInstance] = await Tag.findOrCreate({
+          where: { name: tags[i] },
+          transaction,
+        });
+        await exercise.addTag(tagInstance, {
+          through: { ordering: i + 1 },
+          transaction,
+        });
+      }
+    }
+
+    const reloaded = await Exercise.findByPk(uid, {
+      include: [Tag, Language],
+      order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
+      transaction,
+    });
+
+    return formatExerciseResponse(reloaded);
   });
-
-  return formatExerciseResponse(reloaded);
 }
 
 async function deleteExercise(uid: number): Promise<ExerciseResponse | null> {
