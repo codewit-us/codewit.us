@@ -54,19 +54,19 @@ const ExerciseForms = (): JSX.Element => {
 
   const postExercise = useMutation<ExerciseResponse, Error, any>({
     mutationFn: (payload) =>
-      axios.post<ExerciseResponse>("/exercises", payload, { withCredentials: true }).then(r => r.data),
+      axios.post<ExerciseResponse>("/api/exercises", payload, { withCredentials: true }).then(r => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: EXERCISES_KEY }),
   });
 
   const patchExercise = useMutation<ExerciseResponse, Error, { uid: number; payload: any }>({
     mutationFn: ({ uid, payload }) =>
-      axios.patch<ExerciseResponse>(`/exercises/${uid}`, payload, { withCredentials: true }).then(r => r.data),
+      axios.patch<ExerciseResponse>(`/api/exercises/${uid}`, payload, { withCredentials: true }).then(r => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: EXERCISES_KEY }),
   });
 
   const deleteExercise = useMutation<unknown, Error, number>({
     mutationFn: (uid) =>
-      axios.delete(`/exercises/${uid}`, { withCredentials: true }).then(r => r.data),
+      axios.delete(`/api/exercises/${uid}`, { withCredentials: true }).then(r => r.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: EXERCISES_KEY }),
   });
 

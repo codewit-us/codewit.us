@@ -16,7 +16,7 @@ export default function ImportExercisesPanel({
     mutationFn: async (f: File) => {
       const form = new FormData();
       form.append("file", f);
-      const res = await axios.post<ImportResponse>("/exercises/import-csv", form, {
+      const res = await axios.post<ImportResponse>("/api/exercises/import-csv", form, {
         withCredentials: true,
       });
       return res.data;

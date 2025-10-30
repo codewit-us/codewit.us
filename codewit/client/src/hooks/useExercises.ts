@@ -5,7 +5,7 @@ import type { ExerciseResponse } from '@codewit/interfaces';
 export const EXERCISES_KEY = ['exercises'] as const;
 
 export function fetchExercises() {
-  return axios.get<ExerciseResponse[]>('/exercises', { withCredentials: true })
+  return axios.get<ExerciseResponse[]>('/api/exercises', { withCredentials: true })
               .then(r => r.data);
 }
 
