@@ -97,7 +97,7 @@ const NavBar = ({
               </Link>
             </>
           )}
-          {name ? (
+          {name && (
             <div className="flex flex-col items-center space-y-2">
               <Button
                 size="sm"
@@ -109,16 +109,6 @@ const NavBar = ({
                 <span className="text-md font-medium">Logout</span>
               </Button>
             </div>
-          ) : (
-            <form action="http://localhost:3001/oauth2/google" method="get" className="w-full">
-              <button
-                type="submit"
-                className="w-full bg-white text-gray-600 hover:bg-gray-100 border border-gray-300 rounded-lg py-2 px-4 flex items-center gap-3 shadow-md transition-all"
-              >
-                <GoogleLogo className="h-5 w-5 flex-shrink-0" />
-                <span className="text-md font-medium">Log In with Google</span>
-              </button>
-            </form>
           )}
         </div>
       </div>
