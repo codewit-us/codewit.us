@@ -8,6 +8,10 @@ interface Exercise {
   language: string;
   referenceTest: string;
   starterCode: string;
+
+  // optional (?) for now until next PR
+  title?: string;
+  difficulty?: 'easy' | 'hard' | 'worked_example';
 }
 
 interface ExerciseResponse {
@@ -18,6 +22,9 @@ interface ExerciseResponse {
   referenceTest: string;
   starterCode: string;
   uid: number;
+
+  title?: string;
+  difficulty?: 'easy' | 'hard' | 'worked_example';
 }
 
 interface ExerciseFormData{

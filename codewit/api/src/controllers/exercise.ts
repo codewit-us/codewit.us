@@ -37,7 +37,9 @@ async function createExercise(
   referenceTest: string,
   tags?: string[],
   language?: string,
-  starterCode?: string
+  starterCode?: string,
+  title?: string,
+  difficulty?: 'easy' | 'hard' | 'worked_example'
 ): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
     const [languageInstance] = await Language.findOrCreate({
@@ -46,7 +48,14 @@ async function createExercise(
     });
 
     const exercise = await Exercise.create(
-      { prompt, topic, referenceTest, languageUid: languageInstance.uid, starterCode },
+      { prompt,
+        topic,
+        referenceTest,
+        languageUid: languageInstance.uid,
+        starterCode,
+        title,
+        difficulty,
+      },
       { transaction }
     );
 
@@ -82,7 +91,9 @@ async function updateExercise(
   tags?: string[],
   language?: string,
   topic?: string,
-  starterCode?: string | null
+  starterCode?: string | null,
+  title?: string,
+  difficulty?: 'easy' | 'hard' | 'worked_example'
 ) {
   return await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.findByPk(uid, { transaction });
@@ -93,6 +104,8 @@ async function updateExercise(
     if (typeof prompt === 'string') updates.prompt = prompt;
     if (typeof topic === 'string') updates.topic = topic;
     if (typeof referenceTest === 'string') updates.referenceTest = referenceTest;
+    if (typeof title == 'string') updates.title = title;
+    if (typeof difficulty == 'string') updates.difficulty = difficulty;
 
     if (starterCode === null) {
       updates.starterCode = null;
