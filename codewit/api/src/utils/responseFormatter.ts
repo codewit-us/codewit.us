@@ -44,6 +44,8 @@ export function formatSingleExercise(
     prompt: exercise.prompt,
     referenceTest: exercise.referenceTest,
     starterCode: exercise.starterCode,
+    title: exercise.title,
+    difficulty: exercise.difficulty,
   };
 }
 

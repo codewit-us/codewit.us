@@ -22,6 +22,8 @@ export interface ExerciseResponse {
     prompt: string;
     referenceTest: string;
     starterCode: string;
+    title?: string;
+    difficulty?: 'easy' | 'hard' | 'worked_example';
 }
 
 export interface CourseResponse {
