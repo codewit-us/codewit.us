@@ -23,7 +23,7 @@ export interface ExerciseResponse {
     referenceTest: string;
     starterCode: string;
     title?: string;
-    difficulty?: 'easy' | 'hard' | 'worked_example';
+    difficulty?: 'easy' | 'hard' | 'worked example';
 }
 
 export interface CourseResponse {

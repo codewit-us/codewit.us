@@ -11,7 +11,7 @@ interface Exercise {
 
   // optional (?) for now until next PR
   title?: string;
-  difficulty?: 'easy' | 'hard' | 'worked_example';
+  difficulty?: 'easy' | 'hard' | 'worked example';
 }
 
 interface ExerciseResponse {
@@ -24,7 +24,7 @@ interface ExerciseResponse {
   uid: number;
 
   title?: string;
-  difficulty?: 'easy' | 'hard' | 'worked_example';
+  difficulty?: 'easy' | 'hard' | 'worked example';
 }
 
 interface ExerciseFormData{
