@@ -34,7 +34,7 @@ class Exercise extends Model<
   declare tags?: NonAttribute<Tag[]>;
 
   declare title?: string;
-  declare difficulty?: 'easy' | 'hard' | 'worked_example';
+  declare difficulty?: 'easy' | 'hard' | 'worked example';
 
   declare getTags: BelongsToManyGetAssociationsMixin<Tag>;
   declare addTag: BelongsToManyAddAssociationMixin<Tag, number>;
@@ -88,7 +88,7 @@ class Exercise extends Model<
           allowNull: true,
         },
         difficulty: {
-          type: DataTypes.ENUM('easy', 'hard', 'worked_example'),
+          type: DataTypes.ENUM('easy', 'hard', 'worked example'),
           allowNull: true,
         }
 
