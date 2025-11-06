@@ -82,61 +82,64 @@ async function updateExercise(
   tags?: string[],
   language?: string,
   topic?: string,
-  starterCode?: string
-): Promise<ExerciseResponse> {
+  starterCode?: string | null
+) {
   return await sequelize.transaction(async (transaction) => {
-    const exercise = await Exercise.findByPk(uid, {
-      include: [Tag, Language],
-      transaction,
-    });
-    if (exercise) {
-      if (prompt) exercise.prompt = prompt;
-      if (tags) {
-        await exercise.setTags([], { transaction });
+    const exercise = await Exercise.findByPk(uid, { transaction });
+    if (!exercise) return null;
 
-        await Promise.all(
-          tags.map(async (tag, idx) => {
-            const [tagInstance] = await Tag.findOrCreate({
-              where: { name: tag },
-              transaction,
-            });
-            await exercise.addTag(tagInstance, {
-              through: { ordering: idx + 1 },
-              transaction,
-            });
-          })
-        );
-      }
+    const updates: Record<string, unknown> = {};
 
-      if (language) {
-        const [newLanguage] = await Language.findOrCreate({
-          where: { name: language },
-          transaction,
-        });
-        await exercise.setLanguage(newLanguage, { transaction });
-      }
+    if (typeof prompt === 'string') updates.prompt = prompt;
+    if (typeof topic === 'string') updates.topic = topic;
+    if (typeof referenceTest === 'string') updates.referenceTest = referenceTest;
 
-      if (topic) {
-        exercise.topic = topic;
-      }
-
-      if (referenceTest) {
-        exercise.referenceTest = referenceTest;
-      }
-
-      if (starterCode) {
-        exercise.starterCode = starterCode;
-      }
-
-      await exercise.save({ transaction });
-      await exercise.reload({
-        include: [Tag, Language],
-        order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
-        transaction,
-      });
+    if (starterCode === null) {
+      updates.starterCode = null;
+    } else if (typeof starterCode === 'string') {
+      updates.starterCode = starterCode;
     }
 
-    return formatExerciseResponse(exercise);
+    if (typeof language === 'string' && language.trim() !== '') {
+      const maybeNum = Number(language);
+      if (Number.isFinite(maybeNum) && maybeNum >= 1) {
+        updates.languageUid = maybeNum;
+      } else {
+        const langRow = await Language.findOne({
+          where: { name: language.trim().toLowerCase() },
+          attributes: ['uid'],
+          transaction,
+        });
+        if (!langRow) throw new Error(`Unknown language: ${language}`);
+        updates.languageUid = (langRow as any).uid;
+      }
+    }
+
+    if (Object.keys(updates).length) {
+      await exercise.update(updates, { transaction });
+    }
+
+    if (Array.isArray(tags)) {
+      await exercise.setTags([], { transaction });
+      for (let i = 0; i < tags.length; i++) {
+        const [tagInstance] = await Tag.findOrCreate({
+          where: { name: tags[i] },
+          transaction,
+        });
+        await exercise.addTag(tagInstance, {
+          through: { ordering: i + 1 },
+          transaction,
+        });
+      }
+    }
+
+    const reloaded = await Exercise.findByPk(uid, {
+      include: [Tag, Language],
+      order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
+      transaction,
+    });
+
+    return formatExerciseResponse(reloaded);
   });
 }
 

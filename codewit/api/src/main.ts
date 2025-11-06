@@ -61,5 +61,5 @@ app.use('/attempts', checkAuth, attemptRouter);
 app.use(catchError);
 
 app.listen(PORT, HOST, async () => {
-    console.log(`[ ready ] http://${HOST}:${PORT}`);
+  console.log(`[ ready ] http://${HOST}:${PORT}`);
 });
