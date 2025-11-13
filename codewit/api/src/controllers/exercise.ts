@@ -1,21 +1,7 @@
 import { Exercise, ExerciseTags, Language, Tag, sequelize } from '../models';
 import { ExerciseResponse } from '../typings/response.types';
 import { formatExerciseResponse } from '../utils/responseFormatter';
-
-type DbDifficulty = 'easy' | 'hard' | 'worked example';
-
-function toDbDifficulty(v: unknown): DbDifficulty | null | undefined {
-  if (v == null) return undefined;
-  const s = String(v).trim();
-
-  if (!s) return null;
-  const norm = s.toLowerCase().replace(/_/g, ' ');
-
-  if (norm === 'easy' || norm === 'hard' || norm === 'worked example') {
-    return norm as DbDifficulty;
-  }
-  return undefined; 
-}
+import type { Difficulty } from '../typings/response.types';
 
 async function getAllExercises(): Promise<ExerciseResponse[]> {
   const exercises =  await Exercise.findAll({
@@ -53,8 +39,8 @@ async function createExercise(
   tags?: string[],
   language?: string,
   starterCode?: string,
-  title?: string,
-  difficulty?: string,
+  title?: string | null,
+  difficulty?: Difficulty | null,
 ): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
     const [languageInstance] = await Language.findOrCreate({
@@ -69,7 +55,7 @@ async function createExercise(
         languageUid: languageInstance.uid,
         starterCode,
         title,
-        difficulty: toDbDifficulty(difficulty) ?? null,
+        difficulty: difficulty ?? null,
       },
       { transaction }
     );
@@ -107,8 +93,8 @@ async function updateExercise(
   language?: string,
   topic?: string,
   starterCode?: string | null,
-  title?: string,
-  difficulty?: 'easy' | 'hard' | 'worked example'
+  title?: string | null,
+  difficulty?: Difficulty | null,
 ) {
   return await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.findByPk(uid, { transaction });
@@ -119,11 +105,14 @@ async function updateExercise(
     if (typeof prompt === 'string') updates.prompt = prompt;
     if (typeof topic === 'string') updates.topic = topic;
     if (typeof referenceTest === 'string') updates.referenceTest = referenceTest;
-    if (typeof title == 'string') updates.title = title;
+    // allow update OR clear title
+    if (typeof title !== 'undefined') {
+      const trimmed = title?.trim();
+      updates.title = trimmed ? trimmed : null;
+    }
+    // allow update OR clear difficulty 
     if (typeof difficulty !== 'undefined') {
-      const d = toDbDifficulty(difficulty);
-      if (d === undefined) throw new Error(`Invalid difficulty: ${difficulty}`);
-      updates.difficulty = d;
+      updates.difficulty = difficulty ?? null;
     }
     if (starterCode === null) {
       updates.starterCode = null;
