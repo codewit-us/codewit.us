@@ -195,8 +195,7 @@ const ExerciseForms = (): JSX.Element => {
     { header: "Language", accessor: "language" },
     { 
       header: "Difficulty",
-      accessor: (r) =>
-        r.difficulty ? (r.difficulty === "worked example" ? "worked example" : r.difficulty) : "",
+      accessor: (r) => r.difficulty ?? "",
     }
   ];
 

@@ -18,6 +18,7 @@ import {
 import { Language } from './language';
 import { Tag } from './tag';
 import { Demo } from './demo';
+import { Difficulty } from '../typings/response.types';
 
 class Exercise extends Model<
   InferAttributes<Exercise>,
@@ -33,8 +34,8 @@ class Exercise extends Model<
   declare language?: NonAttribute<Language>;
   declare tags?: NonAttribute<Tag[]>;
 
-  declare title?: string;
-  declare difficulty?: 'easy' | 'hard' | 'worked example';
+  declare title?: string | null;
+  declare difficulty?: Difficulty | null;
 
   declare getTags: BelongsToManyGetAssociationsMixin<Tag>;
   declare addTag: BelongsToManyAddAssociationMixin<Tag, number>;

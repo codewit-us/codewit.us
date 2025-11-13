@@ -2,8 +2,7 @@ import type { Request, Response } from 'express';
 import { parse } from 'csv-parse/sync';
 import { sequelize, Exercise, Language } from '../models';
 import { Transaction } from 'sequelize';
-
-type Difficulty = 'easy' | 'hard' | 'worked example';
+import { Difficulty } from '../typings/response.types';
 
 function parseDifficulty(raw: unknown): Difficulty | undefined {
   if (raw == null) return undefined;
