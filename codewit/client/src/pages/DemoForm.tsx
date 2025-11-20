@@ -1,6 +1,6 @@
 // codewit/client/src/pages/DemoForm.tsx
 import { useEffect, useMemo, useState } from "react";
-import ReusableTable from "../components/form/ReusableTable";
+import ReusableTable, { Column } from "../components/form/ReusableTable";
 import { toast } from "react-toastify";
 import VideoSelect from "../components/form/VideoSelect";
 import { topic_options } from "../components/form/TagSelect";
@@ -112,7 +112,7 @@ export default function DemoTable() {
     },
   });
 
-  const columns = [
+  const columns: Column<DemoResponse>[] = [
     { header: "Title", accessor: "title" },
     { header: "Topic", accessor: "topic" },
     { header: "Language", accessor: "language" },
