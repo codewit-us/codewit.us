@@ -1,6 +1,6 @@
 // codewit/client/src/pages/CourseForm.tsx
 import React, { useState, useEffect } from "react";
-import ReusableTable from "../components/form/ReusableTable";
+import ReusableTable, { Column } from "../components/form/ReusableTable";
 import ReusableModal from "../components/form/ReusableModal";
 import Select, { MultiValue } from "react-select";
 import LanguageSelect from "../components/form/LanguageSelect";
@@ -136,11 +136,11 @@ export default function CourseForm() {
   const requiredFields = ["title"];
   const isValid = isFormValid(formData, requiredFields);
 
-  const columns = [
+  const columns: Column<Course>[] = [
     { header: "Title", accessor: "title" },
-    { header: "Modules", accessor: "modules.length" },
-    { header: "Instructors", accessor: "instructors.length" },
-    { header: "Roster", accessor: "roster.length" },
+    { header: "Modules", accessor: (row) => row.modules.length },
+    { header: "Instructors", accessor: (row) => row.instructors.length },
+    { header: "Roster", accessor: (row) => row.roster.length },
   ];
 
   return (
