@@ -1,6 +1,7 @@
 import { Exercise, ExerciseTags, Language, Tag, sequelize } from '../models';
 import { ExerciseResponse } from '../typings/response.types';
 import { formatExerciseResponse } from '../utils/responseFormatter';
+import type { Difficulty } from '../typings/response.types';
 
 async function getAllExercises(): Promise<ExerciseResponse[]> {
   const exercises =  await Exercise.findAll({
@@ -37,7 +38,9 @@ async function createExercise(
   referenceTest: string,
   tags?: string[],
   language?: string,
-  starterCode?: string
+  starterCode?: string,
+  title?: string | null,
+  difficulty?: Difficulty | null,
 ): Promise<ExerciseResponse> {
   return await sequelize.transaction(async (transaction) => {
     const [languageInstance] = await Language.findOrCreate({
@@ -46,7 +49,14 @@ async function createExercise(
     });
 
     const exercise = await Exercise.create(
-      { prompt, topic, referenceTest, languageUid: languageInstance.uid, starterCode },
+      { prompt,
+        topic,
+        referenceTest,
+        languageUid: languageInstance.uid,
+        starterCode,
+        title,
+        difficulty: difficulty ?? null,
+      },
       { transaction }
     );
 
@@ -82,7 +92,9 @@ async function updateExercise(
   tags?: string[],
   language?: string,
   topic?: string,
-  starterCode?: string | null
+  starterCode?: string | null,
+  title?: string | null,
+  difficulty?: Difficulty | null,
 ) {
   return await sequelize.transaction(async (transaction) => {
     const exercise = await Exercise.findByPk(uid, { transaction });
@@ -93,7 +105,15 @@ async function updateExercise(
     if (typeof prompt === 'string') updates.prompt = prompt;
     if (typeof topic === 'string') updates.topic = topic;
     if (typeof referenceTest === 'string') updates.referenceTest = referenceTest;
-
+    // allow update OR clear title
+    if (typeof title !== 'undefined') {
+      const trimmed = title?.trim();
+      updates.title = trimmed ? trimmed : null;
+    }
+    // allow update OR clear difficulty 
+    if (typeof difficulty !== 'undefined') {
+      updates.difficulty = difficulty ?? null;
+    }
     if (starterCode === null) {
       updates.starterCode = null;
     } else if (typeof starterCode === 'string') {

@@ -4,13 +4,13 @@ import LoadingPage from "../loading/LoadingPage";
 import type { CustomFlowbiteTheme } from "flowbite-react";
 import { cn } from "../../utils/styles";
 
-interface Column {
+export type Column<T> = {
   header: string;
-  accessor: string;
-}
+  accessor: keyof T | ((row: T) => React.ReactNode);
+};
 
 interface ReusableTableProps<T> {
-  columns: Column[],
+  columns: Column<T>[],
   data: T[],
   className?: string,
   itemsPerPage?: number,
@@ -87,15 +87,31 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
           </Table.HeadCell>
         </Table.Head>
         <Table.Body className="divide-y divide-gray-700">
-          {currentData.map((item, index) => {
-            return <Table.Row key={index} className="hover:bg-gray-800 transition-colors duration-300">
-              {columns.map((col) => {
-                const value = getNestedValue(item, col.accessor);
+          {currentData.map((item, rowIdx) => (
+            <Table.Row key={rowIdx} className="hover:bg-gray-800 transition-colors duration-300">
+              {columns.map((col, colIdx) => {
+                let content: React.ReactNode = "-";
 
-                return <Table.Cell key={col.accessor} className="text-gray-400">
-                  {value !== null && value !== undefined ? String(value) : "-"}
-                </Table.Cell>;
+                if (typeof col.accessor === "function") {
+                  content = col.accessor(item);
+                } else {
+                  const path = String(col.accessor);
+                  const value =
+                    path.includes(".")
+                      ? getNestedValue(item, path)
+                      : (item as any)[path];
+
+                  content =
+                    value !== null && value !== undefined ? String(value) : "-";
+                }
+
+                return (
+                  <Table.Cell key={`${col.header}-${colIdx}`} className="text-gray-400">
+                    {content}
+                  </Table.Cell>
+                );
               })}
+
               <Table.Cell className="text-right space-x-2">
                 <button
                   onClick={() => onEdit(item)}
@@ -111,7 +127,7 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
                 </button>
               </Table.Cell>
             </Table.Row>
-          })}
+          ))}
         </Table.Body>
       </Table>
     </div>

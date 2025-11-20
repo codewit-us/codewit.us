@@ -1,6 +1,8 @@
 import { Attempt } from "../models";
 import { EvaluationResponse } from "../utils/codeEvalService"
 
+export type Difficulty = 'easy' | 'hard' | 'worked example';
+
 export interface ModuleResponse {
     uid: number;
     topic: string;
@@ -22,6 +24,8 @@ export interface ExerciseResponse {
     prompt: string;
     referenceTest: string;
     starterCode: string;
+    title?: string;
+    difficulty?: Difficulty | null;
 }
 
 export interface CourseResponse {

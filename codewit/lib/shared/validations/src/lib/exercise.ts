@@ -6,7 +6,9 @@ const createExerciseSchema = z.object({
   topic: z
     .string()
     .refine((t) => validateTopic(t), { message: 'Invalid topic' }),
+  title: z.string().min(1, "Title is required"),
   language: z.string().optional(),
+  difficulty: z.enum(['easy','hard','worked example']).optional(),
   tags: z.string().array().optional(),
   referenceTest: z.string(),
   starterCode: z.string().optional(),
@@ -18,7 +20,9 @@ const updateExerciseSchema = z.object({
     .string()
     .refine((t) => validateTopic(t), { message: 'Invalid topic' })
     .optional(),
+  title: z.string().min(1).optional(),
   language: z.string().optional(),
+  difficulty: z.enum(['easy','hard','worked example']).optional(),
   tags: z.string().array().optional(),
   referenceTest: z.string().optional(),
   starterCode: z.string().optional(),

@@ -18,8 +18,10 @@ import ImportExercisesPanel from './ImportExercisesPanel';
 import axios from "axios";
 import InputLabel from "../components/form/InputLabel";
 import { isFormValid } from "../utils/formValidationUtils";
+import { Column } from "../components/form/ReusableTable";
 
 type UiTag = { label: string; value: string };
+type Difficulty = 'easy' | 'hard' | 'worked example';
 
 interface ExerciseFormState extends ExerciseInput {
   /** UI helper: language in <select> before saving */
@@ -29,6 +31,9 @@ interface ExerciseFormState extends ExerciseInput {
   /* local flags */
   isEditing: boolean;
   editingUid: number;
+
+  title?: string;
+  difficulty?: Difficulty;
 }
 
 const ExerciseForms = (): JSX.Element => {
@@ -47,6 +52,8 @@ const ExerciseForms = (): JSX.Element => {
     selectedTags: [],
     isEditing: false,
     editingUid: -1,
+    title: "",
+    difficulty: undefined,
   });
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -80,6 +87,8 @@ const ExerciseForms = (): JSX.Element => {
       language: formData.selectedLanguage,
       referenceTest: formData.referenceTest,
       starterCode: formData.starterCode,
+      title: formData.title?.trim() || undefined,
+      difficulty: formData.difficulty,
     };
 
     try {
@@ -123,6 +132,8 @@ const ExerciseForms = (): JSX.Element => {
       editingUid: exercise.uid,
       tags: exercise.tags,
       language: exercise.language,
+      title: exercise.title || "",
+      difficulty: exercise.difficulty,
     });
     setModalOpen(true);
   };
@@ -166,23 +177,32 @@ const ExerciseForms = (): JSX.Element => {
       starterCode: "",
       isEditing: false,
       editingUid: -1,
+      title: "",
+      difficulty: undefined,
     });
   };
 
   const requiredFields = ["prompt", "referenceTest", "topic"];
   const isValid = isFormValid(formData, requiredFields);
 
-  const columns = [
+  const columns: Column<ExerciseResponse>[] = [
+    { 
+      header: "Title",
+      accessor: (r) => r.title?.trim() || r.prompt || `#${r.uid}`,
+    },
     { header: "Prompt", accessor: "prompt" },
     { header: "Topic", accessor: "topic" },
     { header: "Language", accessor: "language" },
+    { 
+      header: "Difficulty",
+      accessor: (r) => r.difficulty ?? "",
+    }
   ];
 
   return (
     <div className="flex flex-col h-full bg-zinc-900 p-6">
       <CreateButton onClick={() => setModalOpen(true)} title="Create Exercise" />
 
-      {/* NEW: CSV Import lives with Exercises UI */}
       <div className="mb-4">
         <ImportExercisesPanel
           onImported={() => qc.invalidateQueries({ queryKey: EXERCISES_KEY })}
@@ -234,6 +254,32 @@ const ExerciseForms = (): JSX.Element => {
         }
       >
         <div className="space-y-4">
+          <InputLabel htmlFor="title">Title (optional)</InputLabel>
+          <input
+            id="title"
+            className="w-full rounded-md bg-zinc-800 text-gray-100 px-3 py-2"
+            value={formData.title ?? ""}
+            onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))}
+          />
+
+          <InputLabel htmlFor="difficulty">Difficulty (optional)</InputLabel>
+          <select
+            id="difficulty"
+            className="w-full rounded-md bg-zinc-800 text-gray-100 px-3 py-2"
+            value={formData.difficulty ?? ""}
+            onChange={(e) =>
+              setFormData(p => ({
+                ...p,
+                difficulty: (e.target.value || undefined) as Difficulty | undefined,
+              }))
+            }
+          >
+            <option value="">— None —</option>
+            <option value="easy">easy</option>
+            <option value="hard">hard</option>
+            <option value="worked example">worked example</option>
+          </select>
+
           <InputLabel htmlFor="prompt">Prompt</InputLabel>
           <MDEditor
             value={formData.prompt}

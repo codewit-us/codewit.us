@@ -96,7 +96,9 @@ exerciseRouter.post('/', checkAdmin, async (req, res) => {
       validatedBody.data.referenceTest,
       validatedBody.data.tags,
       validatedBody.data.language,
-      validatedBody.data.starterCode
+      validatedBody.data.starterCode,
+      validatedBody.data.title,
+      validatedBody.data.difficulty,
     );
     res.json(exercise);
   } catch (err) {
@@ -127,7 +129,9 @@ exerciseRouter.patch('/:uid', checkAdmin, async (req, res) => {
       validatedBody.data.tags,
       validatedBody.data.language,
       validatedBody.data.topic,
-      validatedBody.data.starterCode
+      validatedBody.data.starterCode,
+      validatedBody.data.title,
+      validatedBody.data.difficulty,
     );
 
     if (exercise) {
