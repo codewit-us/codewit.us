@@ -1,6 +1,6 @@
 // codewit/client/src/pages/ResourceForm.tsx
 import React, { useState, useEffect } from "react";
-import ReusableTable, { Column } from "../components/form/ReusableTable";
+import ReusableTable from "../components/form/ReusableTable";
 import ReusableModal from "../components/form/ReusableModal";
 import InputLabel from "../components/form/InputLabel";
 import TextInput from "../components/form/TextInput";
@@ -91,10 +91,10 @@ const ResourceForm = (): JSX.Element => {
   const requiredFields = ["url", "title", "source"];
   const isValid = isFormValid(formData, requiredFields);
 
-  const columns: Column<Resource>[] = [
+  const columns = [
     { header: "Title", accessor: "title" },
-    { header: "URL", accessor: (row) => row.url },
-    { header: "Source", accessor: (row) => row.source },
+    { header: "URL", accessor: "url" },
+    { header: "Source", accessor: "source" },
   ];
 
   return (
