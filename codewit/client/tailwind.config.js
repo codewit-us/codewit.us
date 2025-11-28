@@ -1,11 +1,12 @@
 /* v8 ignore next 98 */
 const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
-const { join } = require('path');
+const { join } = require("node:path");
 const flowbite = require("flowbite-react/tailwind");
+
+const root = join(__dirname, "../");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  base: "",
   content: [
     join(
       __dirname,
@@ -15,8 +16,7 @@ module.exports = {
     join(__dirname, '../lib/shared/components/**/*.{ts,tsx}'),
     ...createGlobPatternsForDependencies(__dirname),
     './src/**/*.{js,jsx,ts,tsx}',
-    '../../node_modules/flowbite-react/lib/**/*.js',
-    './node_modules/flowbite/**/*.js',
+    flowbite.content({base: root}),
   ],
   theme: {
     screens: {
@@ -109,7 +109,6 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/typography'),
-    require('flowbite/plugin'),
     require('daisyui'),
     flowbite.plugin(),
   ],
