@@ -1,23 +1,13 @@
 // codewit/client/src/pages/DemoForm.tsx
 import { useEffect, useMemo, useState } from "react";
-import ReusableTable, { Column } from "../components/form/ReusableTable";
 import { toast } from "react-toastify";
-import VideoSelect from "../components/form/VideoSelect";
-import { topic_options } from "../components/form/TagSelect";
-import { language_options, get_language_option } from "../components/form/LanguageSelect";
-import CreateButton from "../components/form/CreateButton";
 import { DemoResponse, ExerciseResponse } from "@codewit/interfaces";
-import { isFormValid } from "../utils/formValidationUtils";
-import LoadingPage from "../components/loading/LoadingPage";
-import { Modal, ModalBody, ModalFooter, ModalHeader } from "../components/ui/modal";
 import { useField, useForm } from "@tanstack/react-form";
-import { Button, Label, TextInput } from "flowbite-react";
+import { Button, Label, TextInput, HelperText } from "flowbite-react";
 import CreatableSelect from "react-select/creatable";
-import { cn, SelectStyles } from "../utils/styles";
 import Select from "react-select";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { ErrorView } from "../components/error/Error";
 import {
   DndContext,
   closestCenter,
@@ -35,6 +25,18 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Bars3Icon, TrashIcon } from "@heroicons/react/24/solid";
+
+import { cn, SelectStyles } from "../utils/styles";
+import { ErrorView } from "../components/error/Error";
+import { isFormValid } from "../utils/formValidationUtils";
+import LoadingPage from "../components/loading/LoadingPage";
+import { Modal, ModalBody, ModalFooter, ModalHeader } from "../components/ui/modal";
+import VideoSelect from "../components/form/VideoSelect";
+import { topic_options } from "../components/form/TagSelect";
+import { language_options, get_language_option } from "../components/form/LanguageSelect";
+import CreateButton from "../components/form/CreateButton";
+import ReusableTable, { Column } from "../components/form/ReusableTable";
+import { VideoOption, use_yt_videos } from "../hooks/yt_videos";
 
 interface DemoForm {
   uid?: number,
@@ -171,6 +173,10 @@ interface DemoFormProps {
 }
 
 function DemoForm({view, demo, on_cancel, on_created, on_updated}: DemoFormProps) {
+  const {
+    error: yt_video_error
+  } = use_yt_videos();
+
   const send_demo = useMutation({
     mutationFn: async (data: DemoForm) => {
       let body = {
@@ -216,7 +222,8 @@ function DemoForm({view, demo, on_cancel, on_created, on_updated}: DemoFormProps
       let result = await send_demo.mutateAsync(value);
 
       form.reset(demo_form(result.data));
-    }
+    },
+    validators: {}
   });
 
   useEffect(() => {
@@ -227,9 +234,7 @@ function DemoForm({view, demo, on_cancel, on_created, on_updated}: DemoFormProps
     form.reset();
   }, [view]);
 
-  return <Modal show={view} position="center" size="2xl" onClose={() => {
-    on_cancel();
-  }}>
+  return <Modal show={view} position="center" size="2xl" onClose={() => on_cancel()}>
     <ModalHeader>
       <form.Subscribe
         selector={state => ([state.values.uid])}
@@ -257,13 +262,73 @@ function DemoForm({view, demo, on_cancel, on_created, on_updated}: DemoFormProps
             />
           </div>;
         }}/>
-        <form.Field name="youtube_id" children={(field) => {
-          return <VideoSelect required youtube_id={field.state.value} onSelectVideo={(id, thumbnail) => {
-            field.handleChange(id);
-            // have to use this since the id and thunbnail are tied to the same input
-            form.setFieldValue("youtube_thumbnail", thumbnail);
-          }}/>
-        }}/>
+        {yt_video_error ?
+            <>
+                <form.Field name="youtube_id" children={(field) => {
+                    return <div className="space-y-2">
+                        <Label htmlFor={field.name}>
+                            Youtube ID
+                        </Label>
+                        <TextInput
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={ev => field.handleChange(ev.target.value)}
+                        />
+                        <HelperText>
+                            Only the Youtube ID which is located in the URL of a video on the site.
+                        </HelperText>
+                    </div>
+                }}/>
+                <form.Field
+                    name="youtube_thumbnail"
+                    validators={{
+                        onBlur: ({value}) => {
+                            try {
+                                let check = new URL(value);
+
+                                return undefined;
+                            } catch(err) {
+                                return "The thumbnail URL must be a valid absolute URL";
+                            }
+                        }
+                    }}
+                    children={(field) => {
+                        let invalid_color = !field.state.meta.isValid ? "failure" : undefined;
+
+                        return <div className="space-y-2">
+                            <Label htmlFor={field.name} color={invalid_color}>
+                                Youtube Thumbnail
+                            </Label>
+                            <TextInput
+                                id={field.name}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={ev => field.handleChange(ev.target.value)}
+                                color={invalid_color}
+                            />
+                            <HelperText>
+                                {field.state.meta.errors.length !== 0 ?
+                                    field.state.meta.errors.join(", ") + ". "
+                                    :
+                                    "The full url of the video thumbnail."
+                                }
+                            </HelperText>
+                        </div>;
+                    }}
+                />
+            </>
+            :
+            <form.Field name="youtube_id" children={(field) => {
+                return <VideoSelect required youtube_id={field.state.value} onSelectVideo={(id, thumbnail) => {
+                    field.handleChange(id);
+                    // have to use this since the id and thunbnail are tied to the same input
+                    form.setFieldValue("youtube_thumbnail", thumbnail);
+                }}/>
+            }}/>
+        }
         <form.Field name="topic" children={field => {
           return <div className="space-y-2">
             <Label htmlFor={field.name}>
