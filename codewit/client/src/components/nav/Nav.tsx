@@ -1,10 +1,9 @@
 // codewit/client/src/components/nav/Nav.tsx
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navbar, Button } from 'flowbite-react';
 import { Link, useSearchParams} from 'react-router-dom';
 import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { UserCircleIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
-import GoogleLogo from '../logo/GoogleLogo';
 
 const NavBar = ({
   name,
@@ -21,6 +20,32 @@ const NavBar = ({
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
   const toggleNavbar = () => setIsOpen(!isOpen);
+  const closeNavbar = () => setIsOpen(false);
+
+  const drawerRef = useRef<HTMLDivElement | null>(null);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const drawer = drawerRef.current;
+      const toggle = toggleRef.current;
+      const target = event.target as Node | null;
+
+      if (!drawer || !target) return;
+
+      if (drawer.contains(target)) return;
+
+      if (toggle && toggle.contains(target)) return;
+
+      closeNavbar();
+    };
+
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const [searchParams] = useSearchParams();
   const slugFromQuery = searchParams.get('course_id');
@@ -62,6 +87,7 @@ const NavBar = ({
           )}
 
           <button
+            ref={toggleRef}
             data-testid="navbar-toggle"
             className="h-9 px-3 relative flex items-center justify-center text-sm text-accent-600 hover:text-accent-700 bg-transparent dark:bg-transparent rounded-lg text-center font-medium focus:outline-none focus:ring-4"
             onClick={toggleNavbar}
@@ -71,14 +97,18 @@ const NavBar = ({
         </div>
       </div>
 
-      {/* drawer … unchanged */}
-      <div className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div
+        ref={drawerRef}
+        className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
         <div className="flex justify-end p-2">
           <Button
             size="sm"
             className="text-accent-500 hover:text-accent-700 bg-transparent dark:bg-transparent"
             color="dark"
-            onClick={toggleNavbar}
+            onClick={closeNavbar}
           >
             <XMarkIcon className="h-6 w-6" />
           </Button>
