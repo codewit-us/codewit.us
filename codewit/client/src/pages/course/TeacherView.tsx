@@ -4,7 +4,7 @@ import bulbLit from '/bulb(lit).svg';
 
 import { useCourseProgress } from '../../hooks/useCourse';
 import Loading  from '../../components/loading/LoadingPage';
-import { default as ErrorEle } from '../../components/error/Error';
+import { ErrorPage } from '../../components/error/Error';
 import { useAxiosFetch } from "../../hooks/fetching";
 import { useEffect, useState } from "react";
 import PendingRequestsCard from './components/PendingRequestsCard';
@@ -73,7 +73,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   }
   
   if (error || course_error || course == null || !students) {
-    return <ErrorEle message="Failed to load course information"/>;
+    return <ErrorPage message="Failed to load course information"/>;
   }
 
   // persist both flags in one PATCH

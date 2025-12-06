@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { StudentCourse as StuCourse} from '@codewit/interfaces';
 
-import { default as ErrorView } from "../components/error/Error";
+import { ErrorPage } from "../components/error/Error";
 import Loading from "../components/loading/LoadingPage";
 import { useAxiosFetch } from "../hooks/fetching";
 
@@ -78,7 +78,7 @@ export default function CourseView({onCourseChange}: CourseView) {
   }
 
   if (error || course == null) {
-    return <ErrorView message="Failed to fetch courses. Please try again later."/>;
+    return <ErrorPage message="Failed to fetch courses. Please try again later."/>;
   }
 
   if (course.type === "TeacherView") {
