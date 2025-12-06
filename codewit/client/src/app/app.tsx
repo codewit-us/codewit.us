@@ -13,7 +13,7 @@ import ResourceForm from '../pages/ResourceForm';
 import CourseForm from '../pages/CourseForm';
 import DemoForms from '../pages/DemoForm';
 import UserManagement from '../pages/UserManagement';
-import Error from '../components/error/Error';
+import { ErrorPage } from '../components/error/Error';
 import LoadingPage from '../components/loading/LoadingPage';
 import TeacherView from '../pages/course/TeacherView';
 import DashboardGate from '../components/guards/DashboardGate';
@@ -113,7 +113,7 @@ export function App() {
                   to="/error"
                   state={{
                     message:
-                      'Oops! Page does not exist. We will return you to the main page.',
+                      'Oops! You do not have permission to access this page.\nPress the button below to return to the main page.',
                     statusCode: 401,
                   }}
                 />
@@ -130,7 +130,7 @@ export function App() {
                   to="/error"
                   state={{
                     message:
-                      'Oops! Page does not exist. We will return you to the main page.',
+                      'Oops! You do not have permission to access this page.\nPress the button below to return to the main page.',
                     statusCode: 401,
                   }}
                 />
@@ -152,7 +152,7 @@ export function App() {
               </DashboardGate>
             }
           />
-          <Route path="/error" element={<Error />} />
+          <Route path="/error" element={<ErrorPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
