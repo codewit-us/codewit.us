@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import Error from '../components/error/Error';
+import { ErrorPage } from '../components/error/Error';
 import Loading from '../components/loading/LoadingPage';
 import { DemoResponse } from '@codewit/interfaces';
 import { Accordion } from '@codewit/shared/components';
@@ -85,7 +85,7 @@ export default function Home() {
    }  
 
   if (error) {
-    return <Error message="Failed to fetch courses. Please try again later." />;
+    return <ErrorPage message="Failed to fetch courses. Please try again later." />;
   }
 
   if (data.student.length === 0 && data.instructor.length === 0) {

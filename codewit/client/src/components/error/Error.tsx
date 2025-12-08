@@ -1,24 +1,17 @@
 // codewit/client/src/components/error/Error.tsx
-// Error.tsx
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { PropsWithChildren, ReactNode, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { PropsWithChildren, ReactNode } from "react";
 
 interface ErrorProps {
   message?: string;
   statusCode?: number; 
 }
 
-const Error = ({ message = "Oops! Page does not exist. We will return you to the main page.", statusCode = 400 }: ErrorProps): JSX.Element => {
+export const ErrorPage = ({ message = "Oops! Page does not exist. You can now return to the main page.", statusCode = 400 }: ErrorProps): JSX.Element => {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const stateMessage = (location.state as { message?: string; statusCode?: number })?.message;
   const stateStatusCode = (location.state as { statusCode?: number })?.statusCode;
-
-  useEffect(() => {
-    const timer = setTimeout(() => navigate('/'), 5000);
-    return () => clearTimeout(timer);
-  }, [navigate]);
 
   const displayStatusCode = stateStatusCode || statusCode;
 
@@ -29,14 +22,20 @@ const Error = ({ message = "Oops! Page does not exist. We will return you to the
           {displayStatusCode} 
            <p className="ml-1 text-7xl font-bold tracking-tight text-white">Error</p>
         </h1>
-        <p className="text-lg">{stateMessage || message}</p>
+        <p className="text-lg whitespace-pre-line">{stateMessage || message}</p>
+        <div className="mt-6">
+          <Link to="/"
+            className="px-8 py-4 inline-flex items-center justify-center
+                       text-base font-semibold text-white bg-accent-500 rounded-lg
+                     hover:bg-accent-600 focus:ring-4 focus:ring-accent-300"
+          >
+            Back to home
+          </Link>
+        </div>
       </div>
-      <p className=" text-gray-400">Redirecting to the homepage in 5 seconds...</p>
     </div>
   );
 };
-
-export default Error;
 
 type ErrorViewProps = PropsWithChildren<{
   title?: string | ReactNode,
