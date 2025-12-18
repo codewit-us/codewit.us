@@ -5,7 +5,7 @@ import LanguageSelect from "../components/form/LanguageSelect";
 import TopicSelect from "../components/form/TagSelect";
 import ResourceSelect from "../components/form/ResourceSelect";
 import CreateButton from "../components/form/CreateButton";
-import ReusableTable from "../components/form/ReusableTable";
+import ReusableTable, { Column } from "../components/form/ReusableTable";
 import ReusableModal from "../components/form/ReusableModal";
 import { toast } from "react-toastify";
 import { SelectedTag, Module } from "@codewit/interfaces";
@@ -119,10 +119,10 @@ const ModuleForm = (): JSX.Element => {
   const requiredFields = ["topic", "language"];
   const isValid = isFormValid(formData, requiredFields);
 
-  const columns = [
+  const columns: Column<Module>[] = [
     { header: "Topic", accessor: "topic" },
     { header: "Language", accessor: "language" },
-    { header: "Resources", accessor: "resources.length" },
+    { header: "Resources", accessor: (m: Module) => m.resources.length },
   ];
 
   return (

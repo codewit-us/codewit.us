@@ -1,0 +1,33 @@
+# .github/workflows/pr-check.yml
+name: PR Build Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - name: web
+            dockerfile: Dockerfile.frontend
+            target: runner
+          - name: api
+            dockerfile: Dockerfile.backend
+            target: runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image (${{ matrix.name }})
+        run: |
+          cd codewit
+          docker build \
+            -f "${{ matrix.dockerfile }}" \
+            --target "${{ matrix.target }}" \
+            -t temp/${{ matrix.name }}:pr .
