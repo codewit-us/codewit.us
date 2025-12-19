@@ -62,7 +62,7 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
   const hasOutput = rawout.trim().length > 0;
   const allPassed = !errorMessage && !hasFailures && state === 'passed';
   const activeIssue = failure_details[issueIdx] || null;
-  const showOutcomeTab = !errorMessage;
+  const showOutcomeTab = hasFailures || !errorMessage;
 
   return (
     <div className="p-6 min-h-full flex flex-col items-start bg-alternate-background-500 rounded-lg shadow-lg border-2 border-white" data-testid="check-list">
@@ -73,7 +73,7 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
             Checked: {passed} of {tests_run} test cases produced correct results
           </div>
         )}
-        {!errorMessage && hasFailures && (
+        {hasFailures && (
           <div className="flex items-center gap-2 mt-2">
             <h2 className="text-lg text-white">Issues</h2>
             <button
@@ -127,13 +127,9 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
       <div className="w-full pt-4 text-white">
         {activeTab === 'outcome' && showOutcomeTab ? (
           <>
-            {errorMessage && (
-              <div className="border border-red-500 p-4 bg-black mb-4">
-                <span className="font-bold text-red-400">{errorMessage}</span>
-              </div>
-            )}
-            {!errorMessage && hasFailures && activeIssue && (
+            {hasFailures && activeIssue && (
               <div className="border border-cyan-500 p-4 bg-black mb-4">
+                <span className="font-bold text-red-400">{activeIssue.test_case}</span><br/>
                 <span className="font-bold text-red-400">{activeIssue.error_message}</span>
                 {activeIssue.expected && (
                   <div className="mt-2 border border-cyan-500 p-2">
