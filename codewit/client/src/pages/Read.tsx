@@ -14,7 +14,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { AttemptResult, DemoAttempt, DemoResource, RelatedDemo } from 'lib/shared/interfaces';
-import { ButtonHTMLAttributes, useState } from 'react';
+import { ButtonHTMLAttributes, useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Resizable } from 're-resizable';
 
@@ -339,6 +339,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
   const [exercise_index, set_exercise_index] = useState(0);
   const [last_attempt, set_last_attempt] = useState<AttemptWithEval | null>(null);
   const [submission_state, set_submission_state] = useState<SubmissionState>(SubmissionState.Submit);
+  const current_exercise = info.demo.exercises[exercise_index];
 
   const {mutateAsync, isPending} = useMutation({
     mutationFn: async (code: string) => {
@@ -346,7 +347,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
         "/api/attempts",
         {
           timestamp: new Date(),
-          exerciseId: info.demo.exercises[exercise_index].uid,
+          exerciseId: current_exercise.uid,
           code,
         },
         { withCredentials: true }
@@ -384,12 +385,19 @@ function RightPanel({info, course_id}: RightPanelProps) {
 
   const form = useForm({
     defaultValues: {
-      code: info.demo.exercises[exercise_index].skeleton ?? ""
+      code: current_exercise.last_attempt ?? ""
     },
     onSubmit: async ({value}) => {
       await mutateAsync(value.code);
     }
   });
+
+  useEffect(() => {
+    const saved_code = current_exercise.last_attempt ?? "";
+    form.setFieldValue("code", saved_code);
+    set_last_attempt(null);
+    set_submission_state(SubmissionState.Submit);
+  }, [current_exercise.last_attempt, current_exercise.uid, form]);
 
   let action_btn;
 
@@ -424,8 +432,6 @@ function RightPanel({info, course_id}: RightPanelProps) {
 
           set_exercise_index(i => (i + 1));
           set_submission_state(SubmissionState.Submit);
-
-          form.resetField("code");
         }}
       >
         <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600" />
@@ -470,7 +476,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
     >
       <div className="px-2 h-full overflow-auto">
         <div className="w-full space-y-2">
-          <DefaultMarkdown text={info.demo.exercises[exercise_index].prompt}/>
+          <DefaultMarkdown text={current_exercise.prompt}/>
         </div>
         <form className="flex-1 flex flex-col h-full mt-2" onSubmit={e => {
           e.preventDefault();
@@ -480,7 +486,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
           <form.Field name="code" children={(field) => {
             return <Editor
               value={field.state.value}
-              language={info.demo.exercises[exercise_index].language}
+              language={current_exercise.language}
               theme="hc-black"
               className="border-2 rounded-lg border-gray-800 focus-within:border-accent-500 overflow-hidden"
               wrapperProps={{
@@ -492,7 +498,12 @@ function RightPanel({info, course_id}: RightPanelProps) {
             />;
           }}/>
           <div className="flex flex-row gap-1 pt-2 pb-3">
-            <ActionBtn type="button" className="w-1/3 border-accent-500" disabled={isPending} onClick={() => form.resetField("code")}>
+            <ActionBtn
+              type="button"
+              className="w-1/3 border-accent-500"
+              disabled={isPending}
+              onClick={() => form.setFieldValue("code", current_exercise.last_attempt ?? "")}
+            >
               <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
               <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
             </ActionBtn>

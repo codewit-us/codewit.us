@@ -22,8 +22,8 @@ import { DemoAttempt } from "@codewit/interfaces";
 import { fromZodError } from 'zod-validation-error';
 import { checkAdmin } from '../middleware/auth';
 import { asyncHandle } from '../middleware/catch';
-import { Demo, DemoTags, Language, sequelize, Tag, UserExerciseCompletion } from '../models';
-import { QueryTypes } from 'sequelize';
+import { Attempt, Demo, DemoTags, Language, sequelize, Tag, UserExerciseCompletion } from '../models';
+import { Op, QueryTypes } from 'sequelize';
 
 const demoRouter = Router();
 
@@ -99,6 +99,33 @@ demoRouter.get("/:uid/attempt", asyncHandle(async (req, res) => {
 
   let exercises = [];
 
+  const exercise_uids = demo_record.exercises.map(ex => ex.uid);
+  const last_attempts: Record<number, string | null> = {};
+
+  if (exercise_uids.length > 0) {
+    const attempts = await Attempt.findAll({
+      where: {
+        exerciseUid: {
+          [Op.in]: exercise_uids
+        },
+        userUid: req.user.uid
+      },
+      attributes: ["exerciseUid", "code", "submissionNumber"],
+      order: [
+        ["exerciseUid", "ASC"],
+        ["submissionNumber", "DESC"],
+      ]
+    });
+
+    for (const attempt of attempts) {
+      const exercise_uid = attempt.getDataValue("exerciseUid");
+
+      if (!(exercise_uid in last_attempts)) {
+        last_attempts[exercise_uid] = attempt.getDataValue("code");
+      }
+    }
+  }
+
   for (let exercise of demo_record.exercises) {
     let completion = 0.0;
 
@@ -112,6 +139,7 @@ demoRouter.get("/:uid/attempt", asyncHandle(async (req, res) => {
       language: exercise.language.name,
       skeleton: exercise.starterCode,
       completion,
+      last_attempt: last_attempts[exercise.uid] ?? null,
     });
   }
 

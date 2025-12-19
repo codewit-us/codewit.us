@@ -32,6 +32,8 @@ class Attempt extends Model<
   declare code: string;
   declare completionPercentage: number;
   declare error: string;
+  declare exerciseUid: number;
+  declare userUid: number;
 
   declare setUser: HasOneSetAssociationMixin<User, number>;
   declare setExercise: HasOneSetAssociationMixin<Exercise, number>;
@@ -56,6 +58,14 @@ class Attempt extends Model<
         },
         code: {
           type: DataTypes.TEXT,
+          allowNull: false,
+        },
+        exerciseUid: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        userUid: {
+          type: DataTypes.INTEGER,
           allowNull: false,
         },
         completionPercentage: {
