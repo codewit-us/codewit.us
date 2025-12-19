@@ -39,4 +39,5 @@ export interface DemoExercise {
     language: string,
     skeleton: string | null,
     completion: number,
+    last_attempt: string | null,
 }

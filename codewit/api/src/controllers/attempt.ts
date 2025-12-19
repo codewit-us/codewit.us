@@ -47,6 +47,8 @@ async function createAttempt(
       {
         code,
         submissionNumber: submissionCount + 1,
+        exerciseUid: exerciseId,
+        userUid: userId,
       },
       { transaction }
     );
