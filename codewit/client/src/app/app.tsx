@@ -7,7 +7,7 @@ import CourseView from "../pages/CourseView";
 import Read from '../pages/Read';
 import Create from '../pages/Create';
 import NotFound from '../components/notfound/NotFound';
-import ExerciseForms from '../pages/ExerciseForm';
+import { ExerciseView } from '../pages/create/exercise';
 import ModuleForm from '../pages/ModuleForm';
 import ResourceForm from '../pages/ResourceForm';
 import CourseForm from '../pages/CourseForm';
@@ -25,23 +25,23 @@ export function App() {
   const { user, loading, handleLogout } = useAuth();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  
+
   const isLandingPage = location.pathname === '/';
   const isUserManagement = location.pathname.startsWith('/usermanagement');
-  
+
   const [courseTitle, setCourseTitle] = useState<string>(() =>
      localStorage.getItem('courseTitle') || '',
    );
- 
+
    const [courseId, setCourseId] = useState<string>(() =>
      localStorage.getItem('courseId') || '',
-   ); 
+   );
 
   useEffect(() => {
     if (courseTitle) {
       localStorage.setItem('courseTitle', courseTitle);
     }
-    if (courseId) { 
+    if (courseId) {
       localStorage.setItem('courseId', courseId);
     }
   }, [courseTitle, courseId]);
@@ -60,7 +60,7 @@ export function App() {
         .catch(() => {});
     }
   }, [user?.isAdmin, courseId]);
-  
+
   // Derive courseId from the current URL for students (and /read)
   useEffect(() => {
     const segs = location.pathname.split('/').filter(Boolean);
@@ -137,9 +137,9 @@ export function App() {
               )
             }
           >
-            <Route index element={<DemoForms />} />
+            <Route index element={<Navigate to="/create/demo"/>}/>
             <Route path="demo" element={<DemoForms />} />
-            <Route path="exercise" element={<ExerciseForms />} />
+            <Route path="exercise/*" element={<ExerciseView/>} />
             <Route path="module" element={<ModuleForm />} />
             <Route path="resource" element={<ResourceForm />} />
             <Route path="course" element={<CourseForm />} />
