@@ -1,4 +1,5 @@
 // codewit/client/src/hooks/useExercise.ts
+import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ExerciseResponse, Exercise, ExerciseInput } from '@codewit/interfaces';
@@ -72,3 +73,24 @@ export const fetchExercisesByIds = async (ids: number[]) => {
   );
   return results.map(r => r.data);
 };
+
+export function single_exercise_query_key(exercise_id: number): ["exercise_id", number] {
+  return ["exercise_id", exercise_id];
+}
+
+export function use_single_exercise_query(exercise_id: number) {
+  return useQuery({
+    queryKey: single_exercise_query_key(exercise_id),
+    queryFn: async () => {
+      let result = await axios.get<ExerciseResponse>(`/api/exercises/${exercise_id}`);
+
+      if (result.status === 200) {
+        return result.data;
+      } else if (result.status === 404) {
+        return null;
+      } else {
+        throw new Error("ApiError");
+      }
+    }
+  });
+}

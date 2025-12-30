@@ -14,7 +14,7 @@ interface ReusableTableProps<T> {
   data: T[],
   className?: string,
   itemsPerPage?: number,
-  onEdit: (item: T) => void,
+  onEdit?: (item: T) => void,
   onDelete: (item: T) => void,
 }
 
@@ -44,7 +44,7 @@ const paginationTheme: CustomFlowbiteTheme["pagination"] = {
   },
 };
 
-const ReusableTable = <T extends { id?: string | number; uid?: string | number }>({
+export const ReusableTable = <T extends { id?: string | number; uid?: string | number }>({
   columns,
   data,
   className,
@@ -113,12 +113,16 @@ const ReusableTable = <T extends { id?: string | number; uid?: string | number }
               })}
 
               <Table.Cell className="text-right space-x-2">
-                <button
-                  onClick={() => onEdit(item)}
-                  className="text-sm font-medium text-blue-500 hover:text-blue-400 hover:underline transition-all rounded-md"
-                >
-                  Edit
-                </button>
+                {onEdit != null ?
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="text-sm font-medium text-blue-500 hover:text-blue-400 hover:underline transition-all rounded-md"
+                  >
+                    Edit
+                  </button>
+                  :
+                  null
+                }
                 <button
                   onClick={() => onDelete(item)}
                   className="text-sm font-medium text-red-500 hover:text-red-400 hover:underline transition-all rounded-md"
