@@ -38,7 +38,7 @@ export async function importExercisesCsv(req: Request, res: Response) {
       prompt: string;
       topic: string;
       languageUid: number;
-      title?: string | null;
+      title: string;
       difficulty?: Difficulty | null;
       referenceTest: string;
       starterCode: string;
@@ -49,7 +49,7 @@ export async function importExercisesCsv(req: Request, res: Response) {
       const get = (k: string) => String((r[k] ?? '') as any).trim();
 
       // Map spreadsheet headers -> our fields
-      const topic         = get('concept');
+      const topic         = get('concept') || 'untagged';
       const title         = get('title');
       const prompt        = get('prompt_markdown');
       const referenceTest = get('test_script');
@@ -81,9 +81,8 @@ export async function importExercisesCsv(req: Request, res: Response) {
       }
 
       // Validations
-      if (!prompt) errors.push({ row: rowNum, field: 'prompt_markdown', message: 'prompt is required' });
-      if (!topic)  errors.push({ row: rowNum, field: 'concept',         message: 'topic is required' });
-      if (!langUid) errors.push({ row: rowNum, field: 'language',        message: 'language is required or unknown' });
+      if (!title)  errors.push({ row: rowNum, field: 'title', message: 'title is required' });
+      if (!langUid) errors.push({ row: rowNum, field: 'language', message: 'language is required or unknown' });
 
       const rawDiff = (r['difficulty'] ?? '').toString().trim();
       if (rawDiff && !difficulty) {
@@ -98,7 +97,7 @@ export async function importExercisesCsv(req: Request, res: Response) {
           prompt,
           topic,
           languageUid: langUid!,
-          title: title || null,
+          title: title,
           referenceTest: referenceTest || '',
           starterCode: starterCode || '',
           difficulty: difficulty ?? null,
@@ -121,14 +120,11 @@ export async function importExercisesCsv(req: Request, res: Response) {
 
     await sequelize.transaction(async (t: Transaction) => {
       for (const r of data) {
-        const candidates = await Exercise.findAll({
-          where: { languageUid: r.languageUid, topic: r.topic },
+        const existing = await Exercise.findOne({
+          where: { languageUid: r.languageUid, title: r.title },
           transaction: t,
-          attributes: ['uid', 'prompt', 'topic', 'languageUid'],
+          attributes: ['uid'],
         });
-
-        const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
-        const existing = candidates.find(e => norm(String((e as any).prompt)) === norm(r.prompt));
 
         const payload = {
           languageUid : r.languageUid,
@@ -136,7 +132,7 @@ export async function importExercisesCsv(req: Request, res: Response) {
           prompt      : r.prompt,
           referenceTest: r.referenceTest ?? '',
           starterCode : r.starterCode ?? '',
-          title       : r.title ?? null,
+          title       : r.title,
           difficulty  : r.difficulty ?? null,
         };
 
