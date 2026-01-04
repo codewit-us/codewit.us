@@ -385,7 +385,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
 
   const form = useForm({
     defaultValues: {
-      code: current_exercise.last_attempt ?? ""
+      code: current_exercise.last_attempt ?? info.demo.exercises[exercise_index].skeleton ?? ""
     },
     onSubmit: async ({value}) => {
       await mutateAsync(value.code);
@@ -397,7 +397,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
     form.setFieldValue("code", saved_code);
     set_last_attempt(null);
     set_submission_state(SubmissionState.Submit);
-  }, [current_exercise.last_attempt, current_exercise.uid, form]);
+  }, [current_exercise.last_attempt, current_exercise.uid]);
 
   let action_btn;
 
@@ -502,7 +502,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
               type="button"
               className="w-1/3 border-accent-500"
               disabled={isPending}
-              onClick={() => form.setFieldValue("code", current_exercise.last_attempt ?? "")}
+              onClick={() => form.reset()}
             >
               <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
               <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
