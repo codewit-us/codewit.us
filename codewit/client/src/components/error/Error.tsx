@@ -4,7 +4,7 @@ import { PropsWithChildren, ReactNode } from "react";
 
 interface ErrorProps {
   message?: string;
-  statusCode?: number; 
+  statusCode?: number;
 }
 
 export const ErrorPage = ({ message = "Oops! Page does not exist. You can now return to the main page.", statusCode = 400 }: ErrorProps): JSX.Element => {
@@ -19,7 +19,7 @@ export const ErrorPage = ({ message = "Oops! Page does not exist. You can now re
     <div className="flex flex-col justify-center items-center bg-zinc-900 w-full h-full px-4 text-center">
       <div className=" text-white rounded-md shadow-lg w-full max-w-xl mx-auto">
         <h1 className="inline-flex mb-4 text-7xl font-extrabold tracking-tight text-red-600 ">
-          {displayStatusCode} 
+          {displayStatusCode}
            <p className="ml-1 text-7xl font-bold tracking-tight text-white">Error</p>
         </h1>
         <p className="text-lg whitespace-pre-line">{stateMessage || message}</p>
@@ -42,16 +42,16 @@ type ErrorViewProps = PropsWithChildren<{
 }>;
 
 export function ErrorView({title = "Error", children}: ErrorViewProps) {
-  return <div className="flex flex-col justify-center items-center bg-zinc-900 w-full h-full px-4 text-center">
-    <div className=" text-white rounded-md shadow-lg w-full max-w-xl mx-auto">
+  return <div className="flex flex-col justify-center items-center w-full h-full px-4 text-center gap-4">
+    <div className="text-white rounded-md w-full max-w-xl mx-auto">
       {typeof title === "string" ?
-        <h1 className="inline-flex mb-4 text-7xl font-extrabold tracking-tight text-red-600 ">
+        <h1 className="inline-flex text-7xl font-extrabold tracking-tight text-red-600 ">
           {title}
         </h1>
         :
         title
       }
-      {children}
     </div>
+    {children}
   </div>
 }

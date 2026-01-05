@@ -14,6 +14,8 @@ import {
   ExerciseResponse,
 } from "@codewit/interfaces";
 
+import LoadingPage from "../../../components/loading/LoadingPage";
+import { ErrorView } from "../../../components/error/Error";
 import TagSelect from "../../../components/form/TagSelect";
 import LanguageSelect from "../../../components/form/LanguageSelect";
 import ReusableModal from "../../../components/form/ReusableModal";
@@ -42,7 +44,12 @@ export function ExerciseIdView() {
   const client = useQueryClient();
 
   if (params.exercise_id == null) {
-    return <div>no exercise id provided</div>;
+    return <ErrorView title="No UID Provided">
+      <p>No exercise uid was provided to the page.</p>
+      <Link to="/create/exercise">
+        <Button type="button">Back to exercises</Button>
+      </Link>
+    </ErrorView>;
   }
 
   if (params.exercise_id === "new") {
@@ -56,7 +63,12 @@ export function ExerciseIdView() {
     if (!isNaN(parsed)) {
       return <ValidExerciseIdView exercise_id={parsed}/>;
     } else {
-      return <div>Invalid Exercise Id Provided</div>;
+      return <ErrorView title="Invalid Exercise UID">
+        <p>The provided exercise uid is not valid. Make sure that the uid is a valid whole number greater than 0</p>
+        <Link to="/create/exercise">
+          <Button type="button">Back to exercises</Button>
+        </Link>
+      </ErrorView>
     }
   }
 }
@@ -72,15 +84,25 @@ export function ValidExerciseIdView({exercise_id}: ValidExerciseIdViewProps) {
   const { data, isLoading, isFetching, error } = use_single_exercise_query(exercise_id);
 
   if (isLoading && isFetching) {
-    return <div>Loading...</div>;
+    return <LoadingPage/>;
   }
 
   if (error != null) {
-    return <div>Failed to retrieve exercise</div>;
+    return <ErrorView>
+      <p>There was an error when attempting to load the requested exercise.</p>
+      <Link to="/create/exercise">
+        <Button type="button">Back to exercises</Button>
+      </Link>
+    </ErrorView>;
   }
 
   if (data == null) {
-    return <div>Exercise Not Found</div>;
+    return <ErrorView title="Exercise Not Found">
+      <p>The exercise was not found.</p>
+      <Link to="/create/exercise">
+        <Button type="button">Back to exercises</Button>
+      </Link>
+    </ErrorView>;
   }
 
   return <ExerciseEdit
@@ -150,7 +172,17 @@ function ExerciseEdit({
       let result = await axios.delete(`/api/exercises/${uid}`, { withCredentials: true });
 
       return result.data;
-    }
+    },
+    onSuccess: (data, vars, ctx) => {
+      toast.success("Exercise Deleted");
+
+      on_deleted();
+    },
+    onError: (err, vars, ctx) => {
+      toast.error("Failed to delete Exercise");
+
+      console.error("failed to delete exercise:", err);
+    },
   });
 
   const handleSubmit = async () => {

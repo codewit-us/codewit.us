@@ -17,7 +17,12 @@ async function getExerciseById(uid: number): Promise<ExerciseResponse | null> {
     include: [Tag, Language],
     order: [[Tag, ExerciseTags, 'ordering', 'ASC']],
   });
-  return formatExerciseResponse(exercise);
+
+  if (exercise == null) {
+    return null;
+  } else {
+    return formatExerciseResponse(exercise);
+  }
 }
 
 async function getExercisesByIds(ids: number[]): Promise<ExerciseResponse[]> {
@@ -110,7 +115,7 @@ async function updateExercise(
       const trimmed = title?.trim();
       updates.title = trimmed ? trimmed : null;
     }
-    // allow update OR clear difficulty 
+    // allow update OR clear difficulty
     if (typeof difficulty !== 'undefined') {
       updates.difficulty = difficulty ?? null;
     }
