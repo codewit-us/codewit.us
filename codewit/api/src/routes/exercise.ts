@@ -25,19 +25,21 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
 });
 
-exerciseRouter.get('/:uid', async (req, res) => {
-  try {
-    const exercise = await getExerciseById(Number(req.params.uid));
-    if (exercise) {
-      res.json(exercise);
-    } else {
-      res.status(404).json({ message: 'Exercise not found' });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+exerciseRouter.get('/:uid', asyncHandle(async (req, res) => {
+  let parsed = parseInt(req.params.uid, 10);
+
+  if (isNaN(parsed) || parsed < 0) {
+    res.status(400).json({error:"InvalidUid"});
   }
-});
+
+  const exercise = await getExerciseById(Number(req.params.uid));
+
+  if (exercise) {
+    res.json(exercise);
+  } else {
+    res.status(404).json({ message: 'Exercise not found' });
+  }
+}));
 
 exerciseRouter.get('/', async (req, res) => {
   try {

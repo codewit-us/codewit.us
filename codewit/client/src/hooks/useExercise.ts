@@ -82,14 +82,21 @@ export function use_single_exercise_query(exercise_id: number) {
   return useQuery({
     queryKey: single_exercise_query_key(exercise_id),
     queryFn: async () => {
-      let result = await axios.get<ExerciseResponse>(`/api/exercises/${exercise_id}`);
+      try {
+        let result = await axios.get<ExerciseResponse>(`/api/exercises/${exercise_id}`);
 
-      if (result.status === 200) {
         return result.data;
-      } else if (result.status === 404) {
-        return null;
-      } else {
-        throw new Error("ApiError");
+      } catch(err) {
+        if (axios.isAxiosError(err)) {
+          if (err.response.status === 404) {
+            // only in the event that the thing we are looking for does not
+            // exist do we return null
+            return null;
+          }
+        }
+
+        // everything else is no explicitly handled by this catch
+        throw err;
       }
     }
   });
