@@ -1,12 +1,15 @@
 // codewit/client/src/pages/ExerciseForm.tsx
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { Editor } from "@monaco-editor/react";
+import { useField, useForm } from "@tanstack/react-form";
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import MDEditor from "@uiw/react-markdown-editor";
 import axios from "axios";
-import { Button, Select, TextInput } from "flowbite-react";
+import { Button, Select, TextInput, Label } from "flowbite-react";
 import React, { useState } from "react";
 import { Routes, Route, Link, useParams, useNavigate } from "react-router-dom";
+import { default as ReactSelect } from  "react-select";
+import CreatableSelect from 'react-select/creatable';
 import { toast } from "react-toastify";
 
 import {
@@ -16,22 +19,22 @@ import {
 
 import LoadingPage from "../../../components/loading/LoadingPage";
 import { ErrorView } from "../../../components/error/Error";
-import TagSelect from "../../../components/form/TagSelect";
+import TagSelect, { topic_options } from "../../../components/form/TagSelect";
 import LanguageSelect from "../../../components/form/LanguageSelect";
 import ReusableModal from "../../../components/form/ReusableModal";
 import InputLabel from "../../../components/form/InputLabel";
 import { isFormValid } from "../../../utils/formValidationUtils";
-import { cn } from "../../../utils/styles";
+import { cn, SelectStyles } from "../../../utils/styles";
 import { use_single_exercise_query, single_exercise_query_key } from "../../../hooks/useExercise";
 
-type UiTag = { label: string; value: string };
+type UITag = { label: string; value: string };
 type Difficulty = 'easy' | 'hard' | 'worked example';
 
 interface ExerciseFormState extends ExerciseInput {
   /** UI helper: language in <select> before saving */
   selectedLanguage: string;
   /** UI helper: tags in react-select before saving */
-  selectedTags: UiTag[];
+  selectedTags: UITag[];
   uid: number;
 
   title?: string;
@@ -53,7 +56,7 @@ export function ExerciseIdView() {
   }
 
   if (params.exercise_id === "new") {
-    return <ExerciseEdit
+    return <ExerciseEdit2
       exercise={null}
       on_created={record => navigate(`/create/exercise/${record.uid}`)}
     />;
@@ -105,7 +108,7 @@ export function ValidExerciseIdView({exercise_id}: ValidExerciseIdViewProps) {
     </ErrorView>;
   }
 
-  return <ExerciseEdit
+  return <ExerciseEdit2
     exercise={data}
     on_updated={record => client.setQueryData(
       single_exercise_query_key(record.uid),
@@ -237,7 +240,7 @@ function ExerciseEdit({
     setFormData((prev) => ({ ...prev, starterCode: value || "" }));
   };
 
-  const handleTagSelect = (tags: UiTag[]) => {
+  const handleTagSelect = (tags: UITag[]) => {
     setFormData((prev) => ({ ...prev, selectedTags: tags }));
   };
 
@@ -369,4 +372,235 @@ function ExerciseEdit({
       </div>
     </div>
   </div>;
+}
+
+interface ExerciseForm {
+  uid: number,
+  title: string,
+  difficulty: Difficulty,
+  prompt: string
+  topic: string
+  tags: UITag[],
+  language: string,
+  referenceTest: string,
+  starterCode: string,
+}
+
+function blank_form(): ExerciseForm {
+  return {
+    uid: -1,
+    prompt: "",
+    topic: "",
+    tags: [],
+    language: "java",
+    referenceTest: "",
+    starterCode: "",
+    title: "",
+    difficulty: "",
+  }
+}
+
+function exercise_to_form2(exercise: ExerciseResponse): ExerciseResponse {
+  return {
+    uid: exercise.uid,
+    title: exercise.title ?? "",
+    difficulty: exercise.difficulty ?? "",
+    prompt: exercise.prompt,
+    topic: exercise.topic,
+    tags: exercise.tags.map(tag => ({ label: tag, value: tag })),
+    language: exercise.language,
+    referenceTest: exercise.referenceTest,
+    starterCode: exercise.starterCode,
+  };
+}
+
+interface ExerciseEdit2Props {
+  exercise: ExerciseResponse | null,
+  on_created?: (exercise: ExerciseResponse) => void,
+  on_updated?: (exercise: ExerciseResponse) => void,
+  on_deleted?: () => void,
+}
+
+function ExerciseEdit2({
+    exercise,
+    on_created = () => {},
+    on_updated = () => {},
+    on_deleted = () => {},
+}: ExerciseEdit2Props) {
+    const create_exercise = useMutation({
+        mutationFn: async (payload: any) => {
+            let result = await axios.post<ExerciseResponse>("/api/exercises", payload, { withCredentials: true });
+
+            return result.data;
+        },
+    });
+
+    const update_exercise = useMutation({
+        mutationFn: async ({ uid, payload }: {uid: number, payload: any}) => {
+            let result = await axios.patch<ExerciseResponse>(`/api/exercises/${uid}`, payload, { withCredentials: true });
+
+            return result.data;
+        },
+    });
+
+    const delete_exercise = useMutation({
+        mutationFn: async ({ uid }: {uid: number}) => {
+            let result = await axios.delete(`/api/exercises/${uid}`, { withCredentials: true });
+
+            return result.data;
+        }
+    });
+
+    const form = useForm({
+        defaultValues: exercise != null ? exercise_to_form2(exercise) : blank_form(),
+        onSubmit: async ({value}) => {
+        },
+        validators: {},
+    });
+
+    return <div className="mx-auto flex flex-col p-6 max-w-6xl">
+        <div className="flex flex-row flex-nowrap items-center gap-x-2 pb-2">
+            <Link to="/create/exercise" className="">
+                <Button type="button" color="light">
+                    <ArrowLeftIcon className="w-6 h-6"/>
+                </Button>
+            </Link>
+            <h2 className="text-4xl font-bold text-heading">
+                {exercise != null ? "Edit Exercise" : "Create Exercise"}
+            </h2>
+            <div className="flex-1"/>
+            <Button
+                type="button"
+                data-testid="submit-button"
+                disabled={delete_exercise.isPending || create_exercise.isPending || update_exercise.isPending}
+                onClick={() => {}}
+            >
+                {exercise != null ? "Update" : "Create"}
+            </Button>
+            {exercise != null ?
+                <Button
+                    type="button"
+                    color="red"
+                    disabled={delete_exercise.isPending || update_exercise.isPending}
+                    onClick={() => delete_exercise.mutate({uid: exercise.uid})}
+                >
+                    <TrashIcon/> Delete
+                </Button>
+                :
+                null
+            }
+        </div>
+        <div className="space-y-4">
+            <div className="flex flex-row flex-nowrap items-center gap-x-2">
+                <form.Field name="title" children={field => {
+                    return <div className="space-y-2 w-1/2">
+                        <Label htmlFor={field.name}>
+                            Title (optional)
+                        </Label>
+                        <TextInput
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={ev => field.handleChange(ev.target.value)}
+                        />
+                    </div>
+                }}/>
+                <form.Field name="difficulty" children={field => {
+                    return <div className="space-y-2 w-1/4">
+                        <Label htmlFor={field.name}>
+                            Difficulty (optional)
+                        </Label>
+                        <Select
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={ev => field.handleChange(ev.target.value)}
+                        >
+                            <option value="">— None —</option>
+                            <option value="easy">easy</option>
+                            <option value="hard">hard</option>
+                            <option value="worked example">worked example</option>
+                        </Select>
+                    </div>
+                }}/>
+            </div>
+            <div className="flex flex-row gap-2">
+                <form.Field name="topic" children={field => {
+                    return <div className="space-y-2 w-1/4">
+                        <Label htmlFor={field.name}>Topic</Label>
+                        <ReactSelect
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            options={topic_options}
+                            styles={SelectStyles}
+                            onBlur={field.handleBlur}
+                            onChange={(value) => field.handleChange(value?.value ?? "")}
+                        />
+                    </div>
+                }}/>
+                <form.Field name="language" children={field => {
+                    return <div className="space-y-2 w-1/4">
+                        <Label htmlFor={field.name}>Language</Label>
+                        <Select
+                            id={field.name}
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={ev => field.handleChange(ev.target.value)}
+                        >
+                            <option value="cpp">C++</option>
+                            <option value="java">Java</option>
+                            <option value="python">Python</option>
+                        </Select>
+                    </div>
+                }}/>
+            </div>
+            <form.Field name="tags" children={field => {
+                return <div className="space-y-2 w-1/2">
+                    <Label htmlFor={field.name}>Tags</Label>
+                    <CreatableSelect
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(value, action) => field.handleChange(value)}
+                        styles={SelectStyles}
+                    />
+                </div>
+            }}/>
+            <form.Field name="prompt" children={field => {
+                return <div className="space-y-2">
+                    <Label htmlFor={field.name}>Prompt</Label>
+                    <MDEditor
+                        id={field.name}
+                        name={field.name}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(editor, data, value) => field.handleChange(value)}
+                        height="300px"
+                        data-testid="prompt"
+                    />
+                </div>
+            }}/>
+            <form.Field name="referenceTest" children={field => {
+                let language = field.form.getFieldValue("language");
+
+                console.log(language);
+
+                return <div className="space-y-2">
+                    <Label htmlFor={field.name}>Reference Test</Label>
+                    <Editor
+                        height="300px"
+                        language={language}
+                        value={field.state.value}
+                        onChange={value => field.handleChange(value)}
+                        theme="vs-dark"
+                    />
+                </div>
+            }}/>
+        </div>
+    </div>;
 }
