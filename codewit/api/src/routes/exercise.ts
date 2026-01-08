@@ -28,7 +28,7 @@ const upload = multer({
 exerciseRouter.get('/:uid', asyncHandle(async (req, res) => {
   let parsed = parseInt(req.params.uid, 10);
 
-  if (isNaN(parsed) || parsed < 0) {
+  if (isNaN(parsed) || parsed <= 0) {
     res.status(400).json({error:"InvalidUid"});
   }
 

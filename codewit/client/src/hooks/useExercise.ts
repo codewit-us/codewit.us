@@ -1,7 +1,7 @@
 // codewit/client/src/hooks/useExercise.ts
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { ExerciseResponse, Exercise, ExerciseInput } from '@codewit/interfaces';
 
 // Hook to handle fetching data with axios
@@ -87,7 +87,7 @@ export function use_single_exercise_query(exercise_id: number) {
 
         return result.data;
       } catch(err) {
-        if (err instanceof AxiosError) {
+        if (axios.isAxiosError(err)) {
           // ts still thinks that this is undefined even though we just checked
           // that it is an instance of AxiosError?
           if (err?.response?.status === 404) {
