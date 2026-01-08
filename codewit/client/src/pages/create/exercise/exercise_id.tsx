@@ -60,7 +60,7 @@ export function ExerciseIdView() {
   } else {
     let parsed = parseInt(params.exercise_id, 10);
 
-    if (!isNaN(parsed)) {
+    if (!isNaN(parsed) && parsed > 0) {
       return <ValidExerciseIdView exercise_id={parsed}/>;
     } else {
       return <ErrorView title="Invalid Exercise UID">
