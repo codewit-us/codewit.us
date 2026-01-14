@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { z } from "zod";
 
 import {
   createExercise,
@@ -17,6 +18,7 @@ import { checkAdmin } from '../middleware/auth';
 import multer from 'multer';
 import { asyncHandle } from '../middleware/catch';
 import { importExercisesCsv } from '../controllers/exerciseImport';
+import { executeCodeEvaluation } from "../utils/codeEvalService";
 
 const exerciseRouter = Router();
 
@@ -160,5 +162,33 @@ exerciseRouter.delete('/:uid', checkAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+const test_schema = z.object({
+  code: z.string(),
+  language: z.string(),
+  reference_test: z.string(),
+});
+
+exerciseRouter.post("/test", checkAdmin, asyncHandle(async (req, res) => {
+  const valid = test_schema.safeParse(req.body);
+
+  // ts does not like it if you try to do `!valid.success` as it will consider
+  // `valid.error` to not exist
+  if (valid.success === false) {
+    return res.status(400).json({
+      error: "Validation",
+      payload: fromZodError(valid.error)
+    });
+  }
+
+  let result = await executeCodeEvaluation({
+    language: valid.data.language,
+    code: valid.data.code,
+    testCode: valid.data.reference_test,
+    runTests: true,
+  });
+
+  return res.status(200).json(result);
+}));
 
 export default exerciseRouter;

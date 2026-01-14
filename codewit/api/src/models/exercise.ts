@@ -37,6 +37,9 @@ class Exercise extends Model<
   declare title?: string | null;
   declare difficulty?: Difficulty | null;
 
+  declare createdAt?: Date;
+  declare updatedAt?: Date;
+
   declare getTags: BelongsToManyGetAssociationsMixin<Tag>;
   declare addTag: BelongsToManyAddAssociationMixin<Tag, number>;
   declare addTags: BelongsToManyAddAssociationsMixin<Tag, number>;
@@ -84,7 +87,7 @@ class Exercise extends Model<
             key: 'uid',
           },
         },
-        title: { 
+        title: {
           type: DataTypes.STRING,
           allowNull: true,
         },
@@ -92,7 +95,6 @@ class Exercise extends Model<
           type: DataTypes.ENUM('easy', 'hard', 'worked example'),
           allowNull: true,
         }
-
       },
       {
         sequelize,
