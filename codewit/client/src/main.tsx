@@ -3,8 +3,10 @@ import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from "react-toastify";
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { FormDevtoolsPanel } from "@tanstack/react-form-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import "react-toastify/dist/ReactToastify.css";
 
 import App from './app/app';
@@ -22,7 +24,20 @@ root.render(
       <App />
       <ToastContainer position="bottom-right" autoClose={1000} />
     </BrowserRouter>
-    <ReactQueryDevtools initialIsOpen={false}/>
+    <TanStackDevtools
+      plugins={[
+        {
+          name: "TanStack Query",
+          render: <ReactQueryDevtoolsPanel/>,
+          defaultOpen: true,
+        },
+        {
+          name: "TanStack Form",
+          render: <FormDevtoolsPanel/>,
+          defaultOpen: false,
+        },
+      ]}
+    />
   </QueryClientProvider>
   // </StrictMode>
 );
