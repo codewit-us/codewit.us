@@ -336,7 +336,7 @@ interface RightPanelProps {
 function RightPanel({info, course_id}: RightPanelProps) {
   const navigate = useNavigate();
 
-  const container_ref = useRef(null);
+  const container_ref = useRef<HTMLDivElement>(null);
   const [exercise_index, set_exercise_index] = useState(0);
   const [last_attempt, set_last_attempt] = useState<AttemptWithEval | null>(null);
   const [submission_state, set_submission_state] = useState<SubmissionState>(SubmissionState.Submit);
