@@ -14,7 +14,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { AttemptResult, DemoAttempt, DemoResource, RelatedDemo } from 'lib/shared/interfaces';
-import { ButtonHTMLAttributes, useEffect, useState } from 'react';
+import { ButtonHTMLAttributes, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Resizable } from 're-resizable';
 
@@ -199,8 +199,8 @@ function LeftPanel({info, module_id, course_id}: LeftPanelProps) {
         {/*
         // we have a way of specifying who the presenter is for the video
         // then this can be used
-        <span className = "inline-flex justify-center items-center gap-1 text-lg font-medium"> 
-          by 
+        <span className = "inline-flex justify-center items-center gap-1 text-lg font-medium">
+          by
           <UserCircleIcon className="w-7 h-7" />
           Jessica
         </span>
@@ -336,12 +336,14 @@ interface RightPanelProps {
 function RightPanel({info, course_id}: RightPanelProps) {
   const navigate = useNavigate();
 
+  const container_ref = useRef(null);
   const [exercise_index, set_exercise_index] = useState(0);
   const [last_attempt, set_last_attempt] = useState<AttemptWithEval | null>(null);
   const [submission_state, set_submission_state] = useState<SubmissionState>(SubmissionState.Submit);
+
   const current_exercise = info.demo.exercises[exercise_index];
 
-  const {mutateAsync, isPending} = useMutation({
+  const { mutateAsync } = useMutation({
     mutationFn: async (code: string) => {
       const { data } = await axios.post<AttemptResponse>(
         "/api/attempts",
@@ -385,7 +387,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
 
   const form = useForm({
     defaultValues: {
-      code: current_exercise.last_attempt ?? info.demo.exercises[exercise_index].skeleton ?? ""
+      code: current_exercise.last_attempt ?? current_exercise.skeleton ?? ""
     },
     onSubmit: async ({value}) => {
       await mutateAsync(value.code);
@@ -393,40 +395,45 @@ function RightPanel({info, course_id}: RightPanelProps) {
   });
 
   useEffect(() => {
-    const saved_code = current_exercise.last_attempt ?? "";
-    form.setFieldValue("code", saved_code);
+    const saved_code = current_exercise.last_attempt ?? current_exercise.skeleton ?? "";
+    form.reset({"code": saved_code});
+
     set_last_attempt(null);
     set_submission_state(SubmissionState.Submit);
-  }, [current_exercise.last_attempt, current_exercise.uid]);
+  }, [current_exercise.uid]);
 
   let action_btn;
 
   switch (submission_state) {
     case SubmissionState.Submit:
-      if (isPending) {
-        action_btn = <ActionBtn
-          type="button"
-          disabled
-          className="bg-alternate-background-500 border-foreground-400 hover:bg-alternate-background-500/90"
-        >
-          <img className="h-[24px] w-[24px]" src ="/processing-cog.svg" alt="cog loader svg for submission"/>
-          <span data-testid="submit-button-checking" className="text-accent-500 font-bold">
-            Checking...
-          </span>
-        </ActionBtn>;
-      } else {
-        action_btn = <ActionBtn type="submit" className="border-accent-500">
-          <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600" />
-          <span data-testid="submit-button" className="text-accent-500 group-hover:text-accent-600">
-            Submit
-          </span>
-        </ActionBtn>;
-      }
+      action_btn = <form.Subscribe selector={state => ({
+        submitting: state.isSubmitting,
+        dirty: state.isDirty
+      })}>
+        {({submitting, dirty}) => submitting ?
+          <ActionBtn
+            type="button"
+            disabled
+            className="bg-alternate-background-500 border-foreground-400 hover:bg-alternate-background-500/90"
+          >
+            <img className="h-[24px] w-[24px]" src ="/processing-cog.svg" alt="cog loader svg for submission"/>
+            <span data-testid="submit-button-checking" className="text-accent-500 font-bold">
+              Checking...
+            </span>
+          </ActionBtn>
+          :
+          <ActionBtn type="submit" className="border-accent-500 bg-background-500" disabled={!dirty}>
+            <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600" />
+            <span data-testid="submit-button" className="text-accent-500 group-hover:text-accent-600">
+              Submit
+            </span>
+          </ActionBtn>}
+      </form.Subscribe>
       break;
     case SubmissionState.Next:
       action_btn = <ActionBtn
         type="button"
-        className="border-accent-500"
+        className="border-accent-500 bg-background-500"
         onClick={e => {
           e.preventDefault();
 
@@ -434,7 +441,7 @@ function RightPanel({info, course_id}: RightPanelProps) {
           set_submission_state(SubmissionState.Submit);
         }}
       >
-        <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600" />
+        <CheckIcon className="w-6 h-6 text-accent-500 group-hover:text-accent-600"/>
         <span data-testid="submit-button" className="text-accent-500 group-hover:text-accent-600">
           Next Exercise
         </span>
@@ -474,15 +481,34 @@ function RightPanel({info, course_id}: RightPanelProps) {
         </div>,
       }}
     >
-      <div className="px-2 h-full overflow-auto">
-        <div className="w-full space-y-2">
+      <div ref={container_ref} className="px-2 h-full overflow-auto">
+        <div className="relative w-full space-y-2">
           <DefaultMarkdown text={current_exercise.prompt}/>
+          <ActionBtn
+            type="button"
+            className="sticky bottom-2 w-full bg-alternate-background-500 border-foreground-400"
+            onClick={() => container_ref.current?.scrollTo({
+              top: container_ref.current.scrollHeight - container_ref.current.clientHeight
+            })}
+          >
+            Jump to code
+          </ActionBtn>
         </div>
-        <form className="flex-1 flex flex-col h-full mt-2" onSubmit={e => {
+        <form className="relative flex-1 flex flex-col h-full mt-2" onSubmit={e => {
           e.preventDefault();
 
           form.handleSubmit();
         }}>
+          <div className="flex flex-row items-center gap-2 py-1">
+            <h5 id="code-input" className="flex-1 text-xl font-bold dark:text-white">Code Input</h5>
+            <ActionBtn
+              type="button"
+              className="w-auto bg-alternate-background-500 border-foreground-400"
+              onClick={() => container_ref.current?.scrollTo({top: 0})}
+            >
+              Jump to prompt
+            </ActionBtn>
+          </div>
           <form.Field name="code" children={(field) => {
             return <Editor
               value={field.state.value}
@@ -497,16 +523,21 @@ function RightPanel({info, course_id}: RightPanelProps) {
               onChange={(v) => field.handleChange(v ?? "")}
             />;
           }}/>
-          <div className="flex flex-row gap-1 pt-2 pb-3">
-            <ActionBtn
-              type="button"
-              className="w-1/3 border-accent-500"
-              disabled={isPending}
-              onClick={() => form.reset()}
-            >
-              <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
-              <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
-            </ActionBtn>
+          <div className="sticky bottom-0 flex flex-row gap-1 pt-2 pb-3">
+            <form.Subscribe selector={state => ({
+              submitting: state.isSubmitting,
+              dirty: state.isDirty
+            })}>
+              {({submitting, dirty}) => <ActionBtn
+                type="button"
+                className="w-1/3 border-accent-500 bg-background-500"
+                disabled={submitting || !dirty}
+                onClick={() => form.reset()}
+              >
+                <ArrowPathIcon className="w-6 h-6 mr-2 text-accent-500 group-hover:text-accent-600" />
+                <span data-testid="reset-button" className="text-accent-500 group-hover:text-accent-600">Reset</span>
+              </ActionBtn>}
+            </form.Subscribe>
             {action_btn}
           </div>
         </form>
