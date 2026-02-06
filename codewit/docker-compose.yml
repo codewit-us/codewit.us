@@ -131,7 +131,7 @@ services:
       - PORT=3002
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - ENABLE_CPP=false
+      - ENABLE_CPP=true
     ports:
       - 3002:3002
     networks:
