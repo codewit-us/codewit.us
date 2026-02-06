@@ -25,7 +25,7 @@ spec:
       containers:
         - env:
             - name: ENABLE_CPP
-              value: "false"
+              value: "true"
             - name: HOST
               value: 0.0.0.0
             - name: PORT
