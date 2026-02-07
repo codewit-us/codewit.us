@@ -283,7 +283,11 @@ async function getStudentCoursesByUid(userUid: number): Promise<CourseResponse[]
   return formatCourseResponse(courses, true);
 }
 
-export async function getStudentCourse(course_id: string, transaction?: Transaction): Promise<StudentCourse | null> {
+export async function getStudentCourse(
+  course_id: string,
+  userUid: number,
+  transaction?: Transaction
+): Promise<StudentCourse | null> {
   const course = await Course.findOne({
     where: { id: course_id },
     include: [
@@ -295,9 +299,19 @@ export async function getStudentCourse(course_id: string, transaction?: Transact
           Resource,
           {
             association: "demos",
-            include: [ UserDemoCompletion ],
+            include: [
+              {
+                model: UserDemoCompletion,
+                where: { userUid },
+                required: false,
+              },
+            ],
           },
-          UserModuleCompletion,
+          {
+            model: UserModuleCompletion,
+            where: { userUid },
+            required: false,
+          },
         ],
         through: { attributes: ['ordering'] },
       },
@@ -323,7 +337,7 @@ export async function getStudentCourse(course_id: string, transaction?: Transact
 
       let completion = 0.0;
 
-      if (module_demo["UserDemoCompletions"]?.length ?? 0 != 0) {
+      if ((module_demo["UserDemoCompletions"]?.length ?? 0) !== 0) {
         completion = module_demo["UserDemoCompletions"][0].completion;
       }
 
@@ -348,7 +362,7 @@ export async function getStudentCourse(course_id: string, transaction?: Transact
 
     let completion = 0.0;
 
-    if (course_module["UserModuleCompletions"]?.length ?? 0 != 0) {
+    if ((course_module["UserModuleCompletions"]?.length ?? 0) !== 0) {
       completion = course_module["UserModuleCompletions"][0].completion;
     }
 
