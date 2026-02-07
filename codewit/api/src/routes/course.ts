@@ -252,7 +252,7 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
   let student_view = "student_view" in req.query && req.query["student_view"] === "1";
 
   if (student_and_instructor && student_view) {
-    let course = await getStudentCourse(req.params.uid);
+    let course = await getStudentCourse(req.params.uid, req.user.uid);
 
     if (course == null) {
       throw new Error("the course was not found when it was found?");
@@ -285,7 +285,7 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
       ...result,
     });
   } else if (found.is_student) {
-    let course = await getStudentCourse(req.params.uid);
+    let course = await getStudentCourse(req.params.uid, req.user.uid);
 
     if (course == null) {
       throw new Error("the course was not found when it was found?");
@@ -528,7 +528,7 @@ courseRouter.post("/:uid/register", asyncHandle(async (req, res) => {
           }
         );
 
-        let course = await getStudentCourse(req.params.uid, transaction);
+        let course = await getStudentCourse(req.params.uid, req.user.uid, transaction);
 
         if (course == null) {
           throw new Error("the course was not found when it was found?");
