@@ -261,7 +261,28 @@ function ExerciseEdit({
                 }
             }
         },
-        validators: {},
+        validators: {
+            onSubmit: ({value, formApi}) => {
+                let result = exercise == null ?
+                    createExerciseSchema.safeParse(value) :
+                    updateExerciseSchema.safeParse(value);
+
+                if (!result.success) {
+                    let rtn = {
+                        fields: {},
+                    };
+
+                    for (let issue of result.error.issues) {
+                        // TODO: this is going to be a little ad hoc for now and
+                        // will need to double check this at some point for
+                        // something better
+                        rtn.fields[issue.path.join('.')] = issue.message;
+                    }
+
+                    return rtn;
+                }
+            }
+        },
     });
 
     useEffect(() => {
@@ -296,29 +317,32 @@ function ExerciseEdit({
                 </div>
                 <div className="space-y-4">
                     <div className="grid grid-cols-4 gap-2">
-                        <form.AppField name="title">
+                        <form.AppField name="title" validators={{
+                            onBlur: ({ value, fieldApi }) => {
+                                fieldApi.setValue(value.trim());
+                            }
+                        }}>
                             {/*@ts-ignore*/}
                             {field => <div className="space-y-2 col-span-2">
-                                <Label htmlFor={field.name}>Title (optional)</Label>
+                                <Label htmlFor={field.name}>Title</Label>
                                 <TextInput
                                     id={field.name}
                                     name={field.name}
                                     value={field.state.value}
-                                    disabled={field.form.state.isSubmitting}
                                     onBlur={field.handleBlur}
-                                    onChange={ev => field.handleChange(ev.target.value.trim())}
+                                    onChange={ev => field.handleChange(ev.target.value)}
                                 />
+                                {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                             </div>}
                         </form.AppField>
                         <form.AppField name="difficulty">
                             {/*@ts-ignore*/}
                             {field => <div className="space-y-2">
-                                <Label htmlFor={field.name}>Difficulty (optional)</Label>
+                                <Label htmlFor={field.name}>Difficulty</Label>
                                 <Select
                                     id={field.name}
                                     name={field.name}
                                     value={field.state.value}
-                                    disabled={field.form.state.isSubmitting}
                                     onBlur={field.handleBlur}
                                     onChange={ev => field.handleChange(ev.target.value)}
                                 >
@@ -327,6 +351,7 @@ function ExerciseEdit({
                                     <option value="hard">hard</option>
                                     <option value="worked example">worked example</option>
                                 </Select>
+                                {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                             </div>}
                         </form.AppField>
                         <div/>
@@ -354,6 +379,7 @@ function ExerciseEdit({
                                         }
                                     }}
                                 />
+                                {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                             </div>}
                         </form.AppField>
                         <form.AppField name="language">
@@ -364,7 +390,6 @@ function ExerciseEdit({
                                     id={field.name}
                                     name={field.name}
                                     value={field.state.value}
-                                    disabled={field.form.state.isSubmitting}
                                     onBlur={field.handleBlur}
                                     onChange={ev => field.handleChange(ev.target.value)}
                                 >
@@ -372,6 +397,7 @@ function ExerciseEdit({
                                     <option value="java">Java</option>
                                     <option value="python">Python</option>
                                 </Select>
+                                {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                             </div>}
                         </form.AppField>
                         <div className="col-span-2"/>
@@ -395,6 +421,7 @@ function ExerciseEdit({
                                     styles={SelectStyles}
                                     isMulti
                                 />
+                                {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                             </div>}
                         </form.AppField>
                     </div>
@@ -410,6 +437,7 @@ function ExerciseEdit({
                                 height="300px"
                                 data-testid="prompt"
                             />
+                            {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                         </div>}
                     </form.AppField>
                     {/*@ts-ignore*/}
@@ -427,6 +455,7 @@ function ExerciseEdit({
                                         onChange={value => field.handleChange(value ?? "")}
                                         theme="vs-dark"
                                     />
+                                    {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                                 </div>}
                             </form.AppField>
                             <form.AppField name="starterCode">
@@ -440,6 +469,7 @@ function ExerciseEdit({
                                         onChange={value => field.handleChange(value ?? "")}
                                         theme="vs-dark"
                                     />
+                                    {field.state.meta.errors.map(err => <div key={err}>{err}</div>)}
                                 </div>}
                             </form.AppField>
                         </>}
@@ -528,7 +558,7 @@ function ExerciseTest({
                         </div>
                         <div>exceeded execution time: {data.execution_time_exceeded ? "true" : "false"}</div>
                         <div>exceeded memory: {data.memory_exceeded ? "true" : "false"}</div>
-                        {data.failure_details?.length !== 0 ?
+                        {(data.failure_details?.length ?? 0) !== 0 ?
                             <>
                                 <div>failure details</div>
                                 <div className="pl-6">
@@ -540,7 +570,7 @@ function ExerciseTest({
                             :
                             null
                         }
-                        {data.compilation_error?.length !== 0 ?
+                        {(data.compilation_error?.length ?? 0) !== 0 ?
                             <>
                                 <div>compilation error</div>
                                 <pre>{data.compilation_error}</pre>
@@ -548,7 +578,7 @@ function ExerciseTest({
                             :
                             null
                         }
-                        {data.runtime_error?.length !== 0 ?
+                        {(data.runtime_error?.length ?? 0) !== 0 ?
                             <>
                                 <div>runtime error</div>
                                 <pre>{data.runtime_error}</pre>
