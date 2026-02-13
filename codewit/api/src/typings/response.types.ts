@@ -26,6 +26,8 @@ export interface ExerciseResponse {
     starterCode: string;
     title?: string;
     difficulty?: Difficulty | null;
+    createdAt: string,
+    updatedAt: string,
 }
 
 export interface CourseResponse {
