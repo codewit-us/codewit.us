@@ -24,20 +24,24 @@ root.render(
       <App />
       <ToastContainer position="bottom-right" autoClose={1000} />
     </BrowserRouter>
-    <TanStackDevtools
-      plugins={[
-        {
-          name: "TanStack Query",
-          render: <ReactQueryDevtoolsPanel/>,
-          defaultOpen: true,
-        },
-        {
-          name: "TanStack Form",
-          render: <FormDevtoolsPanel/>,
-          defaultOpen: false,
-        },
-      ]}
-    />
+    {import.meta.env.DEV ?
+      <TanStackDevtools
+        plugins={[
+          {
+            name: "TanStack Query",
+            render: <ReactQueryDevtoolsPanel/>,
+            defaultOpen: true,
+          },
+          {
+            name: "TanStack Form",
+            render: <FormDevtoolsPanel/>,
+            defaultOpen: false,
+          },
+        ]}
+      />
+      :
+      null
+    }
   </QueryClientProvider>
   // </StrictMode>
 );
