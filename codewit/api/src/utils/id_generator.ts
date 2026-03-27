@@ -52,8 +52,9 @@ let max_attempts = 1000;
 // this will be a counter for the amount of requests made for a new id is
 // generated.
 let id_count = 0;
-// the interval reference for cleaning up
-let interval_id = 0;
+// the interval reference for cleaning up, not sure where the type definition
+// for this is so it will be unset
+let interval_id;
 
 // private function to add a name to the known_ids dictionary
 function add_name(name: string) {
