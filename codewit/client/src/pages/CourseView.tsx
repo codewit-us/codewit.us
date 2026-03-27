@@ -8,9 +8,11 @@ import { StudentCourse as StuCourse} from '@codewit/interfaces';
 import { ErrorPage } from "../components/error/Error";
 import Loading from "../components/loading/LoadingPage";
 import { useAxiosFetch } from "../hooks/fetching";
+import { useAuth } from "../hooks/useAuth";
 
 import StudentView from "./course/StudentView";
 import { CenterPrompt } from "../components/placeholders";
+import LoginRequiredPrompt from "../components/auth/LoginRequiredPrompt";
 
 interface StudentCourse extends StuCourse {
   type: "StudentView",
@@ -59,13 +61,17 @@ interface CourseView {
 export default function CourseView({onCourseChange}: CourseView) {
   const { course_id } = useParams();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
 
   if (course_id == null) {
     throw new Error("course_id not provided");
   }
 
   const [refresh, set_refresh] = useState(0);
-  const { data: course, loading, error, setData } = useAxiosFetch<GetCourse | null>(`/api/courses/${course_id}?student_view=1&r=${refresh}`, null);
+  const { data: course, loading, error, setData } = useAxiosFetch<GetCourse | null>(
+    user ? `/api/courses/${course_id}?student_view=1&r=${refresh}` : null,
+    null,
+  );
 
   useEffect(() => {
     if (course?.type === "StudentView") {
@@ -73,8 +79,12 @@ export default function CourseView({onCourseChange}: CourseView) {
     }
   }, [course, onCourseChange]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return <Loading />;
+  }
+
+  if (!user) {
+    return <LoginRequiredPrompt />;
   }
 
   if (error || course == null) {
@@ -127,14 +137,7 @@ export default function CourseView({onCourseChange}: CourseView) {
         />;
       }
     default:
-      return <CenterPrompt header={"Unknown Response"}>
-        <p className="text-center text-white">
-          The client does not know how to handle the response from the server. Sorry, try going back to the home page.
-        </p>
-        <Link to="/" className="text-white bg-accent-500 rounded-md mt-4 p-2">
-          Home page
-        </Link>
-      </CenterPrompt>;
+      return <ErrorPage message="Failed to load course information. Please try again later." />;
   }
 }
 
@@ -151,9 +154,9 @@ interface RegError {
 }
 
 function EnrollingView({course_id, course_title, auto_enroll, on_update}: EnrollingViewProps) {
-  let [sending, set_sending] = useState(false);
-  let [reg_state, set_reg_state] = useState<RegistrationResult | null>(null);
-  let [error, set_error] = useState<RegError | null>(null);
+  const [sending, set_sending] = useState(false);
+  const [reg_state, set_reg_state] = useState<RegistrationResult | null>(null);
+  const [error, set_error] = useState<RegError | null>(null);
 
   async function request_enrollment() {
     if (sending) {
@@ -163,7 +166,7 @@ function EnrollingView({course_id, course_title, auto_enroll, on_update}: Enroll
     set_sending(true);
 
     try {
-      let result = await axios.post<RegistrationResult>(`/api/courses/${course_id}/register`);
+      const result = await axios.post<RegistrationResult>(`/api/courses/${course_id}/register`);
 
       set_reg_state(result.data);
     } catch (err) {
