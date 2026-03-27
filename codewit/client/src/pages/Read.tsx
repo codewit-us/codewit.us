@@ -378,10 +378,21 @@ function RightPanel({info, course_id}: RightPanelProps) {
       set_last_attempt({
         attempt   : null,
         evaluation: {
-          state : 'error',
-          error : 'Unexpected error: ' + err.message,
+          state: 'error',
+          tests_run: 0,
+          passed: 0,
+          failed: 0,
+          errors: 0,
+          no_tests_collected: false,
+          exit_code: null,
+          failure_details: [],
+          compilation_error: '',
+          runtime_error: '',
+          execution_time_exceeded: false,
+          memory_exceeded: false,
+          error: 'Unexpected error: ' + err.message,
         },
-      } as AttemptWithEval);
+      });
     }
   });
 

@@ -1,28 +1,9 @@
 import { BiSolidRightArrow, BiSolidLeftArrow } from 'react-icons/bi';
-import { useState, useMemo } from 'react';
-
-type FailureDetail = {
-  test_case: string;
-  expected?: string;
-  received?: string;
-  error_message: string;
-  rawout?: string;
-};
+import { useState } from 'react';
+import type { EvaluationResponse } from '../../interfaces/evaluation';
 
 type EvalProps = {
-  evaluation: {
-    state: string;
-    tests_run: number;
-    passed: number;
-    failed: number;
-    failure_details?: FailureDetail[];
-    compilation_error?: string;
-    runtime_error?: string;
-    execution_time_exceeded?: boolean;
-    memory_exceeded?: boolean;
-    rawout?: string;
-    error?: string;
-  } | null;
+  evaluation: EvaluationResponse | null;
 };
 
 const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
@@ -47,9 +28,9 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
     runtime_error = '',
     execution_time_exceeded = false,
     memory_exceeded = false,
-    rawout = '',
-    error = '',
   } = evaluation;
+  const error = 'error' in evaluation ? evaluation.error : '';
+  const rawout = failure_details[issueIdx]?.rawout || '';
 
   let errorMessage = null;
   if (compilation_error) errorMessage = compilation_error;
