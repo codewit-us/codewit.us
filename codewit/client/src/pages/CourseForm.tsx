@@ -347,6 +347,30 @@ export default function CourseForm() {
             handleChange={(e) => handleInputChange("language", e.target.value)}
             initialLanguage={formData.language}
           />
+          <div data-testid="instructor-select">
+            <InputLabel htmlFor="instructors">Instructors</InputLabel>
+            <Select
+              id="instructors"
+              isMulti
+              options={userOptions}
+              styles={SelectStyles}
+              value={userOptions.filter((option) => formData.instructors.includes(option.value))}
+              onChange={(selectedOption) => handleSelectChange(selectedOption, "instructors")}
+            />
+          </div>
+
+          <div data-testid="roster-select">
+            <InputLabel htmlFor="roster">Roster</InputLabel>
+            <Select
+              id="roster"
+              isMulti
+              options={userOptions}
+              styles={SelectStyles}
+              value={userOptions.filter((option) => formData.roster.includes(option.value))}
+              onChange={(selectedOption) => handleSelectChange(selectedOption, "roster")}
+            />
+          </div>
+
           <div data-testid="module-select" className="border-t pt-2 space-y-2">
             <InputLabel htmlFor="module-search">Modules</InputLabel>
             <ModuleSearch
@@ -373,30 +397,6 @@ export default function CourseForm() {
                   modules: prev.modules.filter((module) => module.uid !== uid),
                 }));
               }}
-            />
-          </div>
-
-          <div data-testid="instructor-select">
-            <InputLabel htmlFor="instructors">Instructors</InputLabel>
-            <Select
-              id="instructors"
-              isMulti
-              options={userOptions}
-              styles={SelectStyles}
-              value={userOptions.filter((option) => formData.instructors.includes(option.value))}
-              onChange={(selectedOption) => handleSelectChange(selectedOption, "instructors")}
-            />
-          </div>
-
-          <div data-testid="roster-select">
-            <InputLabel htmlFor="roster">Roster</InputLabel>
-            <Select
-              id="roster"
-              isMulti
-              options={userOptions}
-              styles={SelectStyles}
-              value={userOptions.filter((option) => formData.roster.includes(option.value))}
-              onChange={(selectedOption) => handleSelectChange(selectedOption, "roster")}
             />
           </div>
         </div>
