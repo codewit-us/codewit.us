@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { PlayIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
+import { PlayIcon, CheckCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 
 import { StudentCourse, StudentModule, StudentDemo } from "@codewit/interfaces";
 import { cn } from "../../utils/styles";
@@ -158,6 +158,18 @@ interface CourseModuleDemoProps {
 }
 
 function CourseModuleDemo({course_id, module_id, demo}: CourseModuleDemoProps) {
+  const fallback_src = `https://i.ytimg.com/vi/${demo.youtube_id}/hqdefault.jpg`;
+  const [imgSrc, setImgSrc] = useState(demo.youtube_thumbnail || fallback_src);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const handleImgError = () => {
+    if (imgSrc !== fallback_src) {
+      setImgSrc(fallback_src);
+    } else {
+      setImgFailed(true);
+    }
+  };
+
   let status = null;
 
   if (demo.completion !== 0 && demo.completion !== 1) {
@@ -166,22 +178,29 @@ function CourseModuleDemo({course_id, module_id, demo}: CourseModuleDemoProps) {
 
   return <div className="relative overflow-hidden w-48">
     <div className="relative h-32">
-      <img
-        src={demo.youtube_thumbnail}
-        alt={demo.title}
-        className="w-full h-full object-cover rounded-xl"
-      />
-      <div className="absolute inset-0 bg-black bg-opacity-80 flex rounded-xl items-center justify-center group hover:bg-opacity-30">
+      {imgFailed ? (
+        <div className="w-full h-full bg-gray-900 rounded-xl flex justify-center items-center">
+          <VideoCameraIcon fill="#3da2b4" className="w-12 h-12 opacity-50" />
+        </div>
+      ) : (
+        <img
+          src={imgSrc}
+          alt={demo.title}
+          className="w-full h-full object-cover rounded-xl"
+          onError={handleImgError}
+        />
+      )}
+      <div className="absolute inset-0 bg-black bg-opacity-40 flex rounded-xl items-center justify-center group hover:bg-opacity-20">
         <Link
           to={`/read/${demo.uid}?course_id=${course_id}&module_id=${module_id}`}
           className="text-2xl opacity-70 group-hover:opacity-100"
         >
           {demo.completion === 1 ?
-            <CheckCircleIcon className="h-8 w-8 text-green-500 opacity-40 group-hover:opacity-100"/>
+            <CheckCircleIcon className="h-8 w-8 text-green-500 opacity-70 group-hover:opacity-100"/>
             :
             <div className="flex flex-row items-center gap-2 ">
               {status}
-              <PlayIcon className="h-8 w-8 text-white opacity-40 group-hover:opacity-100"/>
+              <PlayIcon className="h-8 w-8 text-white opacity-70 group-hover:opacity-100"/>
             </div>
           }
         </Link>

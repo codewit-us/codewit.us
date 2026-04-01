@@ -8,6 +8,7 @@ import {
   PlayIcon,
   CheckCircleIcon,
   LinkIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/24/solid';
 import { Editor } from '@monaco-editor/react';
 import { useForm } from "@tanstack/react-form";
@@ -217,6 +218,67 @@ function LeftPanel({info, module_id, course_id}: LeftPanelProps) {
   </Resizable>;
 }
 
+interface RelatedDemoCardProps {
+  demo: RelatedDemo,
+  link_path: string,
+}
+
+function RelatedDemoCard({demo, link_path}: RelatedDemoCardProps) {
+  const fallback_src = `https://i.ytimg.com/vi/${demo.youtube_id}/hqdefault.jpg`;
+  const [imgSrc, setImgSrc] = useState(demo.youtube_thumbnail || fallback_src);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const handleImgError = () => {
+    if (imgSrc !== fallback_src) {
+      setImgSrc(fallback_src);
+    } else {
+      setImgFailed(true);
+    }
+  };
+
+  let status = null;
+
+  if (demo.completion !== 0 && demo.completion !== 1) {
+    status = `${(demo.completion * 100).toFixed(0)}%`;
+  }
+
+  return <Link
+    key={demo.uid}
+    to={link_path}
+    className="flex-shrink-0 w-48 rounded-md overflow-hidden hover:shadow-lg transition-all duration-200 group/link border border-gray-800 hover:border-accent-500/50"
+  >
+    <div className="relative w-full h-28 overflow-hidden">
+      {imgFailed ? (
+        <div className="w-full h-full bg-gray-900 flex justify-center items-center">
+          <VideoCameraIcon fill="#3da2b4" className="w-12 h-12 opacity-50" />
+        </div>
+      ) : (
+        <img
+          src={imgSrc}
+          alt={demo.title}
+          className="w-full h-full object-cover"
+          onError={handleImgError}
+        />
+      )}
+      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center group-hover/link:bg-opacity-20 transition-all">
+        {demo.completion === 1 ?
+          <CheckCircleIcon className="h-8 w-8 text-green-500"/>
+          :
+          <div className="flex flex-row items-center gap-2">
+            {status}
+            <PlayIcon className="h-8 w-8 text-white" />
+          </div>
+        }
+      </div>
+    </div>
+    <div className="p-2">
+      <h3 className="text-sm font-medium text-white group-hover/link:text-accent-400 transition-colors truncate">
+        {demo.title}
+      </h3>
+    </div>
+  </Link>;
+}
+
 interface RelatedDemosProps {
   demos: RelatedDemo[] | null,
   course_id?: string | null,
@@ -246,36 +308,7 @@ function RelatedDemos({demos, course_id, module_id}: RelatedDemosProps) {
             link_path += `module_id=${module_id}`;
           }
 
-          let status = null;
-
-          if (demo.completion !== 0 && demo.completion !== 1) {
-            status = `${(demo.completion * 100).toFixed(0)}%`;
-          }
-
-          return <Link
-            key={demo.uid}
-            to={link_path}
-            className="flex-shrink-0 w-48 rounded-md overflow-hidden hover:shadow-lg transition-all duration-200 group/link border border-gray-800 hover:border-accent-500/50"
-          >
-            <div className="relative w-full h-28 overflow-hidden">
-              <img src={demo.youtube_thumbnail} alt={demo.title} className="w-full h-full object-cover"/>
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center group-hover/link:bg-opacity-20 transition-all">
-                {demo.completion === 1 ?
-                  <CheckCircleIcon className="h-8 w-8 text-green-500"/>
-                  :
-                  <div className="flex flex-row items-center gap-2">
-                    {status}
-                    <PlayIcon className="h-8 w-8 text-white" />
-                  </div>
-                }
-              </div>
-            </div>
-            <div className="p-2">
-              <h3 className="text-sm font-medium text-white group-hover/link:text-accent-400 transition-colors truncate">
-                {demo.title}
-              </h3>
-            </div>
-          </Link>
+          return <RelatedDemoCard key={demo.uid} demo={demo} link_path={link_path} />;
         })}
       </div>
     </div>
