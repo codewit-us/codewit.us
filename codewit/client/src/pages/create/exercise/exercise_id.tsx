@@ -304,7 +304,7 @@ function ExerciseEdit({
             }}>
                 <div className="flex flex-row flex-nowrap items-center gap-x-2 pb-2">
                     <form.ConfirmAway on_away={() => on_cancel()}/>
-                    <h2 className="text-4xl font-bold text-heading">
+                    <h2 className="text-4xl font-bold text-highlight-500">
                         {exercise != null ? "Edit Exercise" : "Create Exercise"}
                     </h2>
                     <div className="flex-1"/>
@@ -537,8 +537,8 @@ function ExerciseTest({
 
     return <div className="space-y-2">
         <div>
-            <h3 className="text-3xl font-bold text-heading">Test Exercise</h3>
-            <p className="text-body">Run a small test with the current exercise inputs to validate it will run as expected</p>
+            <h3 className="text-3xl font-bold text-highlight-500">Test Exercise</h3>
+            <p className="text-white">Run a small test with the current exercise inputs to validate it will run as expected</p>
         </div>
         <div className="flex flex-col gap-2">
             <Editor
@@ -556,7 +556,7 @@ function ExerciseTest({
                     Reset
                 </Button>
             </div>
-            <h4 className="text-2xl font-bold text-heading">Results</h4>
+            <h4 className="text-2xl font-bold text-highlight-500">Results</h4>
             <div className="px-4 w-full min-h-64 overflow-auto">
                 {data != null ?
                     <>

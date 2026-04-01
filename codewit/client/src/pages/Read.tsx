@@ -101,7 +101,7 @@ export default function Read() {
       <LeftPanel info={data} module_id={module_id} course_id={course_id}/>
       {data.demo.exercises.length === 0 ?
         <div className="flex flex-col items-center justify-center w-full">
-          <h3 className="text-xl">No Exercises</h3>
+          <h3 className="text-xl text-highlight-500">No Exercises</h3>
           <p>There are no exercises attached to this demo</p>
         </div>
         :

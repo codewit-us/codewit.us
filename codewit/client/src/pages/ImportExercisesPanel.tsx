@@ -46,7 +46,7 @@ export default function ImportExercisesPanel({
 
   return (
     <div className="bg-foreground-600 rounded-md p-4 space-y-3">
-      <h3 className="text-foreground-200 font-semibold">Import Exercises (CSV)</h3>
+      <h3 className="text-highlight-500 font-semibold">Import Exercises (CSV)</h3>
 
       <div className="flex flex-wrap gap-3 items-center">
         <label className="bg-background-500 text-foreground-200 border border-foreground-500 rounded px-2 py-1 cursor-pointer">

@@ -284,7 +284,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
       {/* ───────── progress table ───────── */}
       <div className="bg-foreground-600 w-3/4 rounded-md p-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-bold text-foreground-200 text-[16px]">
+          <h1 className="font-bold text-highlight-500 text-[16px]">
             Student Progress
           </h1>
           <button
@@ -396,7 +396,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
       {/* ─── pending enrollment requests ─── */}
       {pending.length > 0 && (
         <div className="bg-foreground-600 w-3/4 rounded-md p-4">
-          <h2 className="font-bold text-foreground-200 text-[16px] mb-4">
+          <h2 className="font-bold text-highlight-500 text-[16px] mb-4">
             Pending Enrollment Requests ({pending.length})
           </h2>
           <PendingRequestsCard courseId={courseId} pending={pending} />
