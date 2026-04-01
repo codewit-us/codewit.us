@@ -1,4 +1,5 @@
 // codewit/client/src/components/demos/Demos.tsx
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import LoadingIcons from "../loading/LoadingIcon";
 import { TrashIcon, PencilSquareIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
@@ -7,13 +8,26 @@ interface VideoProps {
   title: string;
   amountExercises: number;
   uid: number;
+  youtube_id: string;
+  youtube_thumbnail: string;
   isDeleting?: boolean;
   handleEdit: () => void;
   handleDelete: () => void;
 }
 
-const Video = ({ title, uid, amountExercises, isDeleting, handleEdit, handleDelete }: VideoProps): JSX.Element => {
-  
+const Video = ({ title, uid, amountExercises, youtube_id, youtube_thumbnail, isDeleting, handleEdit, handleDelete }: VideoProps): JSX.Element => {
+  const fallback_src = `https://i.ytimg.com/vi/${youtube_id}/hqdefault.jpg`;
+  const [imgSrc, setImgSrc] = useState(youtube_thumbnail || fallback_src);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const handleImgError = () => {
+    if (imgSrc !== fallback_src) {
+      setImgSrc(fallback_src);
+    } else {
+      setImgFailed(true);
+    }
+  };
+
   const handleMenuClick = (e: React.MouseEvent<HTMLButtonElement>, action: string) => {
     e.stopPropagation();
     if (action === 'edit') {
@@ -26,8 +40,19 @@ const Video = ({ title, uid, amountExercises, isDeleting, handleEdit, handleDele
   return (
   <div className="flex flex-col h-full bg-gray-800 overflow-hidden rounded-lg transition-transform duration-150 ease-in-out hover:scale-102 cursor-pointer w-full">
       <Link to={`/read/${uid}`} className="flex flex-grow w-full">
-        <div className="flex-shrink-0 flex justify-center items-center bg-gray-900 w-full h-full ">
-          <VideoCameraIcon fill="#3da2b4" className="w-12 h-12 opacity-50" />
+        <div className="relative flex-shrink-0 w-full h-full min-h-[8rem] bg-gray-900">
+          {imgFailed ? (
+            <div className="w-full h-full flex justify-center items-center">
+              <VideoCameraIcon fill="#3da2b4" className="w-12 h-12 opacity-50" />
+            </div>
+          ) : (
+            <img
+              src={imgSrc}
+              alt={title}
+              className="w-full h-full object-cover"
+              onError={handleImgError}
+            />
+          )}
         </div>
       </Link>
       <div className = "flex flex-row justify-center items-center">
