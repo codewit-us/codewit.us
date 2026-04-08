@@ -36,7 +36,7 @@ async function createCourse(
   let id = 0;
 
   try {
-    let result = sequelize.transaction(async (transaction) => {
+    let result = await sequelize.transaction(async (transaction) => {
       if (auto_enroll && !enrolling) {
         auto_enroll = false;
       }

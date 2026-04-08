@@ -64,7 +64,7 @@ function add_name(name: string) {
     known_ids.push(new Set());
   }
 
-  return known_ids[known_ids.length - 1].add(name)
+  known_ids[known_ids.length - 1].add(name);
 }
 
 // private function to check if a name exists in the known_ids
@@ -178,10 +178,16 @@ async function sync_ids() {
     { type: QueryTypes.SELECT }
   );
 
+  let count = 0;
+
   for (let record of results) {
     //@ts-ignore
     add_name(record.id);
+
+    count += 1;
   }
+
+  return count;
 }
 
 // cleans up tmp_ids that are older than 30 seconds
@@ -191,16 +197,17 @@ function clean_tmp() {
   let max_lifetime = 30 * 1000;
   let deleted = 0;
 
-  for (let key of Object.keys(tmp_ids)) {
-    if (now - tmp_ids[key].ts > max_lifetime) {
-      ids_index.delete(tmp_ids[key].id);
+  for (let [key, data] of tmp_ids) {
+    if (now - data.ts > max_lifetime) {
+      ids_index.delete(data.id);
       tmp_ids.delete(key);
+
       deleted += 1;
     }
   }
 
   if (deleted > 0) {
-    console.warn("WARN: tmp_ids are not being commited or rolled back");
+    console.warn("WARN: tmp_ids are not being commited or rolled back. found:", deleted);
   }
 }
 
