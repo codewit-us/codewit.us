@@ -4,6 +4,7 @@ import bulbLit from '/bulb(lit).svg';
 
 import { useCourseProgress } from '../../hooks/useCourse';
 import Loading  from '../../components/loading/LoadingPage';
+import { H1, H2 } from "../../components/typeography";
 import { ErrorPage } from '../../components/error/Error';
 import { useAxiosFetch } from "../../hooks/fetching";
 import { useEffect, useState } from "react";
@@ -71,7 +72,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   if (loading || course_loading) {
     return <Loading />;
   }
-  
+
   if (error || course_error || course == null || !students) {
     return <ErrorPage message="Failed to load course information"/>;
   }
@@ -105,7 +106,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
   }
 
   async function toggleAutoEnroll() {
-    if (!enrolling) return; 
+    if (!enrolling) return;
     const next = !autoEnroll;
     await persistFlags(enrolling, next);
   }
@@ -188,9 +189,9 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
     <div className="w-full flex flex-col items-center bg-black gap-8 py-8">
       {/* ───────── header + invite link ───────── */}
       <div className="bg-foreground-600 w-3/4 rounded-md p-4">
-        <span className="text-[16px] font-bold text-foreground-200">
+        <H1 className="text-[16px] font-bold">
           Teacher Dashboard
-        </span>
+        </H1>
 
         {/* invite link */}
         <div className="mt-4 flex items-center gap-2">
@@ -284,9 +285,9 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
       {/* ───────── progress table ───────── */}
       <div className="bg-foreground-600 w-3/4 rounded-md p-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-bold text-foreground-200 text-[16px]">
+          <H1 className="font-bold text-[16px]">
             Student Progress
-          </h1>
+          </H1>
           <button
             onClick={handleExportCsv}
             disabled={exporting || students.length === 0}
@@ -396,9 +397,9 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
       {/* ─── pending enrollment requests ─── */}
       {pending.length > 0 && (
         <div className="bg-foreground-600 w-3/4 rounded-md p-4">
-          <h2 className="font-bold text-foreground-200 text-[16px] mb-4">
+          <H2 className="font-bold text-[16px] mb-4">
             Pending Enrollment Requests ({pending.length})
-          </h2>
+          </H2>
           <PendingRequestsCard courseId={courseId} pending={pending} />
         </div>
       )}

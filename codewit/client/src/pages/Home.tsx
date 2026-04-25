@@ -117,7 +117,7 @@ interface StudentCourseListProps {
 
 function StudentCourseList({ courses }: StudentCourseListProps) {
   return <div className="space-y-2">
-    <h2 className="border-b text-2xl pb-2">Attending</h2>
+    <h2 className="border-b text-2xl pb-2 text-highlight-500">Attending</h2>
     {courses.map(course => {
       return <div key={course.id} className="p-4 rounded-2xl bg-foreground-500 text-white">
         <h3 className="text-xl">
@@ -157,7 +157,7 @@ interface InstructorCourseListProps {
 
 function InstructorCourseList({ courses }: InstructorCourseListProps) {
   return <div className="space-y-2">
-    <h2 className="border-b text-2xl pb-2">Instructing</h2>
+    <h2 className="border-b text-2xl pb-2 text-highlight-500">Instructing</h2>
     {courses.map(course => {
       return <div key={course.id} className="p-4 rounded-2xl bg-foreground-500 text-white">
         <h3 className="text-xl">

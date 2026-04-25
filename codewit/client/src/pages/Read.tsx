@@ -28,6 +28,7 @@ import { cn } from '../utils/styles';
 import { ErrorView } from '../components/error/Error';
 import { toast } from 'react-toastify';
 import { DefaultMarkdown } from '../components/markdown';
+import { H3 } from "../components/typeography";
 
 function demo_query_key(demo_uid: string, module_id: string | null): ["demo_attempt", string, string | null] {
   return ["demo_attempt", demo_uid, module_id];
@@ -101,7 +102,7 @@ export default function Read() {
       <LeftPanel info={data} module_id={module_id} course_id={course_id}/>
       {data.demo.exercises.length === 0 ?
         <div className="flex flex-col items-center justify-center w-full">
-          <h3 className="text-xl">No Exercises</h3>
+          <H3 className="text-xl">No Exercises</H3>
           <p>There are no exercises attached to this demo</p>
         </div>
         :
