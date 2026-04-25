@@ -25,6 +25,7 @@ import TagSelect, { topic_options } from "../../../components/form/TagSelect";
 import LanguageSelect from "../../../components/form/LanguageSelect";
 import ReusableModal from "../../../components/form/ReusableModal";
 import InputLabel from "../../../components/form/InputLabel";
+import { H2, H3, H4 } from "../../../compponents/typeography";
 import { isFormValid } from "../../../utils/formValidationUtils";
 import { cn, SelectStyles } from "../../../utils/styles";
 import { use_single_exercise_query, single_exercise_query_key } from "../../../hooks/useExercise";
@@ -304,9 +305,9 @@ function ExerciseEdit({
             }}>
                 <div className="flex flex-row flex-nowrap items-center gap-x-2 pb-2">
                     <form.ConfirmAway on_away={() => on_cancel()}/>
-                    <h2 className="text-4xl font-bold text-highlight-500">
+                    <H2 className="text-4xl font-bold">
                         {exercise != null ? "Edit Exercise" : "Create Exercise"}
-                    </h2>
+                    </H2>
                     <div className="flex-1"/>
                     <form.SubmitButton/>
                     <form.ConfirmReset on_reset={() => form.reset()}/>
@@ -537,7 +538,7 @@ function ExerciseTest({
 
     return <div className="space-y-2">
         <div>
-            <h3 className="text-3xl font-bold text-highlight-500">Test Exercise</h3>
+            <H3 className="text-3xl font-bold">Test Exercise</H3>
             <p className="text-white">Run a small test with the current exercise inputs to validate it will run as expected</p>
         </div>
         <div className="flex flex-col gap-2">
@@ -556,7 +557,7 @@ function ExerciseTest({
                     Reset
                 </Button>
             </div>
-            <h4 className="text-2xl font-bold text-highlight-500">Results</h4>
+            <H4 className="text-2xl font-bold">Results</H4>
             <div className="px-4 w-full min-h-64 overflow-auto">
                 {data != null ?
                     <>
