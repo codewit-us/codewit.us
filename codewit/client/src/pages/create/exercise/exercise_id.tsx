@@ -25,7 +25,7 @@ import TagSelect, { topic_options } from "../../../components/form/TagSelect";
 import LanguageSelect from "../../../components/form/LanguageSelect";
 import ReusableModal from "../../../components/form/ReusableModal";
 import InputLabel from "../../../components/form/InputLabel";
-import { H2, H3, H4 } from "../../../compponents/typeography";
+import { H2, H3, H4 } from "../../../components/typeography";
 import { isFormValid } from "../../../utils/formValidationUtils";
 import { cn, SelectStyles } from "../../../utils/styles";
 import { use_single_exercise_query, single_exercise_query_key } from "../../../hooks/useExercise";
