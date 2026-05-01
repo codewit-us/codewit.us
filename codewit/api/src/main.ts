@@ -42,7 +42,13 @@ app.use('/demos', checkAuth, demoRouter);
 app.use('/exercises', checkAuth, exerciseRouter);
 app.use('/modules', checkAuth, moduleRouter);
 app.use('/resources', checkAuth, resourceRouter);
-app.use('/courses', checkAuth, courseRouter);
+app.use('/courses', (req, res, next) => {
+  if (req.path === '/landing' || req.path === '/landing/') {
+    return next();
+  }
+
+  return checkAuth(req, res, next);
+}, courseRouter);
 app.use('/attempts', checkAuth, attemptRouter);
 
 app.use(catchError);
