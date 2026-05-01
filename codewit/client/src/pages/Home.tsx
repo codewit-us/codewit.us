@@ -256,14 +256,14 @@ function OpenEnrollmentSection({
 
     {warning && <InlineWarning message={warning} />}
 
-    <div className={isGuest
-      ? "flex flex-col gap-3 border-b pb-2 sm:flex-row sm:items-end sm:justify-between"
-      : "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end"
-    }>
-      <div className={isGuest
-        ? "flex flex-wrap items-center gap-5 px-1 text-accent-500"
-        : "flex flex-wrap items-center gap-5 text-accent-500 sm:order-2"
-      }>
+	    <div className={isGuest
+	      ? "flex flex-col gap-3 border-b pb-2 sm:flex-row sm:items-end sm:justify-between"
+	      : "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+	    }>
+	      <div className={isGuest
+	        ? "flex flex-wrap items-center gap-5 px-1 text-accent-500"
+	        : "flex flex-wrap items-center gap-5 text-accent-500"
+	      }>
         <SortButton
           active={sortState.key === 'title'}
           onClick={() => onSelectSort('title')}
@@ -289,10 +289,10 @@ function OpenEnrollmentSection({
             : <ArrowDownIcon className="h-4 w-4" />}
         />
       </div>
-      <div className={isGuest ? "" : "sm:order-1"}>
-        <LanguageFilter
-          selectedLanguage={selectedLanguage}
-          languages={languages}
+	      <div>
+	        <LanguageFilter
+	          selectedLanguage={selectedLanguage}
+	          languages={languages}
           onChange={onSelectLanguage}
         />
       </div>
