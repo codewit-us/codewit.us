@@ -6,16 +6,15 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
-const API_PORT = process.env.API_PORT
-const API_HOST = process.env.API_HOST
-if (!API_HOST) {
-  console.log('BACKEND_URL is not set');
-}
-
-// const BACKEND_URL = `http://${API_HOST}:${API_PORT}/api`;
-// if API_HOST is not set, use http://app:3000
-
-const BACKEND_URL = API_HOST ? `http://${API_HOST}/` : 'http://app:3000/api';
+const API_PORT = process.env.API_PORT;
+const API_HOST = process.env.API_HOST;
+const API_TARGET = API_HOST
+  ? `http://${API_HOST}${API_PORT ? `:${API_PORT}` : ''}`
+  : 'http://localhost:3000';
+const CODEEVAL_TARGET = API_HOST
+  ? `http://${API_HOST}${API_PORT ? `:${API_PORT}` : ''}`
+  : 'http://localhost:3002';
+const usingGatewayProxy = Boolean(API_HOST);
 
 export default defineConfig(({ mode }) => ({
   root: __dirname,
@@ -36,6 +35,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), nxViteTsPaths()],
   server: {
     host: true,
+    port: 3001,
     allowedHosts: [
       'nginx',
       'localhost',
@@ -43,6 +43,18 @@ export default defineConfig(({ mode }) => ({
       'codewit.us',
       'codewit.dev',
     ],
+    proxy: {
+      '/api': {
+        target: API_TARGET,
+        changeOrigin: true,
+        rewrite: usingGatewayProxy ? undefined : (path) => path.replace(/^\/api/, ''),
+      },
+      '/codeeval': {
+        target: CODEEVAL_TARGET,
+        changeOrigin: true,
+        rewrite: usingGatewayProxy ? undefined : (path) => path.replace(/^\/codeeval/, ''),
+      },
+    },
   },
 
   // Uncomment this if you are using workers.

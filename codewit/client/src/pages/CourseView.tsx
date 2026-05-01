@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import { Modal } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { StudentCourse as StuCourse} from '@codewit/interfaces';
 
@@ -61,7 +61,9 @@ interface CourseView {
 export default function CourseView({onCourseChange}: CourseView) {
   const { course_id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
+  const autoJoin = searchParams.get('join') === '1';
 
   if (course_id == null) {
     throw new Error("course_id not provided");
@@ -78,6 +80,12 @@ export default function CourseView({onCourseChange}: CourseView) {
       onCourseChange(course.title);
     }
   }, [course, onCourseChange]);
+
+  useEffect(() => {
+    if (course?.type === "StudentView" && autoJoin) {
+      navigate(`/${course_id}`, { replace: true });
+    }
+  }, [autoJoin, course, course_id, navigate]);
 
   if (authLoading || loading) {
     return <Loading />;
@@ -115,7 +123,12 @@ export default function CourseView({onCourseChange}: CourseView) {
           course_id={course_id}
           course_title={course.title}
           auto_enroll={course.auto_enroll}
+          auto_join={autoJoin}
           on_update={data => {
+            if (autoJoin) {
+              navigate(`/${course_id}`, { replace: true });
+            }
+
             switch (data.type) {
               case "AlreadyEnrolled":
                 set_refresh(v => v + 1);
@@ -145,6 +158,7 @@ interface EnrollingViewProps {
   course_id: string,
   course_title: string,
   auto_enroll: boolean,
+  auto_join: boolean,
   on_update: (data: RegistrationResult) => void,
 }
 
@@ -153,10 +167,11 @@ interface RegError {
   message: string,
 }
 
-function EnrollingView({course_id, course_title, auto_enroll, on_update}: EnrollingViewProps) {
+function EnrollingView({course_id, course_title, auto_enroll, auto_join, on_update}: EnrollingViewProps) {
   const [sending, set_sending] = useState(false);
   const [reg_state, set_reg_state] = useState<RegistrationResult | null>(null);
   const [error, set_error] = useState<RegError | null>(null);
+  const [auto_requested, set_auto_requested] = useState(false);
 
   async function request_enrollment() {
     if (sending) {
@@ -214,6 +229,15 @@ function EnrollingView({course_id, course_title, auto_enroll, on_update}: Enroll
 
     set_sending(false);
   }
+
+  useEffect(() => {
+    if (!auto_join || auto_requested || sending || reg_state != null || error != null) {
+      return;
+    }
+
+    set_auto_requested(true);
+    void request_enrollment();
+  }, [auto_join, auto_requested, sending, reg_state, error]);
 
   let modal_title = null;
   let modal_contents = null;
