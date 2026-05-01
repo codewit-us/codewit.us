@@ -18,6 +18,7 @@ import LoadingPage from '../components/loading/LoadingPage';
 import TeacherView from '../pages/course/TeacherView';
 import DashboardGate from '../components/guards/DashboardGate';
 import axios from 'axios';
+import { buildGoogleLoginHref } from '../utils/auth';
 
 const TOP_LEVEL = new Set(['', 'create', 'usermanagement', 'read', 'settings', 'login', 'error']);
 
@@ -28,6 +29,9 @@ export function App() {
 
   const isLandingPage = location.pathname === '/';
   const isUserManagement = location.pathname.startsWith('/usermanagement');
+  const loginHref = !user
+    ? buildGoogleLoginHref(`${location.pathname}${location.search}${location.hash}`)
+    : undefined;
 
   const [courseTitle, setCourseTitle] = useState<string>(() =>
      localStorage.getItem('courseTitle') || '',
@@ -91,12 +95,13 @@ export function App() {
         admin={user ? user.isAdmin : false}
         handleLogout={handleLogout}
         courseTitle={isLandingPage ? '' : courseTitle}
+        loginHref={loginHref}
       />
       <div className="relative flex-1 overflow-auto">
         <Routes>
           <Route
             path="/"
-            element={<Home />}
+            element={<Home user={user} />}
           />
           <Route
             path="/:course_id"
