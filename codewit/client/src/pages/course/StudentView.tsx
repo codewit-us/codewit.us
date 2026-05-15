@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PlayIcon, CheckCircleIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
 
@@ -162,6 +162,10 @@ function CourseModuleDemo({course_id, module_id, demo}: CourseModuleDemoProps) {
   const [imgSrc, setImgSrc] = useState(demo.youtube_thumbnail || fallback_src);
   const [imgFailed, setImgFailed] = useState(false);
 
+  useEffect(() => {
+    setImgSrc(demo.youtube_thumbnail || fallback_src);
+    setImgFailed(false);
+  }, [demo.youtube_thumbnail, fallback_src]);
   const handleImgError = () => {
     if (imgSrc !== fallback_src) {
       setImgSrc(fallback_src);
