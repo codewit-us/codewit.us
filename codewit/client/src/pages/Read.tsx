@@ -228,6 +228,11 @@ function RelatedDemoCard({demo, link_path}: RelatedDemoCardProps) {
   const [imgSrc, setImgSrc] = useState(demo.youtube_thumbnail || fallback_src);
   const [imgFailed, setImgFailed] = useState(false);
 
+  useEffect(() => {
+    setImgSrc(demo.youtube_thumbnail || fallback_src);
+    setImgFailed(false);
+  }, [demo.youtube_thumbnail, fallback_src]);
+
   const handleImgError = () => {
     if (imgSrc !== fallback_src) {
       setImgSrc(fallback_src);
@@ -243,7 +248,6 @@ function RelatedDemoCard({demo, link_path}: RelatedDemoCardProps) {
   }
 
   return <Link
-    key={demo.uid}
     to={link_path}
     className="flex-shrink-0 w-48 rounded-md overflow-hidden hover:shadow-lg transition-all duration-200 group/link border border-gray-800 hover:border-accent-500/50"
   >
