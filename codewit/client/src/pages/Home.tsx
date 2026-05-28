@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, PropsWithChildren, useState } from 'react';
 import { User } from '@codewit/interfaces';
 import {
   ArrowDownIcon,
@@ -131,9 +131,7 @@ export default function Home({ user }: HomeProps) {
       ? "max-w-7xl mx-auto px-10 py-4 space-y-2"
       : "max-w-7xl mx-auto min-h-full px-10 py-4 flex flex-col gap-2"
     }>
-      {!user && <GuestLandingHeader />}
-
-      {user && (
+      {user ? (
         <>
           <HomeSection title="Instructing">
             <InstructorCourseList courses={landingData.instructor} />
@@ -142,6 +140,8 @@ export default function Home({ user }: HomeProps) {
             <StudentCourseList courses={landingData.student} />
           </HomeSection>
         </>
+      ) : (
+        <GuestLandingHeader />
       )}
 
       <OpenEnrollmentSection
@@ -202,10 +202,7 @@ function GuestLandingHeader() {
 function HomeSection({
   title,
   children,
-}: {
-  title: string,
-  children: JSX.Element,
-}) {
+}: PropsWithChildren<{ title: string }>) {
   return <section className="space-y-2">
     <h2 className="border-b pb-2 text-xl text-foreground-200">
       {title}
