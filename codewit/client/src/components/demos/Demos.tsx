@@ -1,5 +1,5 @@
 // codewit/client/src/components/demos/Demos.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import LoadingIcons from "../loading/LoadingIcon";
 import { TrashIcon, PencilSquareIcon, VideoCameraIcon } from "@heroicons/react/24/solid";
@@ -19,6 +19,11 @@ const Video = ({ title, uid, amountExercises, youtube_id, youtube_thumbnail, isD
   const fallback_src = `https://i.ytimg.com/vi/${youtube_id}/hqdefault.jpg`;
   const [imgSrc, setImgSrc] = useState(youtube_thumbnail || fallback_src);
   const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(youtube_thumbnail || fallback_src);
+    setImgFailed(false);
+  }, [youtube_thumbnail, fallback_src]);
 
   const handleImgError = () => {
     if (imgSrc !== fallback_src) {
@@ -83,4 +88,3 @@ const Video = ({ title, uid, amountExercises, youtube_id, youtube_thumbnail, isD
 
 
 export default Video;
-
