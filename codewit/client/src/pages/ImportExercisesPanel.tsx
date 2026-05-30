@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { EXERCISES_KEY } from "../hooks/useExercises";
-import { H3 } from "../components/typeography";
+import { H3 } from "../components/typography";
 
 type ImportResponse = { ok: boolean; created: number; updated: number };
 

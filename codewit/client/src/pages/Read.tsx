@@ -28,7 +28,7 @@ import { cn } from '../utils/styles';
 import { ErrorView } from '../components/error/Error';
 import { toast } from 'react-toastify';
 import { DefaultMarkdown } from '../components/markdown';
-import { H3 } from "../components/typeography";
+import { H3 } from "../components/typography";
 
 function demo_query_key(demo_uid: string, module_id: string | null): ["demo_attempt", string, string | null] {
   return ["demo_attempt", demo_uid, module_id];

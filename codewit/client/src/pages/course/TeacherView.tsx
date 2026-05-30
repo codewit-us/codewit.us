@@ -4,7 +4,7 @@ import bulbLit from '/bulb(lit).svg';
 
 import { useCourseProgress } from '../../hooks/useCourse';
 import Loading  from '../../components/loading/LoadingPage';
-import { H1, H2 } from "../../components/typeography";
+import { H1, H2 } from "../../components/typography";
 import { ErrorPage } from '../../components/error/Error';
 import { useAxiosFetch } from "../../hooks/fetching";
 import { useEffect, useState } from "react";
