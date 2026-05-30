@@ -14,22 +14,9 @@ import { COOKIE_KEY, HOST, PORT, REDIS_HOST, REDIS_PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
 import { catchError, asyncHandle } from "./middleware/catch";
-// import { RedisStore } from "connect-redis";
-// import { createClient } from "redis";
+import { init } from "./utils/id_generator";
 
 const app = express();
-
-// let redisClient = createClient(
-//   {
-//     url: `redis://${REDIS_HOST}:${REDIS_PORT}`,
-//   }
-// )
-// redisClient.connect().catch(console.error)
-
-// let redisStore = new RedisStore({
-//   client: redisClient,
-//   prefix: "codewit:",
-// })
 
 app.use(
   session({
@@ -55,11 +42,19 @@ app.use('/demos', checkAuth, demoRouter);
 app.use('/exercises', checkAuth, exerciseRouter);
 app.use('/modules', checkAuth, moduleRouter);
 app.use('/resources', checkAuth, resourceRouter);
-app.use('/courses', checkAuth, courseRouter);
+app.use('/courses', (req, res, next) => {
+  if (req.path === '/landing' || req.path === '/landing/') {
+    return next();
+  }
+
+  return checkAuth(req, res, next);
+}, courseRouter);
 app.use('/attempts', checkAuth, attemptRouter);
 
 app.use(catchError);
 
-app.listen(PORT, HOST, async () => {
-  console.log(`[ ready ] http://${HOST}:${PORT}`);
-});
+init()
+  .then(() => app.listen(PORT, HOST, async () => {
+    console.log(`[ ready ] http://${HOST}:${PORT}`);
+  }))
+  .catch(console.error);

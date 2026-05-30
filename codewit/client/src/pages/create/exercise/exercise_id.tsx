@@ -608,7 +608,7 @@ function ExerciseTest({
 }
 
 interface FailureDetailProps {
-    test_case: string,
+    test_case: string | number,
     expected: string,
     received: string,
     error_message: string,

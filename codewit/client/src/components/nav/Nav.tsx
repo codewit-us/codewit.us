@@ -4,6 +4,7 @@ import { Navbar, Button } from 'flowbite-react';
 import { Link, useSearchParams} from 'react-router-dom';
 import { ArrowLeftStartOnRectangleIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import { UserCircleIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import GoogleLogo from '../logo/GoogleLogo';
 
 const NavBar = ({
   name,
@@ -11,12 +12,14 @@ const NavBar = ({
   handleLogout,
   courseTitle,
   courseId,
+  loginHref,
 }: {
   name: string;
   admin: boolean;
   handleLogout: () => void;
   courseTitle?: string;
   courseId?: string;
+  loginHref?: string;
 }): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
   const toggleNavbar = () => setIsOpen(!isOpen);
@@ -86,62 +89,74 @@ const NavBar = ({
             </div>
           )}
 
-          <button
-            ref={toggleRef}
-            data-testid="navbar-toggle"
-            className="h-9 px-3 relative flex items-center justify-center text-sm text-accent-600 hover:text-accent-700 bg-transparent dark:bg-transparent rounded-lg text-center font-medium focus:outline-none focus:ring-4"
-            onClick={toggleNavbar}
-          >
-            {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
-          </button>
+          {loginHref ? (
+            <a
+              href={loginHref}
+              className="inline-flex items-center gap-3 rounded-full bg-white px-4 py-2 text-sm font-semibold text-foreground-600 shadow-sm transition hover:bg-highlight-300"
+            >
+              <GoogleLogo className="h-5 w-5" />
+              <span>Log In with Google</span>
+            </a>
+          ) : (
+            <button
+              ref={toggleRef}
+              data-testid="navbar-toggle"
+              className="h-9 px-3 relative flex items-center justify-center text-sm text-accent-600 hover:text-accent-700 bg-transparent dark:bg-transparent rounded-lg text-center font-medium focus:outline-none focus:ring-4"
+              onClick={toggleNavbar}
+            >
+              {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+            </button>
+          )}
         </div>
       </div>
 
-      <div
-        ref={drawerRef}
-        className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex justify-end p-2">
-          <Button
-            size="sm"
-            className="text-accent-500 hover:text-accent-700 bg-transparent dark:bg-transparent"
-            color="dark"
-            onClick={closeNavbar}
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </Button>
+      {!loginHref && (
+        <div
+          ref={drawerRef}
+          className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${
+            isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="flex justify-end p-2">
+            <Button
+              size="sm"
+              className="text-accent-500 hover:text-accent-700 bg-transparent dark:bg-transparent"
+              color="dark"
+              onClick={closeNavbar}
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </Button>
+          </div>
+          <div className="flex flex-col px-4 space-y-4">
+            <Link to="/" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
+              Home
+            </Link>
+            {admin && (
+              <>
+                <Link to="/create" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
+                  Create
+                </Link>
+                <Link to="/usermanagement" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
+                  Manage Users
+                </Link>
+              </>
+            )}
+            {name && (
+              <div className="flex flex-col items-center space-y-2">
+                <Button
+                  size="sm"
+                  color="failure"
+                  onClick={handleLogout}
+                  className="w-full bg-accent-500 text-white hover:bg-accent-600 rounded-lg py-2 px-4 flex items-center gap-3 shadow-md transition-all"
+                >
+                  <ArrowLeftStartOnRectangleIcon className="h-5 w-5 mr-1" />
+                  <span className="text-md font-medium">Logout</span>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex flex-col px-4 space-y-4">
-          <Link to="/" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
-            Home
-          </Link>
-          {admin && (
-            <>
-              <Link to="/create" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
-                Create
-              </Link>
-              <Link to="/usermanagement" className="block px-3 p-1 rounded-md text-base font-medium text-accent-500 hover:text-white hover:bg-accent-600">
-                Manage Users
-              </Link>
-            </>
-          )}
-          {name && (
-            <div className="flex flex-col items-center space-y-2">
-              <Button
-                size="sm"
-                color="failure"
-                onClick={handleLogout}
-                className="w-full bg-accent-500 text-white hover:bg-accent-600 rounded-lg py-2 px-4 flex items-center gap-3 shadow-md transition-all"
-              >
-                <ArrowLeftStartOnRectangleIcon className="h-5 w-5 mr-1" />
-                <span className="text-md font-medium">Logout</span>
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </Navbar>
   );
 };

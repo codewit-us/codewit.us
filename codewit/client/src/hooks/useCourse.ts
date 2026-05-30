@@ -4,6 +4,16 @@ import axios from 'axios';
 import { Course, StudentProgress } from '@codewit/interfaces';
 import { useAuth } from './useAuth';
 
+interface CourseMutationPayload {
+  title: string;
+  enrolling: boolean;
+  auto_enroll: boolean;
+  language?: string;
+  modules?: number[];
+  instructors?: number[];
+  roster?: number[];
+}
+
 // General hook to handle fetching data with axios
 const useAxiosFetch = (initialUrl: string, initialData: Course[] = []) => {
   const [data, setData] = useState<Course[]>(initialData);
@@ -86,13 +96,13 @@ const useAxiosCRUD = (method: 'get' | 'post' | 'patch' | 'delete') => {
 // Hook to post a new course
 export const usePostCourse = () => {
   const { operation } = useAxiosCRUD('post');
-  return (courseData: Course) => operation('/api/courses', courseData);
+  return (courseData: CourseMutationPayload) => operation('/api/courses', courseData);
 };
 
 // Hook to patch an existing course
 export const usePatchCourse = () => {
   const { operation } = useAxiosCRUD('patch');
-  return (courseData: Course, uid: number | string) => operation(`/api/courses/${uid}`, courseData);
+  return (courseData: CourseMutationPayload, uid: number | string) => operation(`/api/courses/${uid}`, courseData);
 };
 
 // Hook to delete a course
