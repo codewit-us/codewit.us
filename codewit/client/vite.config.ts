@@ -8,13 +8,22 @@ dotenv.config({ path: '../../.env' });
 
 const API_PORT = process.env.API_PORT;
 const API_HOST = process.env.API_HOST;
+const CODEEVAL_PORT = process.env.CODEEVAL_PORT;
+const CODEEVAL_HOST = process.env.CODEEVAL_HOST;
+const resolveTarget = (
+  host: string | undefined,
+  port: string | undefined,
+  fallback: string
+) => (host ? `http://${host}${port ? `:${port}` : ''}` : fallback);
 const API_TARGET = API_HOST
-  ? `http://${API_HOST}${API_PORT ? `:${API_PORT}` : ''}`
+  ? resolveTarget(API_HOST, API_PORT, 'http://localhost:3000')
   : 'http://localhost:3000';
-const CODEEVAL_TARGET = API_HOST
-  ? `http://${API_HOST}${API_PORT ? `:${API_PORT}` : ''}`
-  : 'http://localhost:3002';
-const usingGatewayProxy = Boolean(API_HOST);
+const CODEEVAL_TARGET = CODEEVAL_HOST
+  ? resolveTarget(CODEEVAL_HOST, CODEEVAL_PORT, 'http://localhost:3002')
+  : API_HOST
+    ? API_TARGET
+    : 'http://localhost:3002';
+const usingGatewayProxy = Boolean(API_HOST) && !CODEEVAL_HOST;
 
 export default defineConfig(({ mode }) => ({
   root: __dirname,
@@ -47,12 +56,16 @@ export default defineConfig(({ mode }) => ({
       '/api': {
         target: API_TARGET,
         changeOrigin: true,
-        rewrite: usingGatewayProxy ? undefined : (path) => path.replace(/^\/api/, ''),
+        rewrite: usingGatewayProxy
+          ? undefined
+          : (path) => path.replace(/^\/api/, ''),
       },
       '/codeeval': {
         target: CODEEVAL_TARGET,
         changeOrigin: true,
-        rewrite: usingGatewayProxy ? undefined : (path) => path.replace(/^\/codeeval/, ''),
+        rewrite: usingGatewayProxy
+          ? undefined
+          : (path) => path.replace(/^\/codeeval/, ''),
       },
     },
   },

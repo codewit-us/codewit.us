@@ -10,7 +10,7 @@ import userRouter from './routes/user';
 import attemptRouter from './routes/attempt';
 import passport from 'passport';
 import session from 'express-session';
-import { COOKIE_KEY, HOST, PORT, REDIS_HOST, REDIS_PORT } from './secrets';
+import { COOKIE_KEY, HOST, PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
 import { catchError, asyncHandle } from "./middleware/catch";
