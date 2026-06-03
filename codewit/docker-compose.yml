@@ -29,10 +29,8 @@ services:
       - DB_PASSWORD=12345
       - DB_NAME=codewitus_db
       - DB_PORT=5432
-      - API_PORT=3000
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - FRONTEND_URL=http://localhost:80
+      - PORT=3000
+      - FRONTEND_URL=http://localhost:3001
       - NODE_ENV=dev
     env_file:
       - .env
@@ -108,8 +106,10 @@ services:
           target: /codewit/lib/
           action: sync
     environment:
-      - API_PORT=80
-      - API_HOST=nginx
+      - API_HOST=app
+      - API_PORT=3000
+      - CODEEVAL_HOST=codeeval
+      - CODEEVAL_PORT=3002
     networks:
       - codewitus
     stdin_open: true
@@ -129,35 +129,9 @@ services:
     environment:
       - HOST=0.0.0.0
       - PORT=3002
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
       - ENABLE_CPP=true
     ports:
       - 3002:3002
-    networks:
-      - codewitus
-
-  nginx:
-    depends_on:
-      - frontend
-      - app
-      - codewitus_db
-    image: nginx:latest
-    restart: unless-stopped
-    ports:
-      - 80:80
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    networks:
-      - codewitus
-    stdin_open: true
-    tty: true
-
-  redis:
-    image: redis:7.4-alpine
-    restart: unless-stopped
-    ports:
-      - 6379:6379
     networks:
       - codewitus
 
