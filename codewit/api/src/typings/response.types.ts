@@ -39,6 +39,8 @@ export interface CourseResponse {
     modules: ModuleResponse[] | number[];
     roster: UserResponse[];
     instructors: UserResponse[];
+    createdAt: string,
+    updatedAt: string,
 }
 
 export interface UserResponse {

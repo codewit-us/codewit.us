@@ -121,6 +121,8 @@ interface Course {
     username: string;
     email: string;
   }>;
+  createdAt: string,
+  updatedAt: string,
 }
 
 interface Module {

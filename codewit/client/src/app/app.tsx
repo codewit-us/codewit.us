@@ -8,6 +8,7 @@ import Read from '../pages/Read';
 import Create from '../pages/Create';
 import NotFound from '../components/notfound/NotFound';
 import { ExerciseView } from '../pages/create/exercise';
+import { AdminCourseRoutes } from "../pages/create/course";
 import ModuleForm from '../pages/ModuleForm';
 import ResourceForm from '../pages/ResourceForm';
 import CourseForm from '../pages/CourseForm';
@@ -142,7 +143,7 @@ export function App() {
             <Route path="exercise/*" element={<ExerciseView/>} />
             <Route path="module" element={<ModuleForm />} />
             <Route path="resource" element={<ResourceForm />} />
-            <Route path="course" element={<CourseForm />} />
+            <Route path="course/*" element={<AdminCourseRoutes/>} />
           </Route>
           <Route
             path="/:courseId/dashboard"

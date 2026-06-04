@@ -6,7 +6,12 @@ import { useFormContext } from "./context";
 
 interface SubmitButtonProps {}
 
-export function SubmitButton({}) {
+/**
+ * a simple save button that will be disabled when the form is submitting, the
+ * form has not changed, and if the form will allow the submit (eg if the form
+ * does not have errors that the user needs to fix)
+ */
+export function SubmitButton({}: SubmitButtonProps) {
   const form = useFormContext();
 
   return <form.Subscribe selector={state => ({
@@ -14,11 +19,21 @@ export function SubmitButton({}) {
     dirty: state.isDirty,
     can_submit: state.canSubmit,
   })}>
-    {({submitting, dirty, can_submit}) => (
-      <Button type="submit" disabled={submitting || !dirty || !can_submit}>
+    {({submitting, dirty, can_submit}) => {
+      let title = undefined;
+
+      if (!can_submit) {
+        title = "There are errors with the form and must be fixed before submitting";
+      }
+
+      return <Button
+        type="submit"
+        title={title}
+        disabled={submitting || !dirty || !can_submit}
+      >
         Save
       </Button>
-    )}
+    }}
   </form.Subscribe>
 }
 

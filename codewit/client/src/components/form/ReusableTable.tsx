@@ -15,7 +15,7 @@ interface ReusableTableProps<T> {
   className?: string,
   itemsPerPage?: number,
   onEdit?: (item: T) => void,
-  onDelete: (item: T) => void,
+  onDelete?: (item: T) => void,
 }
 
 const getNestedValue = (obj: any, path: string): any => {
@@ -63,6 +63,7 @@ export const ReusableTable = <T extends { id?: string | number; uid?: string | n
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(data.length / itemsPerPage);
+  const enable_actions = onEdit != null || onDelete != null;
 
   const currentData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -82,9 +83,13 @@ export const ReusableTable = <T extends { id?: string | number; uid?: string | n
               {col.header}
             </Table.HeadCell>
           ))}
-          <Table.HeadCell className="text-gray-300 font-semibold">
+          {enable_actions ?
+            <Table.HeadCell className="text-gray-300 font-semibold">
               Actions
-          </Table.HeadCell>
+            </Table.HeadCell>
+            :
+            null
+          }
         </Table.Head>
         <Table.Body className="divide-y divide-gray-700">
           {currentData.map((item, rowIdx) => (
@@ -111,25 +116,32 @@ export const ReusableTable = <T extends { id?: string | number; uid?: string | n
                   </Table.Cell>
                 );
               })}
-
-              <Table.Cell className="text-right space-x-2">
-                {onEdit != null ?
-                  <button
-                    onClick={() => onEdit(item)}
-                    className="text-sm font-medium text-blue-500 hover:text-blue-400 hover:underline transition-all rounded-md"
-                  >
-                    Edit
-                  </button>
-                  :
-                  null
-                }
-                <button
-                  onClick={() => onDelete(item)}
-                  className="text-sm font-medium text-red-500 hover:text-red-400 hover:underline transition-all rounded-md"
-                >
-                  Delete
-                </button>
-              </Table.Cell>
+              {enable_actions ?
+                <Table.Cell className="text-right space-x-2">
+                  {onEdit != null ?
+                    <button
+                      onClick={() => onEdit(item)}
+                      className="text-sm font-medium text-blue-500 hover:text-blue-400 hover:underline transition-all rounded-md"
+                    >
+                      Edit
+                    </button>
+                    :
+                    null
+                  }
+                  {onDelete != null ?
+                    <button
+                      onClick={() => onDelete(item)}
+                      className="text-sm font-medium text-red-500 hover:text-red-400 hover:underline transition-all rounded-md"
+                    >
+                      Delete
+                    </button>
+                    :
+                    null
+                  }
+                </Table.Cell>
+                :
+                null
+              }
             </Table.Row>
           ))}
         </Table.Body>

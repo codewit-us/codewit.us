@@ -93,7 +93,11 @@ async function createCourse(
         // eager load the instructors
         include: [
           Language,
-          Module,
+          {
+            association: Course.associations.modules,
+            include: [Language, Resource],
+            through: { attributes: ['ordering'] },
+          },
           { association: Course.associations.instructors },
           { association: Course.associations.roster },
         ],
@@ -101,7 +105,7 @@ async function createCourse(
         transaction,
       });
 
-      return formatCourseResponse(course);
+      return formatCourseResponse(course, true);
     });
 
     commit_id(id);
@@ -186,7 +190,11 @@ async function updateCourse(
     await course.reload({
       include: [
         Language,
-        Module,
+        {
+          association: Course.associations.modules,
+          include: [Language, Resource],
+          through: { attributes: ['ordering'] },
+        },
         { association: Course.associations.instructors },
         { association: Course.associations.roster },
       ],
@@ -194,7 +202,7 @@ async function updateCourse(
       transaction,
     });
 
-    return formatCourseResponse(course);
+    return formatCourseResponse(course, true);
   });
 }
 
@@ -210,18 +218,26 @@ async function deleteCourse(uid: string): Promise<Course | null> {
   return course;
 }
 
-async function getCourse(uid: string): Promise<CourseResponse | null> {
+async function getCourse(uid: string, is_student: boolean = true): Promise<CourseResponse | null> {
   const course = await Course.findByPk(uid, {
     include: [
       Language,
-      Module,
+      {
+        association: Course.associations.modules,
+        include: [Language, Resource],
+        through: { attributes: ['ordering'] },
+      },
       { association: Course.associations.instructors },
       { association: Course.associations.roster },
     ],
     order: [[Module, CourseModules, 'ordering', 'ASC']],
   });
 
-  return formatCourseResponse(course);
+  if (course != null) {
+    return formatCourseResponse(course, true);
+  } else {
+    return null;
+  }
 }
 
 async function getAllCourses(): Promise<CourseResponse[]> {

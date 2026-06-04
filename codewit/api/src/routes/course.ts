@@ -12,11 +12,11 @@ import {
   updateCourse,
 } from '../controllers/course';
 import { fromZodError } from 'zod-validation-error';
-import { 
-  createCourseSchema, 
-  updateCourseSchema, 
+import {
+  createCourseSchema,
+  updateCourseSchema,
   updateEnrollmentFlagsSchema,
-  bulkRegistrationSchema 
+  bulkRegistrationSchema
 } from '@codewit/validations';
 import { checkAdmin, checkAuth,checkInstructorOrAdmin } from '../middleware/auth';
 import {
@@ -140,7 +140,7 @@ courseRouter.get('/:courseId/progress', checkAuth, async (req, res) => {
           studentName      : student.username,
           completion       : avg,
           modulesCompleted : completedModules,
-          modulesTotal     : totalModules, 
+          modulesTotal     : totalModules,
         };
       })
     );
@@ -218,6 +218,16 @@ interface CourseUserStatus {
 }
 
 courseRouter.get('/:uid', asyncHandle(async (req, res) => {
+  if (req.user?.isAdmin) {
+    let course = await getCourse(req.params.uid, false);
+
+    if (course != null) {
+      return res.status(200).json(course);
+    } else {
+      return res.status(404).json({ error: "CourseNotFound" });
+    }
+  }
+
   let check: CourseUserStatus[] = await sequelize.query(
     `
     select "CourseInstructors"."userUid" is not null as is_instructor,
