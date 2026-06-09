@@ -30,6 +30,9 @@ class Course extends Model<
   declare roster?: NonAttribute<User[]>;
   declare registered?: NonAttribute<User[]>;
 
+  declare createdAt?: Date;
+  declare updatedAt?: Date;
+
   declare static associations: {
     language: Association<Course, Language>;
     modules: Association<Course, Module>;

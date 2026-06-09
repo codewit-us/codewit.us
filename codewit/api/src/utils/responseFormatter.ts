@@ -89,6 +89,8 @@ function formatSingleCourse(course: Course, isGetStudent = false): CourseRespons
       : course.modules.map((module) => filterModule(module) as number),
     instructors: course.instructors.map((instructor) => filterUser(instructor)),
     roster: course.roster.map((user) => filterUser(user)),
+    createdAt: course.createdAt.toJSON(),
+    updatedAt: course.updatedAt.toJSON(),
   };
 }
 
