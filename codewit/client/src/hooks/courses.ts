@@ -29,7 +29,7 @@ export function single_course_query_key(course_id: string, admin: boolean): ["co
 // server
 export function use_single_course_query(course_id: string, admin: boolean = false) {
   return useQuery({
-    queryKey: single_course_query_key(course_id),
+    queryKey: single_course_query_key(course_id, admin),
     queryFn: async () => {
       try {
         let url = `/api/courses/${course_id}`;

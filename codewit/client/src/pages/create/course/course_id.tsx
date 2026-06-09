@@ -1,4 +1,4 @@
-import { User, Module } from "@codewit/interfaces";
+import { Course, User, Module } from "@codewit/interfaces";
 import { updateCourseSchema, createCourseSchema } from "@codewit/validations";
 import {
   DndContext,
@@ -21,7 +21,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button, Label } from "flowbite-react";
 import { useEffect, useMemo } from "react";
 import { Route, Link, useParams, useNavigate } from "react-router-dom";
-import { default as ReactSelect } from "react-select";
+import { default as ReactSelect, SingleValue } from "react-select";
 import { toast } from "react-toastify";
 
 import axios from "axios";
@@ -54,9 +54,11 @@ export function CourseIdView() {
     return <CourseEdit
       course={null}
       on_created={record => {
-        client.setQueryData(single_course_query_key(record.id), record);
+        client.setQueryData(single_course_query_key(record.id, true), record);
 
         navigate(`/create/course/${record.id}`);
+
+        return true;
       }}
       on_cancel={() => navigate("/create/course")}
     />;
@@ -102,10 +104,14 @@ function ValidCourseIdView({course_id}: ValidCourseIdViewProps) {
 
   return <CourseEdit
     course={data}
-    on_updated={record => client.setQueryData(
-      single_course_query_key(record.id),
-      record
-    )}
+    on_updated={record => {
+      client.setQueryData(
+        single_course_query_key(record.id, true),
+        record
+      );
+
+      return true;
+    }}
     on_deleted={() => navigate("/create/course")}
     on_cancel={() => navigate("/create/course")}
   />
@@ -161,13 +167,22 @@ interface CourseUserForm {
   email: string,
 }
 
+// "send" indiciates a create (post) or update (patch)
+type FormAction = "send" | "delete";
+
+// metadata that is sent when the form is submitted
+interface FormMeta {
+  // the specific action for the form to take
+  action: FormAction,
+}
+
 // returns a blank course form for a new course
 function blank_form(): CourseForm {
   return {
     id: "",
     title: "",
     enrolling: false,
-    auto_enrolling: false,
+    auto_enroll: false,
     language: "cpp",
     modules: [],
     instructors: [],
@@ -183,7 +198,7 @@ function course_to_form(course: Course): CourseForm {
     enrolling: course.enrolling,
     auto_enroll: course.auto_enroll,
     language: course.language,
-    modules: course.modules.map(rec => ({uid: rec.uid, topic: rec.topic})),
+    modules: course.modules.map(rec => ({uid: rec.uid as number, topic: rec.topic})),
     instructors: course.instructors.slice(),
     roster: course.roster.slice(),
   };
@@ -229,7 +244,13 @@ interface CourseEditProps {
 }
 
 // the form component to use when creating or editing a course
-function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: CourseEditProps) {
+function CourseEdit({
+  course,
+  on_created = () => {},
+  on_updated = () => {},
+  on_deleted = () => {},
+  on_cancel = () => {},
+}: CourseEditProps) {
   const create_course = useMutation({
     mutationFn: async (payload: any) => {
       let result = await axios.post<Course>("/api/courses", payload);
@@ -315,6 +336,10 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
         if (!result.success) {
           let rtn = {
             fields: {},
+          } as {
+            fields: {
+              [key: string]: string
+            }
           };
 
           for (let issue of result.error.issues) {
@@ -360,6 +385,7 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
         </div>
         <div className="grid grid-cols-8 gap-2">
           <form.AppField name="id">
+            {/*@ts-ignore*/}
             {field => <field.TextField
               label="Course ID"
               disabled
@@ -368,6 +394,7 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
           </form.AppField>
           <div className="col-span-5 flex flex-row flex-nowrap items-end gap-4">
             <form.AppField name="enrolling" validators={{
+              // @ts-ignore
               onChange: ({ value, fieldApi }) => {
                 // listening for changes on this so that when the value is set
                 // to false the "auto_enroll" field is auto set to false as
@@ -377,13 +404,16 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
                 }
               }
             }}>
+              {/*@ts-ignore*/}
               {field => <field.CheckboxField
                 label="Enrolling"
                 title="allows user to request being registered for a course"
               />}
             </form.AppField>
             <form.AppField name="auto_enroll">
+              {/*@ts-ignore*/}
               {field => <form.Subscribe selector={state => state.values.enrolling}>
+                {/*@ts-ignore*/}
                 {enrolling => <field.CheckboxField
                   label="Auto Enroll"
                   title="allows for any user to be automatically enrolled into the course. 'enrolling' must be enabled"
@@ -400,12 +430,15 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
             </form.AppField>
           </div>
           <form.AppField name="title" validators={{
+            // @ts-ignore
             onBlur: ({ value, fieldApi }) => fieldApi.setValue(value.trim()),
           }}>
+            {/*@ts-ignore*/}
             {field => <field.TextField label="Course Title" classNames={{container: "col-span-5"}}/>}
           </form.AppField>
           <div className="col-span-3"/>
           <form.AppField name="language">
+            {/*@ts-ignore*/}
             {field => <field.LanguageSelectField
               label="Course Language"
               classNames={{container: "col-span-3"}}
@@ -414,9 +447,11 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
           <div className="col-span-5"/>
           <div className="col-span-4 space-y-2">
             <form.AppField name="instructors" mode="array">
+              {/*@ts-ignore*/}
               {field => <form.Subscribe selector={state => ({
                 submitting: state.isSubmitting
               })}>
+                {/*@ts-ignore*/}
                 {({submitting}) => <>
                   <h2>Instructors ({field.state.value.length})</h2>
                   <InstructorSearch
@@ -440,9 +475,11 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
           </div>
           <div className="col-span-4 space-y-2">
             <form.AppField name="roster" mode="array">
+              {/*@ts-ignore*/}
               {field => <form.Subscribe selector={state => ({
                 submitting: state.isSubmitting
               })}>
+                {/*@ts-ignore*/}
                 {({submitting}) => <>
                   <h2>Roster ({field.state.value.length})</h2>
                   <RosterSearch
@@ -466,9 +503,11 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
           </div>
           <div className="col-span-4 space-y-2">
             <form.AppField name="modules">
+              {/*@ts-ignore*/}
               {field => <form.Subscribe selector={state => ({
                 submitting: state.isSubmitting
               })}>
+                {/*@ts-ignore*/}
                 {({submitting}) => <>
                   <h2>Modules ({field.state.value.length})</h2>
                   {/* as of making these changes, there is an issue with how an
@@ -524,7 +563,7 @@ function CourseEdit({course, on_created, on_updated, on_deleted, on_cancel}: Cou
 
 interface InstructorSearchProps {
   // the current list of known instructors
-  instructors: CourseInstructorForm[],
+  instructors: CourseUserForm[],
 
   // disables interacting with the component
   disabled?: boolean,
@@ -588,7 +627,7 @@ function InstructorSearch({instructors, disabled, on_add}: InstructorSearchProps
 
 interface RosterSearchProps {
   // the current list of students
-  roster: CourseStudentForm[],
+  roster: CourseUserForm[],
 
   // disables interacting with the component
   disabled?: boolean,
@@ -660,6 +699,12 @@ interface ModuleSearchProps {
   onAdd: (module: Module) => void,
 }
 
+interface SelectModule {
+  value: number,
+  label: string,
+  module: Module,
+}
+
 // provides the ability to search for users to be considered students and add
 // them when selected
 //
@@ -675,7 +720,7 @@ function ModuleSearch({ modules, disabled, onAdd }: ModuleSearchProps) {
     return (data ?? [])
       .filter((option) => !modules.find((module) => module.uid === option.uid))
       .map(v => ({
-        value: v.uid,
+        value: v.uid as number,
         label: `[${v.uid}] ${v.topic}`,
         module: v,
       }))
@@ -697,7 +742,7 @@ function ModuleSearch({ modules, disabled, onAdd }: ModuleSearchProps) {
       options={availableOptions}
       value={null}
       isDisabled={availableOptions.length === 0 || disabled}
-      onChange={(value: SingleValue<SelectedTag>) => {
+      onChange={(value: SingleValue<SelectModule>) => {
         if (value != null) {
           onAdd(value.module);
         }
@@ -848,7 +893,7 @@ function SortableModuleList({ modules, disabled, onSwap, onRemove }: SortableMod
 
 interface SortableModuleItemProps {
   // the module information to display
-  module: CourseModuleFormItem,
+  module: CourseModuleForm,
 
   // index number of the module in the list (0 based)
   index: number,

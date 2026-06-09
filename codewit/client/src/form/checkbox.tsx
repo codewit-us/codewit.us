@@ -39,7 +39,7 @@ export function CheckboxField({
   title,
   classNames = {}
 }: CheckboxFieldProps) {
-  const field = useFieldContext<string>();
+  const field = useFieldContext<boolean>();
 
   let submitting = useStore(field.form.store, state => state.isSubmitting);
   let has_errors = field.state.meta.errors.length !== 0;

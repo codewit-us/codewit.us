@@ -1,3 +1,4 @@
+import type { Course } from "@codewit/interfaces";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
