@@ -6,23 +6,38 @@ import { useFieldContext } from "./context";
 import { cn } from "../utils/styles";
 
 interface SelectFieldProps {
+  // the contents to display in side the select label
   label?: string,
+
+  // a description of the select
   description?: string,
+
+  // a placeholder string to display for the select field
   placeholder?: string,
+
+  // disables the select field
   disabled?: boolean,
+
+  // the title that will be attached to the select field label
   title?: string,
+
+  // a struct containing className strings that will be attached to the rendered
+  // components
   classNames?: {
+    // the className to apply to the select field label component
     label?: string,
+
+    // the className to apply to the select field component
     field?: string,
+
+    // the className to apply to the top most div component
     container?: string,
   }
 }
 
-/*
- * this provides a single select field that will attached to the current form
- * context. the provided children will be the available options for the select
- * field
- */
+// this provides a single select field that will attached to the current form
+// context. the provided children will be the available options for the select
+// field
 export function SelectField({
   label,
   description,
@@ -74,10 +89,10 @@ export function SelectField({
     </div>;
 }
 
-/*
- * a convenience component for the "language" input field that many records
- * have access to
- */
+// a convenience component for the "language" input field that many records
+// have access to
+//
+// takes the same props as the SelectField except for children components
 export function LanguageSelectField(props: SelectFieldProps) {
   return <SelectField {...props}>
     <option value="cpp">C++</option>

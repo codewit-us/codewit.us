@@ -3,6 +3,7 @@ import LoadingIcons from "../components/loading/LoadingIcon";
 
 interface SubmitIndicatorProps {}
 
+// small indicator to signal to the user that the form is currently submitting
 export function SubmitIndicator({}: SubmitIndicatorProps) {
   const form = useFormContext();
 

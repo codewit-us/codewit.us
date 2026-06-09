@@ -5,17 +5,33 @@ import { useFieldContext } from "./context";
 import { cn } from "../utils/styles";
 
 interface CheckboxFieldProps {
+  // the contents to display inside the checkbox label
   label: string,
+
+  // a description for the checkbox
   description?: string,
+
+  // disabled the checkbox
   disabled?: boolean,
+
+  // a title that will be attached to the checkbox label
   title?: string,
+
+  // a struct containing className strings that will be attched to the rendered
+  // components
   classNames?: {
+    // the className to apply to the top most div component
     container?: string,
+
+    // the className to apply to the checkbox component
     field?: string,
+
+    // the className to apply to the label component
     label?: string,
   }
 }
 
+// a simple checkbox input that will handle form and field state automatically
 export function CheckboxField({
   label,
   description,

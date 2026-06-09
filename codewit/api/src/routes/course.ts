@@ -293,7 +293,10 @@ interface CourseUserStatus {
 }
 
 courseRouter.get('/:uid', asyncHandle(async (req, res) => {
-  if (req.user?.isAdmin) {
+  if ("admin" in req.query && req.user?.isAdmin) {
+    // only run if the query is requesting admin level information and the user
+    // is an admin. don't really have a good way of doing this other than
+    // creating a new route to handle this
     let course = await getCourse(req.params.uid, false);
 
     if (course != null) {

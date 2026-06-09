@@ -5,19 +5,39 @@ import { useFieldContext } from "./context";
 import { cn } from "../utils/styles";
 
 interface TextFieldProps {
+  // the contents to display inside the text field label
   label?: string,
+
+  // a description for the text field
   description?: string,
+
+  // a placeholder string to display for the text field
   placeholder?: string,
+
+  // the auto complete value to be provided to the text field
   auto_complete?: string,
+
+  // disables the text field
   disabled?: boolean,
+
+  // the title that will be attached to the text field label
   title?: string,
+
+  // a struct containing className strings that will be attached to the rendered
+  // components
   classNames?: {
+    // the className to apply to the text field label component
     label?: string,
+
+    // the className to apply to the text field component
     field?: string,
+
+    // the className to apply to the top most div component
     container?: string,
   }
 }
 
+// a simple text field input that will handle form and field state automatically
 export function TextField({
   label,
   description,
