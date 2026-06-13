@@ -101,6 +101,9 @@ const NavBar = ({
             <button
               ref={toggleRef}
               data-testid="navbar-toggle"
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isOpen}
+              aria-controls="nav-drawer"
               className="h-9 px-3 relative flex items-center justify-center text-sm text-accent-600 hover:text-accent-700 bg-transparent dark:bg-transparent rounded-lg text-center font-medium focus:outline-none focus:ring-4"
               onClick={toggleNavbar}
             >
@@ -112,6 +115,7 @@ const NavBar = ({
 
       {!loginHref && (
         <div
+          id="nav-drawer"
           ref={drawerRef}
           className={`fixed top-0 right-0 w-64 h-screen bg-foreground-700 shadow-lg z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${
             isOpen ? 'translate-x-0' : 'translate-x-full'
@@ -120,6 +124,7 @@ const NavBar = ({
           <div className="flex justify-end p-2">
             <Button
               size="sm"
+              aria-label="Close menu"
               className="text-accent-500 hover:text-accent-700 bg-transparent dark:bg-transparent"
               color="dark"
               onClick={closeNavbar}

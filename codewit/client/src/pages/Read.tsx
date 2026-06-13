@@ -183,8 +183,10 @@ function LeftPanel({info, module_id, course_id}: LeftPanelProps) {
           onClick={() => mutate({uid: info.demo.uid, like_demo: !is_liked})}
           type="button"
           data-testid="like-button"
+          aria-pressed={is_liked}
+          aria-label={is_liked ? 'Unlike this demo' : 'Like this demo'}
           className={cn(
-            "group px-2 py-1 text-md font-medium text-center flex items-center rounded-lg border-2 hover:bg-accent-400 focus:outline-none",
+            "group px-2 py-1 text-md font-medium text-center flex items-center rounded-lg border-2 hover:bg-accent-400 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-400",
             {"text-green-500 border-green-500": is_liked},
             {"text-accent-400 border-accent-400": !is_liked}
           )}
@@ -605,7 +607,7 @@ type ActionBtnProps = ButtonHTMLAttributes<HTMLButtonElement>;
 function ActionBtn({className, children, ...rest}: ActionBtnProps) {
   return <button
     className={cn(
-      "group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 rounded-lg focus:outline-none w-2/3",
+      "group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-400 w-2/3",
       className
     )}
     {...rest}

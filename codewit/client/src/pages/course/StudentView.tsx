@@ -197,6 +197,7 @@ function CourseModuleDemo({course_id, module_id, demo}: CourseModuleDemoProps) {
       <div className="absolute inset-0 bg-black bg-opacity-40 flex rounded-xl items-center justify-center group hover:bg-opacity-20">
         <Link
           to={`/read/${demo.uid}?course_id=${course_id}&module_id=${module_id}`}
+          aria-label={demo.completion === 1 ? `${demo.title} (completed)` : `Open lesson: ${demo.title}`}
           className="text-2xl opacity-70 group-hover:opacity-100"
         >
           {demo.completion === 1 ?

@@ -195,7 +195,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
 
         {/* invite link */}
         <div className="mt-4 flex items-center gap-2">
-          <p className="text-foreground-200 text-sm">Class Link</p>
+          <label htmlFor="invite-link" className="text-foreground-200 text-sm">Class Link</label>
           <input
             id="invite-link"
             className="p-1 bg-background-500 text-foreground-200 w-1/3 border border-accent-500 rounded-sm"
@@ -225,6 +225,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
                 type="button"
                 role="switch"
                 aria-checked={enrolling}
+                aria-label="Open for Enrollment"
                 onClick={toggleEnrolling}
                 disabled={savingFlags}
                 title={enrolling ? 'Turn off enrollment' : 'Open for enrollment'}
@@ -254,6 +255,7 @@ export default function TeacherView({ onCourseChange }: TeacherViewProps) {
                 type="button"
                 role="switch"
                 aria-checked={enrolling && autoEnroll}
+                aria-label="Auto Enroll"
                 onClick={toggleAutoEnroll}
                 disabled={!enrolling || savingFlags}
                 title={!enrolling ? 'Enable Open for Enrollment first' : (autoEnroll ? 'Disable auto enroll' : 'Enable auto enroll')}
