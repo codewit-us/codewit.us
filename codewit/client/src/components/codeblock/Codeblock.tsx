@@ -58,7 +58,7 @@ export default function CodeEditor({
         {/* submit and reset buttons */}
         <div className="inline-flex gap-1 pt-2 pb-3">
           <button
-            className="group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 border-accent-500 rounded-lg focus:outline-none w-1/3"
+            className="group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 border-accent-500 rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 w-1/3"
             onClick={() => {
               if (editorInstanceRef.current) {
                 editorInstanceRef.current.setValue('');
@@ -70,7 +70,7 @@ export default function CodeEditor({
           </button>
           <button
             className={cn(
-              "group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 rounded-lg focus:outline-none w-2/3",
+              "group px-2 py-1 text-md font-medium text-center flex items-center justify-center border-2 rounded-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-500 w-2/3",
               {
                 "bg-alternate-background-500 border-foreground-400 hover:bg-alternate-background-500/90": is_submitting,
                 "border-accent-500": !is_submitting,

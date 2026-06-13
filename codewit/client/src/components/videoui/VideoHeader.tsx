@@ -8,7 +8,8 @@ const VideoHeader = ({ title, uid, handleClick }: { title: string, uid:number | 
       onClick={() => handleClick(uid ?? 0)}
       type="button"
       data-testid="like-button"
-      className="group px-2 py-1 text-md font-medium text-center flex items-center text-white  rounded-lg  border-2 border-accent-400 hover:bg-accent-400 focus:outline-none"     
+      aria-label="Like this demo"
+      className="group px-2 py-1 text-md font-medium text-center flex items-center text-white  rounded-lg  border-2 border-accent-400 hover:bg-accent-400 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent-400"
     >      
       <HandThumbUpIcon className="w-6 h-6 mr-2 text-accent-400 group-hover:text-white" />
       <span  className="text-accent-400 group-hover:text-white">Like</span>
