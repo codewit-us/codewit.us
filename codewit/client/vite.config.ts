@@ -56,9 +56,6 @@ export default defineConfig(({ mode }) => ({
       '/api': {
         target: API_TARGET,
         changeOrigin: true,
-        rewrite: usingGatewayProxy
-          ? undefined
-          : (path) => path.replace(/^\/api/, ''),
       },
       '/codeeval': {
         target: CODEEVAL_TARGET,

@@ -17,16 +17,12 @@ import { ModuleDemos } from './moduleDemos';
 
 require('dotenv').config();
 
-if (
-  !process.env.DB_HOST ||
-  !process.env.DB_NAME ||
-  !process.env.DB_USER ||
-  !process.env.DB_PASSWORD ||
-  !process.env.DB_PORT
-) {
-  throw new Error(
-    'Please provide the DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, and DB_PORT environment variables'
-  );
+const required_keys = ["DB_HOST", "DB_NAME", "DB_USER"];
+
+for (let key of required_keys) {
+  if (!(key in process.env)) {
+    throw new Error(`Missing required database value: "${key}"`);
+  }
 }
 
 const sequelize = new Sequelize({
@@ -34,8 +30,9 @@ const sequelize = new Sequelize({
   database: process.env.DB_NAME,
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  port: Number(process.env.DB_PORT),
+  port: Number(process.env.DB_PORT ?? 5432),
   dialect: 'postgres',
+  logging: false,
   pool: {
     max: 10,
     min: 0,

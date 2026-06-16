@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import { sequelize } from './models';
 import demoRouter from './routes/demo';
 import exerciseRouter from './routes/exercise';
@@ -14,9 +14,21 @@ import { COOKIE_KEY, HOST, PORT } from './secrets';
 import './auth/passport';
 import { checkAuth } from './middleware/auth';
 import { catchError, asyncHandle } from "./middleware/catch";
+import { log_request } from "./middleware/logging";
+import { set_request_id } from "./middleware/id";
 import { init } from "./utils/id_generator";
+import handler from "serve-handler";
+import { join } from "node:path";
+
+const cwd = process.cwd();
+
+// we need to serve data from "dist/apps/client"
+const assets_dir = join(cwd, "dist/apps/client");
 
 const app = express();
+
+app.use(set_request_id);
+app.use(log_request);
 
 app.use(
   session({
@@ -35,21 +47,43 @@ app.use(passport.session());
 
 app.use(express.json());
 
+// there is a mix of no api prefix requests and api prefix requests that are
+// being made when attempting to authorize a user with google. this is to help
+// with this but it should be fixed so that the flow is more consistent
 app.use('/oauth2', authrouter);
 
-app.use('/users', checkAuth, userRouter);
-app.use('/demos', checkAuth, demoRouter);
-app.use('/exercises', checkAuth, exerciseRouter);
-app.use('/modules', checkAuth, moduleRouter);
-app.use('/resources', checkAuth, resourceRouter);
-app.use('/courses', (req, res, next) => {
+// start api configuration -----------------------------------------------------
+
+const api_router = Router();
+
+api_router.use('/oauth2', authrouter);
+
+api_router.use('/users', checkAuth, userRouter);
+api_router.use('/demos', checkAuth, demoRouter);
+api_router.use('/exercises', checkAuth, exerciseRouter);
+api_router.use('/modules', checkAuth, moduleRouter);
+api_router.use('/resources', checkAuth, resourceRouter);
+api_router.use('/courses', (req, res, next) => {
   if (req.path === '/landing' || req.path === '/landing/') {
     return next();
   }
 
   return checkAuth(req, res, next);
 }, courseRouter);
-app.use('/attempts', checkAuth, attemptRouter);
+api_router.use('/attempts', checkAuth, attemptRouter);
+
+app.use("/api", api_router);
+
+// end api configuration -------------------------------------------------------
+
+app.get("/*", async (req, res) => {
+  await handler(req, res, {
+    public: assets_dir,
+    rewrites: [
+      { "source": "/**", "destination": "/index.html" }
+    ]
+  });
+});
 
 app.use(catchError);
 
