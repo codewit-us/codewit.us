@@ -372,14 +372,32 @@ function DemoForm({view, demo, on_cancel, on_created, on_updated}: DemoFormProps
             </div>;
           }}/>
         </div>
-        <form.Field name="exercises" mode="array" children={field => {
+        <form.Field name="exercises" children={field => {
           return <div className="border-t pt-2 space-y-2">
             <Label>Exercises</Label>
-            <ExerciseSearch values={field.state.value} on_add={add => field.pushValue(add)}/>
+            <ExerciseSearch
+              values={field.state.value}
+              on_add={add => {
+                let next = [...field.state.value];
+                next.push(add);
+
+                field.setValue(next);
+              }}
+            />
             <SortableExercise
               values={field.state.value}
-              on_swap={(a_index, b_index) => field.moveValue(a_index, b_index)}
-              on_remove={(index, uid) => field.removeValue(index)}
+              on_swap={(a_index, b_index) => {
+                let next = [...field.state.value];
+                next.splice(a_index, 0, next.splice(b_index, 1)[0]);
+
+                field.setValue(next);
+              }}
+              on_remove={(index, uid) => {
+                let next = [...field.state.value];
+                next.splice(index, 1);
+
+                field.setValue(next);
+              }}
             />
           </div>
         }}/>
