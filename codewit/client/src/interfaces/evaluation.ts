@@ -1,4 +1,4 @@
-import type { AttemptDTO, FailureDetail, TestResult } from '@codewit/interfaces';
+import type { AttemptDTO, FailureDetail, LearnerHint, TestResult } from '@codewit/interfaces';
 
 export interface EvaluationErrorResponse {
   state: 'error';
@@ -14,6 +14,7 @@ export interface EvaluationErrorResponse {
   execution_time_exceeded: false;
   memory_exceeded: false;
   error: string;
+  learner_hint?: LearnerHint | null;
 }
 
 export type EvaluationResponse = TestResult | EvaluationErrorResponse;
