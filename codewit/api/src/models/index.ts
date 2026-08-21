@@ -14,6 +14,7 @@ import { UserExerciseCompletion } from './userExerciseCompletion';
 import { UserModuleCompletion } from './userModuleCompletion';
 import { DemoExercises } from './demoExercises';
 import { ModuleDemos } from './moduleDemos';
+import { ModuleResources } from './moduleResources';
 
 require('dotenv').config();
 
@@ -60,6 +61,7 @@ const sequelize = new Sequelize({
   UserModuleCompletion,
   DemoExercises,
   ModuleDemos,
+  ModuleResources,
 ].forEach((model) => model.initialize(sequelize));
 
 Demo.belongsToMany(Exercise, { through: DemoExercises });
@@ -96,8 +98,8 @@ Language.hasMany(Exercise, { foreignKey: 'languageUid' });
 Demo.belongsToMany(Module, { through: ModuleDemos });
 Module.belongsToMany(Demo, { through: ModuleDemos });
 
-Resource.belongsToMany(Module, { through: 'ModuleResources' });
-Module.belongsToMany(Resource, { through: 'ModuleResources' });
+Resource.belongsToMany(Module, { through: ModuleResources });
+Module.belongsToMany(Resource, { through: ModuleResources });
 
 Module.belongsTo(Language);
 Language.hasMany(Module);
@@ -175,6 +177,7 @@ export {
   Course,
   Module,
   ModuleDemos,
+  ModuleResources,
   CourseModules,
   CourseRegistration,
   Resource,

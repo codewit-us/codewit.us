@@ -248,7 +248,9 @@ interface AttemptResult {
 // Payload sent when creating a NEW exercise (no uid yet)
 export type ExerciseInput = Omit<Exercise, 'uid'>;
 
-export type ModuleDraft = Omit<Module, 'completion'>;
+export type ModuleDraft = Omit<Module, 'completion' | 'resources'> & {
+  resources: number[];
+};
 
 export type {
   AttemptDTO,
