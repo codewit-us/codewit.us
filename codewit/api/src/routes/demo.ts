@@ -22,7 +22,7 @@ import { DemoAttempt } from "@codewit/interfaces";
 import { fromZodError } from 'zod-validation-error';
 import { checkAdmin } from '../middleware/auth';
 import { asyncHandle } from '../middleware/catch';
-import { Attempt, Demo, DemoTags, Language, sequelize, Tag, UserExerciseCompletion } from '../models';
+import { Attempt, Demo, DemoExercises, DemoTags, Language, sequelize, Tag, UserExerciseCompletion } from '../models';
 import { Op, QueryTypes } from 'sequelize';
 
 const demoRouter = Router();
@@ -84,7 +84,10 @@ demoRouter.get("/:uid/attempt", asyncHandle(async (req, res) => {
       Tag,
       Language
     ],
-    order: [[Tag, DemoTags, "ordering", "ASC"]]
+    order: [
+      [Tag, DemoTags, "ordering", "ASC"],
+      [Demo.associations.exercises, DemoExercises, "order", "ASC"],
+    ]
   });
 
   if (demo_record == null) {
@@ -166,7 +169,8 @@ demoRouter.get("/:uid/attempt", asyncHandle(async (req, res) => {
             mod_resc."moduleUid" = $1
           left join "ResourceLikes" as resc_likes on
             resources.uid = resc_likes."resourceUid" and
-            resc_likes."userUid" = $2`,
+            resc_likes."userUid" = $2
+        order by mod_resc.ordering asc`,
         {
           type: QueryTypes.SELECT,
           bind: [maybe_module_id, req.user.uid]

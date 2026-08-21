@@ -1,4 +1,4 @@
-import { Demo, Language, Module, Resource, sequelize } from '../models';
+import { Demo, Language, Module, ModuleResources, Resource, sequelize } from '../models';
 import { ModuleResponse } from '../typings/response.types';
 import { formatModuleResponse } from '../utils/responseFormatter';
 
@@ -30,8 +30,19 @@ async function createModule(
     await module.setDemos(demos, { transaction });
     await module.setLanguage(languageInstance, { transaction });
 
-    await module.setResources(resources, { transaction });
-    await module.reload({ include: [Language, Demo, Resource], transaction });
+    await ModuleResources.bulkCreate(
+      resources.map((resourceUid, ordering) => ({
+        moduleUid: module.uid,
+        resourceUid,
+        ordering,
+      })),
+      { transaction },
+    );
+    await module.reload({
+      include: [Language, Demo, Resource],
+      order: [[Module.associations.resources, ModuleResources, 'ordering', 'ASC']],
+      transaction,
+    });
 
     return formatModuleResponse(module);
   });
@@ -40,6 +51,7 @@ async function createModule(
 async function getModule(uid: number): Promise<ModuleResponse | null> {
   const module = await Module.findByPk(uid, {
     include: [Language, Demo, Resource],
+    order: [[Module.associations.resources, ModuleResources, 'ordering', 'ASC']],
   });
 
   return formatModuleResponse(module);
@@ -72,7 +84,15 @@ async function updateModule(
       await module.setLanguage(languageInstance, { transaction });
     }
     if (resources) {
-      await module.setResources(resources, { transaction });
+      await ModuleResources.destroy({ where: { moduleUid: module.uid }, transaction });
+      await ModuleResources.bulkCreate(
+        resources.map((resourceUid, ordering) => ({
+          moduleUid: module.uid,
+          resourceUid,
+          ordering,
+        })),
+        { transaction },
+      );
     }
 
     await module.save({ transaction });
@@ -94,6 +114,7 @@ async function updateModule(
 
     await module.reload({
       include: [Language, Demo, Resource],
+      order: [[Module.associations.resources, ModuleResources, 'ordering', 'ASC']],
       transaction,
     });
 
@@ -104,6 +125,7 @@ async function updateModule(
 async function getModules(): Promise<ModuleResponse[]> {
   const modules = await Module.findAll({
     include: [Language, Demo, Resource],
+    order: [[Module.associations.resources, ModuleResources, 'ordering', 'ASC']],
   });
 
   return formatModuleResponse(modules);
@@ -112,6 +134,7 @@ async function getModules(): Promise<ModuleResponse[]> {
 async function deleteModule(uid: number): Promise<ModuleResponse | null> {
   const module = await Module.findByPk(uid, {
     include: [Language, Demo, Resource], 
+    order: [[Module.associations.resources, ModuleResources, 'ordering', 'ASC']],
   });
   if (!module) {
     return null;

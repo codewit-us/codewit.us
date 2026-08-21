@@ -29,6 +29,7 @@ import {
   CourseRegistration,
   Resource,
   Module,
+  ModuleResources,
 } from '../models';
 import { asyncHandle } from "../middleware/catch";
 import {  } from "../models";
@@ -275,7 +276,10 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
         { association: Course.associations.instructors, where: { uid: req.user.uid } },
         { association: Course.associations.roster },
       ],
-      order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+      order: [
+        [Course.associations.modules, CourseModules, 'ordering', 'ASC'],
+        [Course.associations.modules, Module.associations.resources, ModuleResources, 'ordering', 'ASC'],
+      ],
     });
 
     let result = formatCourseResponse(course, true);

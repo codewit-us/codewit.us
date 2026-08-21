@@ -1,6 +1,5 @@
 // codewit/client/src/pages/ModuleForm.tsx
 import React, { useState, useEffect } from "react";
-import Select, { MultiValue } from "react-select";
 import LanguageSelect from "../components/form/LanguageSelect";
 import TopicSelect from "../components/form/TagSelect";
 import ResourceSelect from "../components/form/ResourceSelect";
@@ -8,7 +7,7 @@ import CreateButton from "../components/form/CreateButton";
 import ReusableTable, { Column } from "../components/form/ReusableTable";
 import ReusableModal from "../components/form/ReusableModal";
 import { toast } from "react-toastify";
-import { SelectedTag, Module } from "@codewit/interfaces";
+import { SelectedTag, Module, ModuleDraft } from "@codewit/interfaces";
 import { isFormValid } from "../utils/formValidationUtils";
 import { useFetchResources } from "../hooks/useResource";
 import {
@@ -17,8 +16,6 @@ import {
   useDeleteModule,
   usePatchModule,
 } from "../hooks/useModule";
-
-type ModuleDraft = Omit<Module, "completion">;
 
 const ModuleForm = (): JSX.Element => {
   const { data: existingResources } = useFetchResources();
@@ -48,10 +45,29 @@ const ModuleForm = (): JSX.Element => {
     setResourceOptions(options);
   }, [existingResources]);
 
-  const handleResourceChange = (selectedOptions: MultiValue<SelectedTag>) => {
-    const resources = selectedOptions.map((option) => option.value);
-    // @ts-ignore
-    setFormData((prev) => ({ ...prev, resources }));
+  const addResource = (resourceId: number) => {
+    setFormData((prev) => (
+      prev.resources.includes(resourceId)
+        ? prev
+        : { ...prev, resources: [...prev.resources, resourceId] }
+    ));
+  };
+
+  const moveResource = (fromIndex: number, toIndex: number) => {
+    setFormData((prev) => {
+      const resources = [...prev.resources];
+      const [resource] = resources.splice(fromIndex, 1);
+      resources.splice(toIndex, 0, resource);
+
+      return { ...prev, resources };
+    });
+  };
+
+  const removeResource = (resourceId: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      resources: prev.resources.filter(id => id !== resourceId),
+    }));
   };
 
   const handleTopicSelect = (topics: SelectedTag | SelectedTag[]) => {
@@ -64,8 +80,7 @@ const ModuleForm = (): JSX.Element => {
       ...module,
       language: module.language,
       topic: module.topic,
-      // @ts-ignore
-      resources: module.resources.map((resource) => resource.uid),
+      resources: module.resources.flatMap(resource => resource.uid == null ? [] : [resource.uid]),
     });
     setIsEditing(true);
     setModalOpen(true);
@@ -188,8 +203,10 @@ const ModuleForm = (): JSX.Element => {
 
           <ResourceSelect
             resourceOptions={resourceOptions}
-            selectedResources={formData.resources}
-            handleResourceChange={handleResourceChange}
+            selectedResourceIds={formData.resources}
+            onAddResource={addResource}
+            onMoveResource={moveResource}
+            onRemoveResource={removeResource}
           />
         </div>
       </ReusableModal>

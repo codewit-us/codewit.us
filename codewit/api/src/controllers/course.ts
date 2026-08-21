@@ -12,6 +12,7 @@ import {
   CourseModules,
   Language,
   Module,
+  ModuleResources,
   Demo,
   Resource,
   UserDemoCompletion,
@@ -223,7 +224,10 @@ async function getAllCourses(): Promise<CourseResponse[]> {
       { association: Course.associations.instructors },
       { association: Course.associations.roster },
     ],
-    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+    order: [
+      [Course.associations.modules, CourseModules, 'ordering', 'ASC'],
+      [Course.associations.modules, Module.associations.resources, ModuleResources, 'ordering', 'ASC'],
+    ],
   });
   return formatCourseResponse(courses);
 }
@@ -241,7 +245,10 @@ async function getTeacherCourses(teacherId: string): Promise<CourseResponse[]> {
       { association: Course.associations.instructors, where: { googleId: teacherId } },
       { association: Course.associations.roster },
     ],
-    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+    order: [
+      [Course.associations.modules, CourseModules, 'ordering', 'ASC'],
+      [Course.associations.modules, Module.associations.resources, ModuleResources, 'ordering', 'ASC'],
+    ],
   });
 
   return formatCourseResponse(courses);
@@ -259,7 +266,10 @@ async function getStudentCourses(studentId: string): Promise<CourseResponse[]> {
       { association: Course.associations.instructors },
       { association: Course.associations.roster, where: { googleId: studentId } },
     ],
-    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+    order: [
+      [Course.associations.modules, CourseModules, 'ordering', 'ASC'],
+      [Course.associations.modules, Module.associations.resources, ModuleResources, 'ordering', 'ASC'],
+    ],
   });
 
   return formatCourseResponse(courses, true);
@@ -277,7 +287,10 @@ async function getStudentCoursesByUid(userUid: number): Promise<CourseResponse[]
       { association: Course.associations.instructors },
       { association: Course.associations.roster, where: { uid: userUid } },
     ],
-    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+    order: [
+      [Course.associations.modules, CourseModules, 'ordering', 'ASC'],
+      [Course.associations.modules, Module.associations.resources, ModuleResources, 'ordering', 'ASC'],
+    ],
   });
 
   return formatCourseResponse(courses, true);
@@ -303,7 +316,10 @@ export async function getStudentCourse(course_id: string, transaction?: Transact
       },
       { association: Course.associations.instructors },
     ],
-    order: [[Course.associations.modules, CourseModules, 'ordering', 'ASC']],
+    order: [
+      [Course.associations.modules, CourseModules, 'ordering', 'ASC'],
+      [Course.associations.modules, Module.associations.resources, ModuleResources, 'ordering', 'ASC'],
+    ],
     transaction,
   });
 

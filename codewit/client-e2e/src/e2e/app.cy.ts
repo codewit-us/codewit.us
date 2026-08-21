@@ -613,9 +613,17 @@ describe("Module creations functionality", () => {
       statusCode: 200,
       body: [] 
     }).as('getModules');
+    cy.intercept('GET', '/resources', {
+      statusCode: 200,
+      body: [
+        { uid: 1, title: 'First resource', url: 'https://example.com/first', source: 'Example', likes: 0 },
+        { uid: 2, title: 'Second resource', url: 'https://example.com/second', source: 'Example', likes: 0 },
+      ],
+    }).as('getResources');
     cy.visit('/create/module');
     cy.wait('@getUserInfo');
     cy.wait('@getModules');
+    cy.wait('@getResources');
   })
 
   it('should render successfully', () => {
@@ -642,6 +650,30 @@ describe("Module creations functionality", () => {
     getSubmitButton().click();
     cy.wait('@createModule');
   })
+
+  it('adds, reorders, and removes selected resources before saving', () => {
+    cy.intercept('POST', '/modules', (req) => {
+      expect(req.body).to.deep.equal({
+        language: 'cpp',
+        resources: [2],
+        topic: 'operation',
+      });
+    }).as('createOrderedModule');
+
+    cy.contains('Create Module').click();
+    getTopicSelect().type('operation{enter}');
+    getLanguageSelect().type('cpp{enter}');
+    cy.get('#resource-select').type('First resource{enter}');
+    cy.get('#resource-select').type('Second resource{enter}');
+
+    cy.get('[data-testid="selected-resources"]').should('contain.text', 'First resource');
+    cy.get('[data-testid="selected-resources"]').should('contain.text', 'Second resource');
+    cy.get('[aria-label="Drag Second resource"]').focus().type('{space}{uparrow}{space}');
+    cy.get('[aria-label="Remove First resource"]').click();
+
+    getSubmitButton().click();
+    cy.wait('@createOrderedModule');
+  });
 })
 
 
