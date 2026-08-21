@@ -1,0 +1,15 @@
+## AI Agent Reasoning
+
+### Context
+Issue #182 requires persisted ordering for Module resources and consistent learner-visible Demo exercise ordering.
+
+### Decisions Made
+- Added an explicit ModuleResources model with zero-based ordering rather than relying on the anonymous join table, so the ordering contract is typed and queryable.
+- Backfilled existing resource links by created time then resource ID for deterministic migration behavior.
+- Reused the existing dnd-kit pattern for the Module editor and included a remove control as requested.
+
+### Trade-offs
+- Module association replacement is transactional and direct through the join model, which makes write order explicit. Duplicate IDs are rejected at request validation to avoid a database constraint error.
+
+### References
+- GitHub issue #182
