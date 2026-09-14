@@ -10,6 +10,7 @@ interface LearnerHintContext {
 }
 
 type MatchReason = 'case' | 'format';
+type BindingKind = 'variable' | 'function' | 'any';
 
 function createHint(
   kind: LearnerHint['kind'],
@@ -27,8 +28,12 @@ function createHint(
   };
 }
 
-function buildDiagnosticText(detail: FailureDetail): string {
-  return [detail.error_message, detail.rawout]
+function buildDiagnosticText(detail: FailureDetail, includeRawOutput: boolean): string {
+  return [
+    detail.diagnostic,
+    detail.error_message,
+    includeRawOutput ? detail.rawout : '',
+  ]
     .filter((value) => typeof value === 'string' && value.trim().length > 0)
     .join('\n');
 }
@@ -57,19 +62,124 @@ function isSuspiciousComparisonValue(value: string): boolean {
   );
 }
 
-function extractIdentifiers(code: string): string[] {
-  const reserved = new Set([
-    'False', 'None', 'True', 'and', 'as', 'assert', 'break', 'class', 'continue',
-    'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global',
-    'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass',
-    'raise', 'return', 'try', 'while', 'with', 'yield', 'int', 'float', 'str',
-    'list', 'dict', 'set', 'tuple', 'print', 'input'
-  ]);
+function maskPythonCommentsAndStrings(code: string): string {
+  let masked = '';
+  let comment = false;
+  let quote = '';
+  let tripleQuoted = false;
+  let escaped = false;
 
+  for (let index = 0; index < code.length; index += 1) {
+    const character = code[index];
+
+    if (comment) {
+      if (character === '\n') {
+        comment = false;
+        masked += '\n';
+      } else {
+        masked += ' ';
+      }
+      continue;
+    }
+
+    if (quote) {
+      if (character === '\n') {
+        masked += '\n';
+        escaped = false;
+        continue;
+      }
+
+      if (tripleQuoted && code.startsWith(quote.repeat(3), index)) {
+        masked += '   ';
+        index += 2;
+        quote = '';
+        tripleQuoted = false;
+        continue;
+      }
+
+      masked += ' ';
+      if (!tripleQuoted) {
+        if (escaped) {
+          escaped = false;
+        } else if (character === '\\') {
+          escaped = true;
+        } else if (character === quote) {
+          quote = '';
+        }
+      }
+      continue;
+    }
+
+    if (character === '#') {
+      comment = true;
+      masked += ' ';
+      continue;
+    }
+
+    if (character === '"' || character === "'") {
+      quote = character;
+      tripleQuoted = code.startsWith(character.repeat(3), index);
+      masked += tripleQuoted ? '   ' : ' ';
+      if (tripleQuoted) index += 2;
+      continue;
+    }
+
+    masked += character;
+  }
+
+  return masked;
+}
+
+function extractPythonBindings(code: string): { functions: string[]; variables: string[] } {
+  const structuralCode = maskPythonCommentsAndStrings(code);
+  const functions = collectUniqueMatches(
+    structuralCode,
+    /^\s*(?:async\s+)?def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/gm
+  );
+  const variables = new Set<string>();
+
+  for (const line of structuralCode.split('\n')) {
+    const simpleAssignment = line.match(
+      /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?::[^=]+)?=(?!=)/
+    );
+    if (simpleAssignment) {
+      variables.add(simpleAssignment[1]);
+    }
+
+    const unpackingAssignment = line.match(
+      /^\s*[\[(]?\s*([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)+)\s*[\])]?\s*=(?!=)/
+    );
+    if (unpackingAssignment) {
+      unpackingAssignment[1]
+        .split(',')
+        .map((name) => name.trim())
+        .forEach((name) => variables.add(name));
+    }
+
+    const importAlias = line.match(/^\s*import\s+[\w.]+\s+as\s+([A-Za-z_][A-Za-z0-9_]*)\s*$/);
+    if (importAlias) {
+      variables.add(importAlias[1]);
+    }
+
+    const fromImport = line.match(
+      /^\s*from\s+[\w.]+\s+import\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s+as\s+([A-Za-z_][A-Za-z0-9_]*))?\s*$/
+    );
+    if (fromImport) {
+      variables.add(fromImport[2] || fromImport[1]);
+    }
+  }
+
+  return {
+    functions,
+    variables: [...variables],
+  };
+}
+
+function collectUniqueMatches(input: string, pattern: RegExp): string[] {
   return [...new Set(
-    [...code.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\b/g)]
-      .map((match) => match[1])
-      .filter((identifier) => !reserved.has(identifier))
+    [...input.matchAll(pattern)]
+      .map((match) => match[1] ?? '')
+      .filter((value) => value.length > 0)
   )];
 }
 
@@ -77,8 +187,17 @@ function normalizeIdentifier(identifier: string): string {
   return identifier.replace(/_/g, '').toLowerCase();
 }
 
-function findIdentifierMatch(expectedIdentifier: string, submittedCode: string): null | { actual: string; reason: MatchReason } {
-  const identifiers = extractIdentifiers(submittedCode);
+function findIdentifierMatch(
+  expectedIdentifier: string,
+  submittedCode: string,
+  bindingKind: BindingKind
+): null | { actual: string; reason: MatchReason } {
+  const bindings = extractPythonBindings(submittedCode);
+  const identifiers = bindingKind === 'function'
+    ? bindings.functions
+    : bindingKind === 'variable'
+      ? bindings.variables
+      : [...new Set([...bindings.functions, ...bindings.variables])];
   const caseMatch = identifiers.find((identifier) => (
     identifier !== expectedIdentifier &&
     identifier.toLowerCase() === expectedIdentifier.toLowerCase()
@@ -132,7 +251,11 @@ function buildMissingIdentifierHint(
   lessonLabel: string,
   isFunction: boolean
 ): LearnerHint {
-  const similar = findIdentifierMatch(expectedIdentifier, submittedCode);
+  const similar = findIdentifierMatch(
+    expectedIdentifier,
+    submittedCode,
+    isFunction ? 'function' : 'variable'
+  );
 
   if (similar?.reason === 'case') {
     return createHint(
@@ -176,7 +299,7 @@ function buildNameErrorHint(
   missingIdentifier: string,
   submittedCode: string
 ): LearnerHint {
-  const similar = findIdentifierMatch(missingIdentifier, submittedCode);
+  const similar = findIdentifierMatch(missingIdentifier, submittedCode, 'any');
 
   if (similar) {
     return createHint(
@@ -417,17 +540,31 @@ function hasAssertionFailure(diagnosticText: string): boolean {
   return /AssertionError\b|Assertion failed:|^\s*assert\b/m.test(diagnosticText);
 }
 
-function buildFailureHint(detail: FailureDetail, context: LearnerHintContext): LearnerHint {
+function buildFailureHint(
+  detail: FailureDetail,
+  context: LearnerHintContext,
+  includeRawOutput: boolean
+): LearnerHint {
   const contract = extractExerciseContract(context.referenceTest, context.topic, context.title);
   const message = detail.error_message || '';
-  const diagnosticText = buildDiagnosticText(detail);
+  const diagnosticText = buildDiagnosticText(detail, includeRawOutput);
   const topicLabel = context.title?.trim() || context.topic?.trim() || 'This lesson';
   const lessonLabel = topicLabel;
   const missingAttributeMatch = diagnosticText.match(/module 'program' has no attribute '([A-Za-z_][A-Za-z0-9_]*)'/);
+  const missingImportMatch = diagnosticText.match(
+    /ImportError:\s+cannot import name ['"]([A-Za-z_][A-Za-z0-9_]*)['"] from ['"]program['"]/i
+  );
   const comparisonValues = resolveComparisonValues(detail, diagnosticText);
 
-  if (missingAttributeMatch) {
-    const expectedIdentifier = missingAttributeMatch[1];
+  if (missingAttributeMatch || missingImportMatch) {
+    const expectedIdentifier = (missingAttributeMatch || missingImportMatch)?.[1] ?? '';
+    const isExpectedFunction = contract.expectedFunctions.includes(expectedIdentifier);
+    const isExpectedVariable = contract.expectedVariables.includes(expectedIdentifier);
+
+    if (!isExpectedFunction && !isExpectedVariable) {
+      return buildRuntimeHint(message || extractFirstMatchingLine(diagnosticText, /ImportError:[^\n]*/i));
+    }
+
     const isFunction = contract.expectedFunctions.includes(expectedIdentifier) &&
       !contract.expectedVariables.includes(expectedIdentifier);
 
@@ -516,10 +653,6 @@ function buildFailureHint(detail: FailureDetail, context: LearnerHintContext): L
 function buildTopLevelHint(evaluation: EvaluationResponse, context: LearnerHintContext): LearnerHint | null {
   const contract = extractExerciseContract(context.referenceTest, context.topic, context.title);
 
-  if (evaluation.failure_details.length > 0) {
-    return evaluation.failure_details[0].learner_hint ?? null;
-  }
-
   if (evaluation.execution_time_exceeded) {
     return createHint(
       'timeout',
@@ -533,17 +666,8 @@ function buildTopLevelHint(evaluation: EvaluationResponse, context: LearnerHintC
     );
   }
 
-  if (evaluation.memory_exceeded) {
-    return createHint(
-      'memory_limit',
-      'medium',
-      'Your code used too much memory',
-      'The lesson stopped your program because it tried to store too much data at once.',
-      [
-        'Look for very large lists, repeated copies of data, or code that keeps growing forever.',
-        'Submit again after using less memory.'
-      ]
-    );
+  if (evaluation.failure_details.length > 0) {
+    return evaluation.failure_details[0].learner_hint ?? null;
   }
 
   if (evaluation.compilation_error) {
@@ -575,6 +699,10 @@ function buildTopLevelHint(evaluation: EvaluationResponse, context: LearnerHintC
     return buildRuntimeHint(evaluation.runtime_error);
   }
 
+  if (evaluation.memory_exceeded) {
+    return buildUnknownHint();
+  }
+
   if (evaluation.state === 'passed') {
     return null;
   }
@@ -586,9 +714,10 @@ function addLearnerHintsToEvaluation(
   evaluation: EvaluationResponse,
   context: LearnerHintContext
 ): EvaluationResponse {
+  const includeRawOutput = evaluation.failure_details.length === 1;
   const failure_details = evaluation.failure_details.map((detail) => ({
     ...detail,
-    learner_hint: buildFailureHint(detail, context),
+    learner_hint: buildFailureHint(detail, context, includeRawOutput),
   }));
 
   const hintedEvaluation = {

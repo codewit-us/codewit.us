@@ -1180,4 +1180,268 @@ def test_worldcup_describe():
     expect(hinted.failure_details[0].learner_hint?.kind).toBe('syntax_error');
     expect(hinted.failure_details[0].learner_hint?.summary).toContain('invalid syntax');
   });
+
+  it('keeps identifiers and values scoped to each Codeval failure detail', () => {
+    const rawout = `
+=================================== FAILURES ===================================
+_________________________________ test_hats ___________________________________
+>       assert program.NumberOfHats == 9
+E       assert 8 == 9
+________________________________ test_shirts __________________________________
+>       assert program.NumberOfShirts == 4
+E       assert 2 == 4
+    `.trim();
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 2,
+      passed: 0,
+      failed: 2,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [
+        {
+          test_case: 'test_hats',
+          expected: '9',
+          received: '8',
+          error_message: 'Assertion failed: assert program.NumberOfHats == 9',
+          diagnostic: '>       assert program.NumberOfHats == 9\nE       assert 8 == 9',
+          rawout,
+        },
+        {
+          test_case: 'test_shirts',
+          expected: '4',
+          received: '2',
+          error_message: 'Assertion failed: assert program.NumberOfShirts == 4',
+          diagnostic: '>       assert program.NumberOfShirts == 4\nE       assert 2 == 4',
+          rawout,
+        },
+      ],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: [
+        'import program',
+        'def test_hats():',
+        '    assert program.NumberOfHats == 9',
+        'def test_shirts():',
+        '    assert program.NumberOfShirts == 4',
+      ].join('\n'),
+      submittedCode: 'NumberOfHats = 8\nNumberOfShirts = 2',
+      topic: 'variable',
+      title: 'Clothing inventory',
+    });
+
+    expect(hinted.failure_details[0].learner_hint?.title).toContain('NumberOfHats');
+    expect(hinted.failure_details[0].learner_hint?.summary).toContain('`8`');
+    expect(hinted.failure_details[0].learner_hint?.summary).toContain('`9`');
+    expect(hinted.failure_details[1].learner_hint?.title).toContain('NumberOfShirts');
+    expect(hinted.failure_details[1].learner_hint?.summary).toContain('`2`');
+    expect(hinted.failure_details[1].learner_hint?.summary).toContain('`4`');
+  });
+
+  it('classifies missing functions imported from program', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 0,
+      passed: 0,
+      failed: 0,
+      errors: 1,
+      no_tests_collected: false,
+      exit_code: 2,
+      failure_details: [{
+        test_case: 'pytest collection',
+        expected: '',
+        received: '',
+        error_message: "ImportError: cannot import name 'calculateTotal' from 'program' (/tmp/program.py)",
+        diagnostic: "ImportError: cannot import name 'calculateTotal' from 'program' (/tmp/program.py)",
+        rawout: 'pytest collection output',
+      }],
+      compilation_error: '',
+      runtime_error: "ImportError: cannot import name 'calculateTotal' from 'program' (/tmp/program.py)",
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'from program import calculateTotal\n\ndef test_total():\n    assert calculateTotal() == 3',
+      submittedCode: 'def calculate_total():\n    return 3',
+      topic: 'function',
+      title: 'Calculate a total',
+    });
+
+    expect(hinted.failure_details[0].learner_hint?.kind).toBe('name_mismatch');
+    expect(hinted.failure_details[0].learner_hint?.summary).toContain('calculate_total');
+    expect(hinted.failure_details[0].learner_hint?.summary).toContain('calculateTotal');
+  });
+
+  it('classifies missing variables imported from program', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 0,
+      passed: 0,
+      failed: 0,
+      errors: 1,
+      no_tests_collected: false,
+      exit_code: 2,
+      failure_details: [{
+        test_case: 'pytest collection',
+        expected: '',
+        received: '',
+        error_message: "ImportError: cannot import name 'numberOfHats' from 'program' (/tmp/program.py)",
+        diagnostic: "ImportError: cannot import name 'numberOfHats' from 'program' (/tmp/program.py)",
+        rawout: 'pytest collection output',
+      }],
+      compilation_error: '',
+      runtime_error: "ImportError: cannot import name 'numberOfHats' from 'program' (/tmp/program.py)",
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'from program import numberOfHats\n\ndef test_hats():\n    assert numberOfHats == 9',
+      submittedCode: 'hatCount = 9',
+      topic: 'variable',
+      title: 'Collecting Hats',
+    });
+
+    expect(hinted.failure_details[0].learner_hint?.kind).toBe('missing_variable');
+    expect(hinted.failure_details[0].learner_hint?.summary).toContain('numberOfHats');
+  });
+
+  it('ignores near-match names that appear only in comments and strings', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'test_hats',
+        expected: '',
+        received: '',
+        error_message: "AttributeError: module 'program' has no attribute 'numberOfHats'",
+        diagnostic: "AttributeError: module 'program' has no attribute 'numberOfHats'",
+        rawout: 'pytest output',
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'import program\n\ndef test_hats():\n    assert program.numberOfHats == 9',
+      submittedCode: [
+        '# NumberOfHats = 9',
+        'message = "NumberOfHats = 9"',
+        "notes = '''",
+        'NumberOfHats = 9',
+        "'''",
+      ].join('\n'),
+      topic: 'variable',
+      title: 'Collecting Hats',
+    });
+
+    expect(hinted.failure_details[0].learner_hint?.kind).toBe('missing_variable');
+  });
+
+  it('prioritizes a structured timeout over partial pytest failures', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: null,
+      failure_details: [{
+        test_case: 'test_first',
+        expected: '1',
+        received: '0',
+        error_message: 'Assertion failed: assert program.value == 1',
+        diagnostic: '>       assert program.value == 1\nE       assert 0 == 1',
+        rawout: 'partial pytest output',
+      }],
+      compilation_error: '',
+      runtime_error: 'Execution timed out',
+      execution_time_exceeded: true,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'import program\n\ndef test_first():\n    assert program.value == 1',
+      submittedCode: 'value = 0\nwhile True:\n    pass',
+      topic: 'variable',
+      title: 'Timeout',
+    });
+
+    expect(hinted.learner_hint?.kind).toBe('timeout');
+  });
+
+  it('does not classify import failures from other modules as missing lesson names', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 0,
+      passed: 0,
+      failed: 0,
+      errors: 1,
+      no_tests_collected: false,
+      exit_code: 2,
+      failure_details: [{
+        test_case: 'pytest collection',
+        expected: '',
+        received: '',
+        error_message: "ImportError: cannot import name 'DataFrame' from 'pandas'",
+        diagnostic: "ImportError: cannot import name 'DataFrame' from 'pandas'",
+        rawout: 'pytest collection output',
+      }],
+      compilation_error: '',
+      runtime_error: "ImportError: cannot import name 'DataFrame' from 'pandas'",
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'import program\n\ndef test_value():\n    assert program.value == 1',
+      submittedCode: 'value = 1',
+      topic: 'variable',
+      title: 'Value',
+    });
+
+    expect(hinted.failure_details[0].learner_hint?.kind).toBe('unknown');
+  });
+
+  it('does not claim a memory limit was enforced from an unsupported flag', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 0,
+      passed: 0,
+      failed: 0,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: null,
+      failure_details: [],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: true,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'def test_program():\n    pass',
+      submittedCode: '',
+      topic: 'variable',
+      title: 'Value',
+    });
+
+    expect(hinted.learner_hint?.kind).toBe('unknown');
+    expect(hinted.learner_hint?.summary).not.toMatch(/memory/i);
+  });
 });

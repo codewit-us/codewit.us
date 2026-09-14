@@ -118,8 +118,15 @@ function extractExerciseContract(
   const normalizedTopic = normalizeTopic(topic);
   const directProgramFunctionCalls = collectMatches(structuralReferenceTest, /program\.([A-Za-z_][A-Za-z0-9_]*)\s*\(/g);
   const aliasedProgramFunctions = extractAliasedProgramFunctions(structuralReferenceTest);
-  const expectedFunctions = unique([...directProgramFunctionCalls, ...aliasedProgramFunctions]);
   const importedIdentifiers = extractImportedIdentifiers(referenceTest);
+  const importedFunctions = importedIdentifiers.filter(
+    (identifier) => new RegExp(`\\b${identifier}\\s*\\(`).test(structuralReferenceTest)
+  );
+  const expectedFunctions = unique([
+    ...directProgramFunctionCalls,
+    ...aliasedProgramFunctions,
+    ...importedFunctions,
+  ]);
   const expectedVariables = unique([
     ...collectMatches(structuralReferenceTest, /program\.([A-Za-z_][A-Za-z0-9_]*)\b(?!\s*\()/g),
     ...extractHasattrIdentifiers(referenceTest),
@@ -135,7 +142,7 @@ function extractExerciseContract(
     title: title ?? '',
     lessonFamily: detectLessonFamily(normalizedTopic, expectedFunctions, usesConsoleOutput, usesDataframe),
     expectedVariables: unique([...expectedVariables, ...importedIdentifiers.filter((identifier) => !expectedFunctions.includes(identifier))]),
-    expectedFunctions: unique([...expectedFunctions, ...importedIdentifiers.filter((identifier) => new RegExp(`\\b${identifier}\\s*\\(`).test(referenceTest))]),
+    expectedFunctions,
     expectedImports: importedIdentifiers,
     usesConsoleOutput,
     usesInput,

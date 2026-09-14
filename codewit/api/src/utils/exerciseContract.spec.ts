@@ -57,6 +57,38 @@ def test_choose_clothes_function_variants():
     expect(contract.expectedVariables).not.toContain('chooes_clothes');
   });
 
+  it('classifies called identifiers imported from program as functions only', () => {
+    const contract = extractExerciseContract(
+      `
+from program import calculateTotal
+
+def test_total():
+    assert calculateTotal() == 3
+      `.trim(),
+      'function',
+      'Calculate a total'
+    );
+
+    expect(contract.expectedFunctions).toContain('calculateTotal');
+    expect(contract.expectedVariables).not.toContain('calculateTotal');
+  });
+
+  it('classifies uncalled identifiers imported from program as variables only', () => {
+    const contract = extractExerciseContract(
+      `
+from program import numberOfHats
+
+def test_hats():
+    assert numberOfHats == 9
+      `.trim(),
+      'variable',
+      'Collecting Hats'
+    );
+
+    expect(contract.expectedVariables).toContain('numberOfHats');
+    expect(contract.expectedFunctions).not.toContain('numberOfHats');
+  });
+
   it('detects dataframe operations and expected functions', () => {
     const contract = extractExerciseContract(
       `
