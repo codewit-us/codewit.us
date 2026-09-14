@@ -30,7 +30,7 @@ export const getCheckList = () => cy.get('[data-testid="check-list"]');
 
 export const getHomeModule = () => cy.get('[data-testid="module"]');
 export const mockNonAdminUser = () => {
-    cy.intercept('GET', '/oauth2/google/userinfo', {
+    cy.intercept('GET', '/api/oauth2/google/userInfo', {
       statusCode: 200,
       body: {
         user: {
@@ -44,7 +44,7 @@ export const mockNonAdminUser = () => {
     }).as('getUserInfo');
 }; 
 export const mockAdminUser = () => {
-    cy.intercept('GET', '/oauth2/google/userinfo', {
+    cy.intercept('GET', '/api/oauth2/google/userInfo', {
       statusCode: 200,
       body: {
         user: {
