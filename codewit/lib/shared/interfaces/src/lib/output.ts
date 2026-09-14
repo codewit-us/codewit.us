@@ -37,6 +37,7 @@ interface FailureDetail {
   received: string;
   error_message: string;
   rawout: string;
+  diagnostic?: string;
   stderr?: string;
   learner_hint?: LearnerHint;
 }
@@ -54,6 +55,9 @@ interface TestResult {
   runtime_error: string;
   execution_time_exceeded: boolean;
   memory_exceeded: boolean;
+  stdout?: string;
+  stderr?: string;
+  rawout?: string;
   learner_hint?: LearnerHint | null;
 }
 
