@@ -40,11 +40,23 @@ interface UserStatus {
   is_student: boolean,
 }
 
+interface OpenEnrollmentCourseRow {
+  id: string,
+  title: string,
+  language: string,
+  created_at: Date | string | null,
+  module_names: string[],
+  enrollment_count: number,
+  is_student: boolean,
+  is_instructor: boolean,
+  is_registered: boolean,
+}
+
 const courseRouter = Router();
 
 courseRouter.get("/landing", asyncHandle(async (req, res) => {
-  let [as_instructor, as_student] = await Promise.all([
-    Course.findAll({
+  let [as_instructor, as_student, open_enrollment] = await Promise.all([
+    req.user ? Course.findAll({
       include: [
         Language,
         {
@@ -54,8 +66,8 @@ courseRouter.get("/landing", asyncHandle(async (req, res) => {
           }
         },
       ]
-    }),
-    Course.findAll({
+    }) : Promise.resolve([]),
+    req.user ? Course.findAll({
       include: [
         Language,
         {
@@ -69,12 +81,59 @@ courseRouter.get("/landing", asyncHandle(async (req, res) => {
       order: [
         [ Course.associations.instructors, "username" ]
       ]
-    })
+    }) : Promise.resolve([]),
+    sequelize.query<OpenEnrollmentCourseRow>(
+      `
+      select
+        courses.id,
+        courses.title,
+        coalesce(languages.name::text, '') as language,
+        courses."createdAt" as created_at,
+        coalesce((
+          select array_agg(modules.topic order by cm.ordering)
+          from "CourseModules" cm
+          join modules on modules.uid = cm."moduleUid"
+          where cm."courseId" = courses.id
+        ), '{}'::text[]) as module_names,
+        coalesce((
+          select count(*)::int
+          from "CourseRoster" roster
+          where roster."courseId" = courses.id
+        ), 0)::int as enrollment_count,
+        exists(
+          select 1
+          from "CourseRoster" roster_self
+          where roster_self."courseId" = courses.id
+            and roster_self."userUid" = $1::int
+        ) as is_student,
+        exists(
+          select 1
+          from "CourseInstructors" instructor_self
+          where instructor_self."courseId" = courses.id
+            and instructor_self."userUid" = $1::int
+        ) as is_instructor,
+        exists(
+          select 1
+          from course_registrations registration_self
+          where registration_self."courseId" = courses.id
+            and registration_self."userUid" = $1::int
+        ) as is_registered
+      from courses
+        left join languages on languages.uid = courses."languageUid"
+      where courses.enrolling = true
+      order by enrollment_count desc, courses.title asc
+      `,
+      {
+        bind: [req.user?.uid ?? null],
+        type: QueryTypes.SELECT,
+      }
+    )
   ]);
 
   let rtn = {
     student: [],
     instructor: [],
+    openEnrollment: [],
   };
 
   for (let course of as_instructor) {
@@ -99,6 +158,22 @@ courseRouter.get("/landing", asyncHandle(async (req, res) => {
       title: course.title,
       language: course.language.name,
       instructors,
+    });
+  }
+
+  for (let course of open_enrollment) {
+    rtn.openEnrollment.push({
+      id: course.id,
+      title: course.title,
+      language: course.language,
+      createdAt: course.created_at instanceof Date
+        ? course.created_at.toISOString()
+        : course.created_at,
+      moduleNames: course.module_names,
+      enrollmentCount: course.enrollment_count,
+      isStudent: course.is_student,
+      isInstructor: course.is_instructor,
+      isRegistered: course.is_registered,
     });
   }
 
@@ -253,7 +328,7 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
   let student_view = "student_view" in req.query && req.query["student_view"] === "1";
 
   if (student_and_instructor && student_view) {
-    let course = await getStudentCourse(req.params.uid);
+    let course = await getStudentCourse(req.params.uid, req.user.uid);
 
     if (course == null) {
       throw new Error("the course was not found when it was found?");
@@ -289,7 +364,7 @@ courseRouter.get('/:uid', asyncHandle(async (req, res) => {
       ...result,
     });
   } else if (found.is_student) {
-    let course = await getStudentCourse(req.params.uid);
+    let course = await getStudentCourse(req.params.uid, req.user.uid);
 
     if (course == null) {
       throw new Error("the course was not found when it was found?");
@@ -532,7 +607,7 @@ courseRouter.post("/:uid/register", asyncHandle(async (req, res) => {
           }
         );
 
-        let course = await getStudentCourse(req.params.uid, transaction);
+        let course = await getStudentCourse(req.params.uid, req.user.uid, transaction);
 
         if (course == null) {
           throw new Error("the course was not found when it was found?");

@@ -12,6 +12,7 @@ import {
   Model,
   InferAttributes,
   InferCreationAttributes,
+  CreationOptional,
   DataTypes,
   Sequelize,
   NonAttribute,
@@ -24,14 +25,14 @@ class Attempt extends Model<
   InferAttributes<Attempt>,
   InferCreationAttributes<Attempt>
 > {
-  declare uid: number;
-  declare timestamp: Date;
+  declare uid: CreationOptional<number>;
+  declare timestamp: CreationOptional<Date>;
   declare exercise: NonAttribute<Exercise>;
   declare user: NonAttribute<User>;
-  declare submissionNumber: number;
+  declare submissionNumber: CreationOptional<number>;
   declare code: string;
-  declare completionPercentage: number;
-  declare error: string;
+  declare completionPercentage: CreationOptional<number>;
+  declare error: CreationOptional<null | string>;
   declare exerciseUid: number;
   declare userUid: number;
 

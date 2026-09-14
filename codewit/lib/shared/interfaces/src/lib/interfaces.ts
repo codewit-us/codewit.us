@@ -22,9 +22,10 @@ interface ExerciseResponse {
   referenceTest: string;
   starterCode: string;
   uid: number;
-
   title?: string;
   difficulty?: 'easy' | 'hard' | 'worked example';
+  createdAt: string,
+  updatedAt: string,
 }
 
 interface ExerciseFormData{

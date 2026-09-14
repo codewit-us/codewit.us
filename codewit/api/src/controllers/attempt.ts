@@ -4,8 +4,20 @@ import { UserExerciseCompletion } from '../models/userExerciseCompletion';
 import { UserModuleCompletion } from '../models/userModuleCompletion';
 import { AttemptWithEval } from '../typings/response.types';
 import { EvaluationPayload, EvaluationResponse, executeCodeEvaluation } from '../utils/codeEvalService';
+import { addLearnerHintsToEvaluation } from '../utils/learnerHints';
 import { Language as LanguageEnum } from '@codewit/language';
 
+function getEvaluationError(response: EvaluationResponse): string {
+  if (response.compilation_error) return response.compilation_error;
+  if (response.runtime_error) return response.runtime_error;
+  if (response.execution_time_exceeded) return 'Execution time exceeded';
+  if (response.memory_exceeded) return 'Memory limit exceeded';
+
+  const failureMessage = response.failure_details.find((detail) => detail.error_message)?.error_message;
+  if (failureMessage) return failureMessage;
+
+  return response.state === 'passed' ? '' : `Evaluation failed (${response.state})`;
+}
 
 async function createAttempt(
   exerciseId: number,
@@ -72,16 +84,23 @@ async function createAttempt(
 
     let evalResponse: EvaluationResponse | null = null;
     try {
-      const response = await executeCodeEvaluation(evaluationPayload, cookies);
+      const rawResponse = await executeCodeEvaluation(evaluationPayload, cookies);
+      const response = addLearnerHintsToEvaluation(rawResponse, {
+        referenceTest: exercise.referenceTest,
+        submittedCode: code,
+        topic: exercise.topic,
+        title: exercise.title,
+      });
       evalResponse = response;
-      console.log('Code evaluation response:', response);
-      const { tests_run, passed, error: eval_error } = response;
+      const { tests_run, passed } = response;
+      const evalError = getEvaluationError(response);
+
+      attempt.completionPercentage = 0;
+      attempt.error = evalError;
 
       if (tests_run > 0) {
         const completionPercentage = Math.round((passed / tests_run) * 100);
         attempt.completionPercentage = completionPercentage;
-        attempt.error = eval_error;
-        console.log(`Completion Percentage: ${completionPercentage}%`);
 
         // Update UserExerciseCompletion
         const completion = passed / tests_run;
@@ -166,13 +185,12 @@ async function createAttempt(
             updatedModules.push({ moduleUid, completion: maxCompletion });
           }
         }
-
-      } else {
-        attempt.error = eval_error;
-        console.warn('Invalid response data for completion percentage calculation:', tests_run, passed, eval_error);
+      } else if (response.state === 'passed') {
+        console.warn('Code evaluation returned a passed state without runnable tests:', response);
       }
     } catch (err) {
-      console.error('Code evaluation failed:', err.message);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error('Code evaluation failed:', errorMessage);
       throw new Error('Code evaluation failed');
     }
 

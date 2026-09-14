@@ -21,6 +21,7 @@ import {
 } from '../models';
 import { CourseResponse } from '../typings/response.types';
 import { formatCourseResponse } from '../utils/responseFormatter';
+import { generate_id, commit_id, rollback_id } from "../utils/id_generator";
 
 async function createCourse(
   title: string,
@@ -31,77 +32,89 @@ async function createCourse(
   instructors?: number[],
   roster?: number[]
 ): Promise<CourseResponse> {
-  return sequelize.transaction(async (transaction) => {
-    // acquire SHARE ROW EXCLUSIVE lock, This lock allows concurrent reads
-    // and locks the table against concurrent writes to avoid race conditions
-    // when reading the current count of courses to create a unique course id
-    // refer: https://www.postgresql.org/docs/16/explicit-locking.html
-    await sequelize.query('LOCK TABLE "courses" IN SHARE ROW EXCLUSIVE MODE', {
-      transaction,
-    });
+  // will need to store the id of the generated name so that we can either
+  // commit or rollback
+  let id = 0;
 
-    if (auto_enroll && !enrolling) {
-      auto_enroll = false;
-    }
+  try {
+    let result = await sequelize.transaction(async (transaction) => {
+      if (auto_enroll && !enrolling) {
+        auto_enroll = false;
+      }
 
-    const course_count = await Course.count({ transaction });
-    const course = await Course.create(
-      {
-        id: uniqueNamesGenerator({
-          dictionaries: [adjectives, colors, animals],
-          separator: '-',
-          // use the current count of courses as the seed to ensure uniqueness
-          seed: course_count + 1,
-        }),
-        title,
-        enrolling,
-        auto_enroll,
-      },
-      { transaction }
-    );
+      let [successful, name, gen_id] = generate_id();
 
-    if (language) {
-      const [lang] = await Language.findOrCreate({
-        where: { name: language },
+      if (!successful) {
+        // based on how the id is currently generated, it will only fail if we
+        // reach the max attempts or if there are no more ids to generate
+        throw new Error("failed to generate course id");
+      }
+
+      id = gen_id;
+
+      const course = await Course.create(
+        {
+          id: name,
+          title,
+          enrolling,
+          auto_enroll,
+        },
+        { transaction }
+      );
+
+      if (language) {
+        const [lang] = await Language.findOrCreate({
+          where: { name: language },
+          transaction,
+        });
+
+        await course.setLanguage(lang, { transaction });
+      }
+
+      if (modules) {
+        await Promise.all(
+          modules.map(async (moduleId, idx) => {
+            await course.addModule(moduleId, {
+              through: { ordering: idx + 1 },
+              transaction,
+            });
+          })
+        );
+      }
+
+      if (instructors) {
+        await course.setInstructors(instructors, { transaction });
+      }
+
+      if (roster) {
+        await course.setRoster(roster, { transaction });
+      }
+
+      await course.reload({
+        // eager load the instructors
+        include: [
+          Language,
+          Module,
+          { association: Course.associations.instructors },
+          { association: Course.associations.roster },
+        ],
+        order: [[Module, CourseModules, 'ordering', 'ASC']],
         transaction,
       });
 
-      await course.setLanguage(lang, { transaction });
-    }
-
-    if (modules) {
-      await Promise.all(
-        modules.map(async (moduleId, idx) => {
-          await course.addModule(moduleId, {
-            through: { ordering: idx + 1 },
-            transaction,
-          });
-        })
-      );
-    }
-
-    if (instructors) {
-      await course.setInstructors(instructors, { transaction });
-    }
-
-    if (roster) {
-      await course.setRoster(roster, { transaction });
-    }
-
-    await course.reload({
-      // eager load the instructors
-      include: [
-        Language,
-        Module,
-        { association: Course.associations.instructors },
-        { association: Course.associations.roster },
-      ],
-      order: [[Module, CourseModules, 'ordering', 'ASC']],
-      transaction,
+      return formatCourseResponse(course);
     });
 
-    return formatCourseResponse(course);
-  });
+    commit_id(id);
+
+    return result;
+  } catch(err) {
+    // not going to deal with the error other than rollback the id generated if
+    // one was made
+    rollback_id(id);
+
+    throw err;
+  }
 }
 
 async function updateCourse(
@@ -296,7 +309,11 @@ async function getStudentCoursesByUid(userUid: number): Promise<CourseResponse[]
   return formatCourseResponse(courses, true);
 }
 
-export async function getStudentCourse(course_id: string, transaction?: Transaction): Promise<StudentCourse | null> {
+export async function getStudentCourse(
+  course_id: string,
+  userUid: number,
+  transaction?: Transaction
+): Promise<StudentCourse | null> {
   const course = await Course.findOne({
     where: { id: course_id },
     include: [
@@ -308,9 +325,19 @@ export async function getStudentCourse(course_id: string, transaction?: Transact
           Resource,
           {
             association: "demos",
-            include: [ UserDemoCompletion ],
+            include: [
+              {
+                model: UserDemoCompletion,
+                where: { userUid },
+                required: false,
+              },
+            ],
           },
-          UserModuleCompletion,
+          {
+            model: UserModuleCompletion,
+            where: { userUid },
+            required: false,
+          },
         ],
         through: { attributes: ['ordering'] },
       },
@@ -339,7 +366,7 @@ export async function getStudentCourse(course_id: string, transaction?: Transact
 
       let completion = 0.0;
 
-      if (module_demo["UserDemoCompletions"]?.length ?? 0 != 0) {
+      if ((module_demo["UserDemoCompletions"]?.length ?? 0) !== 0) {
         completion = module_demo["UserDemoCompletions"][0].completion;
       }
 
@@ -364,7 +391,7 @@ export async function getStudentCourse(course_id: string, transaction?: Transact
 
     let completion = 0.0;
 
-    if (course_module["UserModuleCompletions"]?.length ?? 0 != 0) {
+    if ((course_module["UserModuleCompletions"]?.length ?? 0) !== 0) {
       completion = course_module["UserModuleCompletions"][0].completion;
     }
 

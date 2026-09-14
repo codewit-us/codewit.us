@@ -1,33 +1,64 @@
 import { BiSolidRightArrow, BiSolidLeftArrow } from 'react-icons/bi';
-import { useState, useMemo } from 'react';
-
-type FailureDetail = {
-  test_case: string;
-  expected?: string;
-  received?: string;
-  error_message: string;
-  rawout?: string;
-};
+import { useEffect, useState } from 'react';
+import type { EvaluationResponse } from '../../interfaces/evaluation';
+import type { LearnerHint } from '@codewit/interfaces';
 
 type EvalProps = {
-  evaluation: {
-    state: string;
-    tests_run: number;
-    passed: number;
-    failed: number;
-    failure_details?: FailureDetail[];
-    compilation_error?: string;
-    runtime_error?: string;
-    execution_time_exceeded?: boolean;
-    memory_exceeded?: boolean;
-    rawout?: string;
-    error?: string;
-  } | null;
+  evaluation: EvaluationResponse | null;
+};
+
+const fallbackHint: LearnerHint = {
+  kind: 'unknown',
+  confidence: 'low',
+  title: 'The lesson found a problem',
+  summary: 'Open the Output tab to see the technical details, then fix the first error shown there.',
+  next_steps: [
+    'Read the first technical error in Output.',
+    'Fix that error and submit again.'
+  ],
+};
+
+const HintCard = ({ hint }: { hint: LearnerHint }): JSX.Element => {
+  return (
+    <div className="border border-cyan-500 p-4 bg-black mb-4">
+      <h3 className="font-bold text-red-300 text-xl">{hint.title}</h3>
+      <p className="mt-2 text-white whitespace-pre-wrap">{hint.summary}</p>
+      {hint.next_steps.length > 0 && (
+        <div className="mt-3">
+          <div className="text-cyan-300 font-semibold">Try this next:</div>
+          <ul className="mt-2 list-disc list-inside space-y-1 text-gray-200">
+            {hint.next_steps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const composeTechnicalOutput = (...values: Array<string | undefined>): string => {
+  const sections: string[] = [];
+
+  for (const value of values) {
+    const normalized = value?.trim();
+    if (!normalized || sections.some((section) => section.includes(normalized))) continue;
+
+    const retainedSections = sections.filter((section) => !normalized.includes(section));
+    sections.splice(0, sections.length, ...retainedSections, normalized);
+  }
+
+  return sections.join('\n\n');
 };
 
 const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
   const [activeTab, setActiveTab] = useState<'outcome' | 'output'>('outcome');
   const [issueIdx, setIssueIdx] = useState(0);
+
+  useEffect(() => {
+    setActiveTab('outcome');
+    setIssueIdx(0);
+  }, [evaluation]);
 
   if (!evaluation) {
     return (
@@ -47,22 +78,31 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
     runtime_error = '',
     execution_time_exceeded = false,
     memory_exceeded = false,
-    rawout = '',
-    error = '',
   } = evaluation;
-
-  let errorMessage = null;
-  if (compilation_error) errorMessage = compilation_error;
-  else if (runtime_error) errorMessage = runtime_error;
-  else if (execution_time_exceeded) errorMessage = 'Execution time exceeded';
-  else if (memory_exceeded) errorMessage = 'Memory limit exceeded';
-  else if (state === 'error') errorMessage = 'Evaluation failed ' + error;
+  const error = 'error' in evaluation ? evaluation.error : '';
+  const activeIssue = failure_details[issueIdx] || null;
+  const topLevelHint = 'learner_hint' in evaluation ? (evaluation.learner_hint ?? null) : null;
+  const activeHint = execution_time_exceeded
+    ? topLevelHint
+    : activeIssue?.learner_hint || topLevelHint || (state === 'passed' ? null : fallbackHint);
+  const technicalOutput = composeTechnicalOutput(
+    activeIssue?.rawout,
+    evaluation.rawout,
+    activeIssue?.diagnostic,
+    activeIssue?.error_message,
+    activeIssue?.stderr,
+    evaluation.stdout,
+    evaluation.stderr,
+    compilation_error,
+    runtime_error,
+    error,
+    execution_time_exceeded ? 'Execution time exceeded' : undefined
+  );
 
   const hasFailures = failure_details.length > 0;
-  const hasOutput = rawout.trim().length > 0;
-  const allPassed = !errorMessage && !hasFailures && state === 'passed';
-  const activeIssue = failure_details[issueIdx] || null;
-  const showOutcomeTab = hasFailures || !errorMessage;
+  const hasOutput = technicalOutput.trim().length > 0;
+  const allPassed = !hasFailures && !compilation_error && !runtime_error && !execution_time_exceeded && !memory_exceeded && !error && state === 'passed';
+  const showOutcomeTab = true;
 
   return (
     <div className="p-6 min-h-full flex flex-col items-start bg-alternate-background-500 rounded-lg shadow-lg border-2 border-white" data-testid="check-list">
@@ -94,7 +134,6 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
           </div>
         )}
         {allPassed && <span className="text-green-400 font-semibold">All tests passed!</span>}
-        {errorMessage && <pre className="text-red-400 font-semibold overflow-x-auto whitespace-pre p-2">{errorMessage}</pre>}
       </div>
 
       <div className="w-full flex justify-start border-b border-white">
@@ -127,10 +166,12 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
       <div className="w-full pt-4 text-white">
         {activeTab === 'outcome' && showOutcomeTab ? (
           <>
+            {!allPassed && activeHint && (
+              <HintCard hint={activeHint} />
+            )}
             {hasFailures && activeIssue && (
               <div className="border border-cyan-500 p-4 bg-black mb-4">
-                <span className="font-bold text-red-400">{activeIssue.test_case}</span><br/>
-                <span className="font-bold text-red-400">{activeIssue.error_message}</span>
+                <span className="font-bold text-cyan-300">{activeIssue.test_case}</span>
                 {activeIssue.expected && (
                   <div className="mt-2 border border-cyan-500 p-2">
                     <span className="text-cyan-300 font-semibold">Expected:</span>
@@ -143,18 +184,19 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
                     <pre className="font-mono bg-black mt-1 whitespace-pre-wrap">{activeIssue.received}</pre>
                   </div>
                 )}
+                <p className="mt-3 text-gray-300">Open the Output tab to see the technical details for this issue.</p>
               </div>
             )}
-            {!errorMessage && !hasFailures && (
+            {!allPassed && !hasFailures && !activeHint && (
               <div className="border border-cyan-500 p-4 bg-black mb-4">
-                <span className="text-gray-300">No test cases to show.</span>
+                <span className="text-gray-300">Open the Output tab to see the technical details.</span>
               </div>
             )}
           </>
         ) : (
           activeTab === 'output' && hasOutput && (
             <div className="border border-cyan-500 p-4 bg-black">
-              <pre className="font-mono whitespace-pre-wrap">{rawout}</pre>
+              <pre className="font-mono whitespace-pre-wrap">{technicalOutput}</pre>
             </div>
           )
         )}

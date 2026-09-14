@@ -46,6 +46,8 @@ export function formatSingleExercise(
     starterCode: exercise.starterCode,
     title: exercise.title,
     difficulty: exercise.difficulty,
+    createdAt: exercise.createdAt.toJSON(),
+    updatedAt: exercise.updatedAt.toJSON(),
   };
 }
 

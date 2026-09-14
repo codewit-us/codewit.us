@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 interface AxiosFetch<T> {
   data: T,
@@ -14,13 +14,13 @@ interface AxiosFetch<T> {
 // this will assume that the first mount is the initial loading of the data
 // and will indicate that it is loading before sending the actual request to
 // the server.
-export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch<T> {
+export function useAxiosFetch<T>(initialUrl: string | null, initialData: T): AxiosFetch<T> {
   const [data, setData] = useState(initialData);
   const [active_requests, setActiveRequests] = useState(0);
   const [error, setError] = useState(false);
-  const [initial_loading, setInitialLoading] = useState(true);
+  const [initial_loading, setInitialLoading] = useState(initialUrl != null);
 
-  const fetchData = async (controller: AbortController) => {
+  const fetchData = async (url: string, controller: AbortController) => {
     setActiveRequests(v => (v + 1));
 
     let canceled = false;
@@ -28,7 +28,7 @@ export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch
     setError(false);
 
     try {
-      const response = await axios.get(initialUrl, {
+      const response = await axios.get(url, {
         signal: controller.signal
       });
 
@@ -49,14 +49,25 @@ export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch
   };
 
   const refetch = () => {
+    if (initialUrl == null) {
+      return;
+    }
+
     const controller = new AbortController();
-    fetchData(controller);
+    fetchData(initialUrl, controller);
   };
 
   useEffect(() => {
-    let controller = new AbortController();
+    if (initialUrl == null) {
+      setError(false);
+      setInitialLoading(false);
+      return;
+    }
 
-    fetchData(controller);
+    const controller = new AbortController();
+    setInitialLoading(true);
+
+    fetchData(initialUrl, controller);
 
     return () => {
       controller.abort();
@@ -75,4 +86,4 @@ export function useAxiosFetch<T>(initialUrl: string, initialData: T): AxiosFetch
   }, [initialUrl]);
 
   return { data, setData, loading: initial_loading || active_requests > 0, error, refetch };
-};
+}

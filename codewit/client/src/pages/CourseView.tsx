@@ -1,16 +1,18 @@
 import axios, { AxiosError } from "axios";
 import { Modal } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { StudentCourse as StuCourse} from '@codewit/interfaces';
 
 import { ErrorPage } from "../components/error/Error";
 import Loading from "../components/loading/LoadingPage";
 import { useAxiosFetch } from "../hooks/fetching";
+import { useAuth } from "../hooks/useAuth";
 
 import StudentView from "./course/StudentView";
 import { CenterPrompt } from "../components/placeholders";
+import LoginRequiredPrompt from "../components/auth/LoginRequiredPrompt";
 
 interface StudentCourse extends StuCourse {
   type: "StudentView",
@@ -59,13 +61,19 @@ interface CourseView {
 export default function CourseView({onCourseChange}: CourseView) {
   const { course_id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
+  const autoJoin = searchParams.get('join') === '1';
 
   if (course_id == null) {
     throw new Error("course_id not provided");
   }
 
   const [refresh, set_refresh] = useState(0);
-  const { data: course, loading, error, setData } = useAxiosFetch<GetCourse | null>(`/api/courses/${course_id}?student_view=1&r=${refresh}`, null);
+  const { data: course, loading, error, setData } = useAxiosFetch<GetCourse | null>(
+    user ? `/api/courses/${course_id}?student_view=1&r=${refresh}` : null,
+    null,
+  );
 
   useEffect(() => {
     if (course?.type === "StudentView") {
@@ -73,8 +81,18 @@ export default function CourseView({onCourseChange}: CourseView) {
     }
   }, [course, onCourseChange]);
 
-  if (loading) {
+  useEffect(() => {
+    if (course?.type === "StudentView" && autoJoin) {
+      navigate(`/${course_id}`, { replace: true });
+    }
+  }, [autoJoin, course, course_id, navigate]);
+
+  if (authLoading || loading) {
     return <Loading />;
+  }
+
+  if (!user) {
+    return <LoginRequiredPrompt />;
   }
 
   if (error || course == null) {
@@ -105,7 +123,12 @@ export default function CourseView({onCourseChange}: CourseView) {
           course_id={course_id}
           course_title={course.title}
           auto_enroll={course.auto_enroll}
+          auto_join={autoJoin}
           on_update={data => {
+            if (autoJoin) {
+              navigate(`/${course_id}`, { replace: true });
+            }
+
             switch (data.type) {
               case "AlreadyEnrolled":
                 set_refresh(v => v + 1);
@@ -127,14 +150,7 @@ export default function CourseView({onCourseChange}: CourseView) {
         />;
       }
     default:
-      return <CenterPrompt header={"Unknown Response"}>
-        <p className="text-center text-white">
-          The client does not know how to handle the response from the server. Sorry, try going back to the home page.
-        </p>
-        <Link to="/" className="text-white bg-accent-500 rounded-md mt-4 p-2">
-          Home page
-        </Link>
-      </CenterPrompt>;
+      return <ErrorPage message="Failed to load course information. Please try again later." />;
   }
 }
 
@@ -142,6 +158,7 @@ interface EnrollingViewProps {
   course_id: string,
   course_title: string,
   auto_enroll: boolean,
+  auto_join: boolean,
   on_update: (data: RegistrationResult) => void,
 }
 
@@ -150,10 +167,11 @@ interface RegError {
   message: string,
 }
 
-function EnrollingView({course_id, course_title, auto_enroll, on_update}: EnrollingViewProps) {
-  let [sending, set_sending] = useState(false);
-  let [reg_state, set_reg_state] = useState<RegistrationResult | null>(null);
-  let [error, set_error] = useState<RegError | null>(null);
+function EnrollingView({course_id, course_title, auto_enroll, auto_join, on_update}: EnrollingViewProps) {
+  const [sending, set_sending] = useState(false);
+  const [reg_state, set_reg_state] = useState<RegistrationResult | null>(null);
+  const [error, set_error] = useState<RegError | null>(null);
+  const [auto_requested, set_auto_requested] = useState(false);
 
   async function request_enrollment() {
     if (sending) {
@@ -163,7 +181,7 @@ function EnrollingView({course_id, course_title, auto_enroll, on_update}: Enroll
     set_sending(true);
 
     try {
-      let result = await axios.post<RegistrationResult>(`/api/courses/${course_id}/register`);
+      const result = await axios.post<RegistrationResult>(`/api/courses/${course_id}/register`);
 
       set_reg_state(result.data);
     } catch (err) {
@@ -211,6 +229,15 @@ function EnrollingView({course_id, course_title, auto_enroll, on_update}: Enroll
 
     set_sending(false);
   }
+
+  useEffect(() => {
+    if (!auto_join || auto_requested || sending || reg_state != null || error != null) {
+      return;
+    }
+
+    set_auto_requested(true);
+    void request_enrollment();
+  }, [auto_join, auto_requested, sending, reg_state, error]);
 
   let modal_title = null;
   let modal_contents = null;
