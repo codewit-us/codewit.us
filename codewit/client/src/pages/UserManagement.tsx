@@ -1,5 +1,5 @@
 // codewit/client/src/utils/UserManagement.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlassIcon, ShieldCheckIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { User } from '@codewit/interfaces';
 import { useFetchUsers, useSearchUser, useSetAdmin } from '../hooks/useUsers';
@@ -10,18 +10,53 @@ interface ModalProps {
   onSave: () => void;
 }
 
-const Modal: React.FC<ModalProps> = ({ user, onClose, onSave }) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-    <div className="bg-gray-800 p-6 rounded-lg space-y-4 w-full max-w-md">
-      <h2 className="text-white text-lg font-semibold">Change Admin Status</h2>
-      <p className="text-white">Are you sure you want to {user.isAdmin ? 'remove' : 'assign'} admin rights to {user.email}?</p>
-      <div className="flex justify-end space-x-2">
-        <button onClick={onClose} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Cancel</button>
-        <button onClick={onSave} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Confirm</button>
+const Modal: React.FC<ModalProps> = ({ user, onClose, onSave }) => {
+  const headingId = 'change-admin-status-heading';
+  const confirmRef = useRef<HTMLButtonElement>(null);
+
+  // Move focus to the Confirm button when the modal opens
+  useEffect(() => {
+    confirmRef.current?.focus();
+  }, []);
+
+  // Close on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={headingId}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+    >
+      <div className="bg-gray-800 p-6 rounded-lg space-y-4 w-full max-w-md">
+        <h2 id={headingId} className="text-white text-lg font-semibold">Change Admin Status</h2>
+        <p className="text-white">Are you sure you want to {user.isAdmin ? 'remove' : 'assign'} admin rights to {user.email}?</p>
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={onClose}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Cancel
+          </button>
+          <button
+            ref={confirmRef}
+            onClick={onSave}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Confirm
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const UserManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -99,7 +134,9 @@ const UserManagement: React.FC = () => {
     >
       <div className="mb-6 w-full max-w-7xl">
         <div className="flex">
+          <label htmlFor="user-search" className="sr-only">Search users by email</label>
           <input
+            id="user-search"
             type="text"
             className="w-full md:w-64 py-2 px-5 border border-gray-600 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white"
             placeholder="Search by email"
@@ -107,7 +144,8 @@ const UserManagement: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <button
-            className="bg-accent-500 hover:bg-accent-600 text-white p-2 px-3 rounded-r-md disabled:opacity-50"
+            aria-label="Search users"
+            className="bg-accent-500 hover:bg-accent-600 text-white p-2 px-3 rounded-r-md disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             onClick={handleSearch}
             disabled={loading}
           >
