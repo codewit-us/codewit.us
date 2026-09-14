@@ -609,11 +609,11 @@ describe("Course creations functionality", () => {
 describe("Module creations functionality", () => {
   beforeEach(() => {
     mockAdminUser();
-    cy.intercept('GET', '/modules', {
+    cy.intercept('GET', '/api/modules', {
       statusCode: 200,
       body: [] 
     }).as('getModules');
-    cy.intercept('GET', '/resources', {
+    cy.intercept('GET', '/api/resources', {
       statusCode: 200,
       body: [
         { uid: 1, title: 'First resource', url: 'https://example.com/first', source: 'Example', likes: 0 },
@@ -636,7 +636,7 @@ describe("Module creations functionality", () => {
   })
 
   it("should allow a user to creat a new moduele", () => {
-    cy.intercept('POST', '/modules', (req) => {
+    cy.intercept('POST', '/api/modules', (req) => {
       expect(req.body).to.deep.equal({
         language: "cpp",
         resources: [],
@@ -651,14 +651,10 @@ describe("Module creations functionality", () => {
     cy.wait('@createModule');
   })
 
-  it('adds, reorders, and removes selected resources before saving', () => {
-    cy.intercept('POST', '/modules', (req) => {
-      expect(req.body).to.deep.equal({
-        language: 'cpp',
-        resources: [2],
-        topic: 'operation',
-      });
-    }).as('createOrderedModule');
+  it('submits selected resources in their reordered sequence', () => {
+    cy.intercept('POST', '/api/modules', (req) => {
+      expect(req.body.resources).to.deep.equal([2, 1]);
+    }).as('createReorderedModule');
 
     cy.contains('Create Module').click();
     getTopicSelect().type('operation{enter}');
@@ -668,11 +664,26 @@ describe("Module creations functionality", () => {
 
     cy.get('[data-testid="selected-resources"]').should('contain.text', 'First resource');
     cy.get('[data-testid="selected-resources"]').should('contain.text', 'Second resource');
-    cy.get('[aria-label="Drag Second resource"]').focus().type('{space}{uparrow}{space}');
+    cy.get('[aria-label="Drag Second resource"]').focus().type('{enter}{uparrow}{enter}');
+
+    getSubmitButton().click();
+    cy.wait('@createReorderedModule');
+  });
+
+  it('removes a selected resource before saving', () => {
+    cy.intercept('POST', '/api/modules', (req) => {
+      expect(req.body.resources).to.deep.equal([2]);
+    }).as('createModuleWithoutRemovedResource');
+
+    cy.contains('Create Module').click();
+    getTopicSelect().type('operation{enter}');
+    getLanguageSelect().type('cpp{enter}');
+    cy.get('#resource-select').type('First resource{enter}');
+    cy.get('#resource-select').type('Second resource{enter}');
     cy.get('[aria-label="Remove First resource"]').click();
 
     getSubmitButton().click();
-    cy.wait('@createOrderedModule');
+    cy.wait('@createModuleWithoutRemovedResource');
   });
 })
 
@@ -680,7 +691,7 @@ describe("Module creations functionality", () => {
 describe('Demo creation functionality', () => {
   beforeEach(() => {
     mockAdminUser();
-    cy.intercept('GET', '/exercises', {
+    cy.intercept('GET', '/api/exercises', {
       statusCode: 200,
       body: [{
         uid: 1,
@@ -707,7 +718,7 @@ describe('Demo creation functionality', () => {
   });
 
   it('allows a user to create a new demo', () => {
-    cy.intercept('POST', '/demos', (req) => {
+    cy.intercept('POST', '/api/demos', (req) => {
       expect(req.body).to.deep.equal({
         title: 'New Demo Title',
         youtube_id: '8bc-VU3V7lU',
@@ -750,7 +761,7 @@ describe('Demo creation functionality', () => {
 describe('Demo Editing/Deleting functionality', () => {
   beforeEach(() => {
     mockAdminUser();
-    cy.intercept('GET', '/demos', {
+    cy.intercept('GET', '/api/demos', {
       statusCode: 200,
       body: [
         {
@@ -761,23 +772,34 @@ describe('Demo Editing/Deleting functionality', () => {
           topic: 'operation',
           language: 'cpp',
           tags: ['console io'],
-          exercises: [1],
+          exercises: [
+            { uid: 1, prompt: 'First Exercise Prompt' },
+            { uid: 2, prompt: 'Second Exercise Prompt' },
+          ],
         },
       ],
     }).as('getDemos');
 
-    cy.intercept('GET', '/exercises', {
+    cy.intercept('GET', '/api/exercises', {
       statusCode: 200,
-      body: [{
-        uid: 1,
-        prompt: 'New Exercise Prompt',
-        referenceTest: 'console.log("Hello World");',
-        tags: ['console io', 'customtag'],
-        topic: 'console io',
-        language: {
-          name: 'cpp'
-        }
-      }]
+      body: [
+        {
+          uid: 1,
+          prompt: 'First Exercise Prompt',
+          referenceTest: 'console.log("First");',
+          tags: ['console io', 'customtag'],
+          topic: 'console io',
+          language: { name: 'cpp' },
+        },
+        {
+          uid: 2,
+          prompt: 'Second Exercise Prompt',
+          referenceTest: 'console.log("Second");',
+          tags: ['console io'],
+          topic: 'console io',
+          language: { name: 'cpp' },
+        },
+      ]
     }).as('getExercise');
 
     cy.visit('/create/demo');
@@ -801,7 +823,7 @@ describe('Demo Editing/Deleting functionality', () => {
   });
 
   it('edit should send updated demo and verify body', () => {
-    cy.intercept('PATCH', '/demos/99', (req) => {
+    cy.intercept('PATCH', '/api/demos/99', (req) => {
       expect(req.body).to.deep.equal({
         uid: 99,
         title: 'Updated Demo Title',
@@ -810,7 +832,7 @@ describe('Demo Editing/Deleting functionality', () => {
         topic: 'operation',
         language: 'cpp',
         tags: ['console io', 'updated tag'],
-        exercises: [1],
+        exercises: [1, 2],
       });
     }).as('patchDemo');
 
@@ -821,14 +843,55 @@ describe('Demo Editing/Deleting functionality', () => {
     cy.wait('@patchDemo');
   });
 
+  it('saves and restores reordered exercises', () => {
+    cy.intercept('PATCH', '/api/demos/99', (req) => {
+      expect(req.body.exercises).to.deep.equal([2, 1]);
+      req.reply({
+        ...req.body,
+        exercises: [
+          { uid: 2, prompt: 'Second Exercise Prompt' },
+          { uid: 1, prompt: 'First Exercise Prompt' },
+        ],
+      });
+    }).as('reorderDemoExercises');
+    cy.intercept('GET', '/api/demos', {
+      statusCode: 200,
+      body: [{
+        uid: 99,
+        title: 'New Demo Title',
+        youtube_id: '8bc-VU3V7lU',
+        youtube_thumbnail: 'https://i.ytimg.com/vi/8bc-VU3V7lU/hqdefault.jpg',
+        topic: 'operation',
+        language: 'cpp',
+        tags: ['console io'],
+        exercises: [
+          { uid: 2, prompt: 'Second Exercise Prompt' },
+          { uid: 1, prompt: 'First Exercise Prompt' },
+        ],
+      }],
+    }).as('getReorderedDemos');
+
+    cy.contains('Edit').click();
+    cy.get('[aria-label="Drag Second Exercise Prompt"]').focus().type('{enter}{uparrow}{enter}');
+    cy.contains('button', 'Update').click();
+    cy.wait('@reorderDemoExercises');
+    cy.wait('@getReorderedDemos');
+
+    cy.contains('Edit').click();
+    cy.get('[aria-label^="Drag"]').then(handles => {
+      expect(handles.eq(0)).to.have.attr('aria-label', 'Drag Second Exercise Prompt');
+      expect(handles.eq(1)).to.have.attr('aria-label', 'Drag First Exercise Prompt');
+    });
+  });
+
   it('delete should call endpoint with correct UID', () => {
-    cy.intercept('DELETE', '/demos/99').as('deleteDemo');
+    cy.intercept('DELETE', '/api/demos/99').as('deleteDemo');
     cy.contains('Delete').click();
     cy.wait('@deleteDemo').its('request.url').should('include', '/demos/99');
   });
 
   it('edit should update the title visually on table', () => {
-    cy.intercept('PATCH', '/demos/99', {
+    cy.intercept('PATCH', '/api/demos/99', {
       statusCode: 200,
       body: {
         uid: 99,

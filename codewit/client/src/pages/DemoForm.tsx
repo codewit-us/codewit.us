@@ -37,6 +37,7 @@ import { language_options, get_language_option } from "../components/form/Langua
 import CreateButton from "../components/form/CreateButton";
 import ReusableTable, { Column } from "../components/form/ReusableTable";
 import { VideoOption, use_yt_videos } from "../hooks/yt_videos";
+import { moveArrayItem } from "../utils/arrayOrder";
 
 interface DemoForm {
   uid?: number,
@@ -387,10 +388,7 @@ function DemoForm({view, demo, on_cancel, on_created, on_updated}: DemoFormProps
             <SortableExercise
               values={field.state.value}
               on_swap={(a_index, b_index) => {
-                let next = [...field.state.value];
-                next.splice(a_index, 0, next.splice(b_index, 1)[0]);
-
-                field.setValue(next);
+                field.setValue(moveArrayItem(field.state.value, a_index, b_index));
               }}
               on_remove={(index, uid) => {
                 let next = [...field.state.value];
@@ -554,9 +552,15 @@ function SortableExerciseItem({uid, prompt, on_remove}: SortableExerciseItemProp
     className="border rounded-lg p-2 gap-x-2 flex flex-row items-center bg-[rgb(55,65,81)] border-[rgb(75,85,99)]"
     style={style}
   >
-    <div className="p-2" {...attributes} {...listeners}>
+    <button
+      type="button"
+      className="p-2 cursor-grab"
+      aria-label={`Drag ${prompt}`}
+      {...attributes}
+      {...listeners}
+    >
       <Bars3Icon className="h-5 w-5"/>
-    </div>
+    </button>
     <div className="flex-1">
       <p className="truncate dark:text-white bg-">{prompt}</p>
       <span className="text-sm dark:text-white">uid: {uid}</span>

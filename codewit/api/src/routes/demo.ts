@@ -61,7 +61,7 @@ function parse_non_zero_int(given: string): number | null {
   return parsed;
 }
 
-demoRouter.get("/:uid/attempt", asyncHandle(async (req, res) => {
+export const getDemoAttempt = asyncHandle(async (req, res) => {
   let maybe_module_id = typeof req.query.module_id === "string" ?
     parse_non_zero_int(req.query.module_id) :
     null;
@@ -244,7 +244,9 @@ demoRouter.get("/:uid/attempt", asyncHandle(async (req, res) => {
     resources,
     related_demos,
   } as DemoAttempt);
-}));
+});
+
+demoRouter.get("/:uid/attempt", getDemoAttempt);
 
 demoRouter.post('/', checkAdmin, async (req, res) => {
   try {
