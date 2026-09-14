@@ -1,5 +1,5 @@
 import { BiSolidRightArrow, BiSolidLeftArrow } from 'react-icons/bi';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { EvaluationResponse } from '../../interfaces/evaluation';
 import type { LearnerHint } from '@codewit/interfaces';
 
@@ -37,9 +37,27 @@ const HintCard = ({ hint }: { hint: LearnerHint }): JSX.Element => {
   );
 };
 
+const composeTechnicalOutput = (...values: Array<string | undefined>): string => {
+  const sections: string[] = [];
+
+  for (const value of values) {
+    const normalized = value?.trim();
+    if (normalized && !sections.some((section) => section.includes(normalized))) {
+      sections.push(normalized);
+    }
+  }
+
+  return sections.join('\n\n');
+};
+
 const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
   const [activeTab, setActiveTab] = useState<'outcome' | 'output'>('outcome');
   const [issueIdx, setIssueIdx] = useState(0);
+
+  useEffect(() => {
+    setActiveTab('outcome');
+    setIssueIdx(0);
+  }, [evaluation]);
 
   if (!evaluation) {
     return (
@@ -64,7 +82,21 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
   const activeIssue = failure_details[issueIdx] || null;
   const topLevelHint = 'learner_hint' in evaluation ? (evaluation.learner_hint ?? null) : null;
   const activeHint = activeIssue?.learner_hint || topLevelHint || (state === 'passed' ? null : fallbackHint);
-  const technicalOutput = activeIssue?.rawout || compilation_error || runtime_error || error || '';
+  const failureOutput = activeIssue?.rawout?.trim() || composeTechnicalOutput(
+    activeIssue?.diagnostic,
+    activeIssue?.error_message,
+    activeIssue?.stderr
+  );
+  const technicalOutput = composeTechnicalOutput(
+    failureOutput,
+    evaluation.stdout,
+    evaluation.stderr,
+    evaluation.rawout,
+    compilation_error,
+    runtime_error,
+    error,
+    execution_time_exceeded ? 'Execution time exceeded' : undefined
+  );
 
   const hasFailures = failure_details.length > 0;
   const hasOutput = technicalOutput.trim().length > 0;

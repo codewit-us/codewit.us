@@ -13,6 +13,9 @@ export interface EvaluationErrorResponse {
   runtime_error: '';
   execution_time_exceeded: false;
   memory_exceeded: false;
+  stdout?: string;
+  stderr?: string;
+  rawout?: string;
   error: string;
   learner_hint?: LearnerHint | null;
 }
