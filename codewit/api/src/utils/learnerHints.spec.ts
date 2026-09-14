@@ -1352,6 +1352,72 @@ E       assert 2 == 4
     expect(hinted.failure_details[0].learner_hint?.kind).toBe('missing_variable');
   });
 
+  it('ignores near-match module names bound only inside a function', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'test_hats',
+        expected: '',
+        received: '',
+        error_message: "AttributeError: module 'program' has no attribute 'numberOfHats'",
+        diagnostic: "AttributeError: module 'program' has no attribute 'numberOfHats'",
+        rawout: 'pytest output',
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'import program\n\ndef test_hats():\n    assert program.numberOfHats == 9',
+      submittedCode: 'def helper():\n    NumberOfHats = 9\n    return NumberOfHats',
+      topic: 'variable',
+      title: 'Collecting Hats',
+    });
+
+    expect(hinted.failure_details[0].learner_hint?.kind).toBe('missing_variable');
+  });
+
+  it('ignores near-match module functions defined only inside a class', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 0,
+      passed: 0,
+      failed: 0,
+      errors: 1,
+      no_tests_collected: false,
+      exit_code: 2,
+      failure_details: [{
+        test_case: 'pytest collection',
+        expected: '',
+        received: '',
+        error_message: "ImportError: cannot import name 'calculateTotal' from 'program' (/tmp/program.py)",
+        diagnostic: "ImportError: cannot import name 'calculateTotal' from 'program' (/tmp/program.py)",
+        rawout: 'pytest output',
+      }],
+      compilation_error: '',
+      runtime_error: "ImportError: cannot import name 'calculateTotal' from 'program' (/tmp/program.py)",
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: 'from program import calculateTotal\n\ndef test_total():\n    assert calculateTotal() == 3',
+      submittedCode: 'class Calculator:\n    def calculate_total(self):\n        return 3',
+      topic: 'function',
+      title: 'Calculate a total',
+    });
+
+    expect(hinted.failure_details[0].learner_hint?.kind).toBe('missing_function');
+  });
+
   it('prioritizes a structured timeout over partial pytest failures', () => {
     const evaluation: EvaluationResponse = {
       state: 'failed',

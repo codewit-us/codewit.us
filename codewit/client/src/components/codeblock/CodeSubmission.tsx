@@ -42,9 +42,10 @@ const composeTechnicalOutput = (...values: Array<string | undefined>): string =>
 
   for (const value of values) {
     const normalized = value?.trim();
-    if (normalized && !sections.some((section) => section.includes(normalized))) {
-      sections.push(normalized);
-    }
+    if (!normalized || sections.some((section) => section.includes(normalized))) continue;
+
+    const retainedSections = sections.filter((section) => !normalized.includes(section));
+    sections.splice(0, sections.length, ...retainedSections, normalized);
   }
 
   return sections.join('\n\n');
@@ -81,17 +82,17 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
   const error = 'error' in evaluation ? evaluation.error : '';
   const activeIssue = failure_details[issueIdx] || null;
   const topLevelHint = 'learner_hint' in evaluation ? (evaluation.learner_hint ?? null) : null;
-  const activeHint = activeIssue?.learner_hint || topLevelHint || (state === 'passed' ? null : fallbackHint);
-  const failureOutput = activeIssue?.rawout?.trim() || composeTechnicalOutput(
+  const activeHint = execution_time_exceeded
+    ? topLevelHint
+    : activeIssue?.learner_hint || topLevelHint || (state === 'passed' ? null : fallbackHint);
+  const technicalOutput = composeTechnicalOutput(
+    activeIssue?.rawout,
+    evaluation.rawout,
     activeIssue?.diagnostic,
     activeIssue?.error_message,
-    activeIssue?.stderr
-  );
-  const technicalOutput = composeTechnicalOutput(
-    failureOutput,
+    activeIssue?.stderr,
     evaluation.stdout,
     evaluation.stderr,
-    evaluation.rawout,
     compilation_error,
     runtime_error,
     error,
