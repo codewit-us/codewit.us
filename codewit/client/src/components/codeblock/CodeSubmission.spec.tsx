@@ -173,6 +173,110 @@ describe('CodeSubmission', () => {
     expect(screen.getByText(/unique assertion diagnostic/).textContent?.match(/unique assertion diagnostic/g)).toHaveLength(1);
   });
 
+  it('includes structured diagnostics missing from non-empty raw output', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'test_value',
+        expected: '',
+        received: '',
+        error_message: 'specific failure message',
+        diagnostic: 'scoped assertion detail',
+        rawout: 'truncated pytest header',
+        stderr: 'worker warning',
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    render(<CodeSubmission evaluation={evaluation} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Output' }));
+
+    expect(screen.getByText(/truncated pytest header/)).toBeTruthy();
+    expect(screen.getByText(/scoped assertion detail/)).toBeTruthy();
+    expect(screen.getByText(/specific failure message/)).toBeTruthy();
+    expect(screen.getByText(/worker warning/)).toBeTruthy();
+  });
+
+  it('does not repeat diagnostics embedded in top-level raw output', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'test_value',
+        expected: '',
+        received: '',
+        error_message: 'embedded diagnostic',
+        rawout: '',
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+      rawout: 'full evaluator output\nembedded diagnostic\nsummary',
+    };
+
+    render(<CodeSubmission evaluation={evaluation} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Output' }));
+
+    expect(screen.getByText(/embedded diagnostic/).textContent?.match(/embedded diagnostic/g)).toHaveLength(1);
+  });
+
+  it('prioritizes timeout guidance over a partial failure hint', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: null,
+      failure_details: [{
+        test_case: 'test_value',
+        expected: '1',
+        received: '0',
+        error_message: 'assert 0 == 1',
+        rawout: 'partial pytest output',
+        learner_hint: {
+          kind: 'output_mismatch',
+          confidence: 'high',
+          title: 'The variable has the wrong value',
+          summary: 'The first test failed.',
+          next_steps: ['Fix the value.'],
+        },
+      }],
+      compilation_error: '',
+      runtime_error: 'Execution timed out',
+      execution_time_exceeded: true,
+      memory_exceeded: false,
+      learner_hint: {
+        kind: 'timeout',
+        confidence: 'medium',
+        title: 'Your code took too long to finish',
+        summary: 'The lesson stopped your program.',
+        next_steps: ['Check for loops that never end.'],
+      },
+    };
+
+    render(<CodeSubmission evaluation={evaluation} />);
+
+    expect(screen.getByText('Your code took too long to finish')).toBeTruthy();
+    expect(screen.queryByText('The variable has the wrong value')).toBeNull();
+  });
+
   it('resets the selected issue when a new evaluation has fewer failures', () => {
     const firstEvaluation: EvaluationResponse = {
       state: 'failed',

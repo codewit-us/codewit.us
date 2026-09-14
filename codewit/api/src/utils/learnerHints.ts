@@ -130,24 +130,28 @@ function maskPythonCommentsAndStrings(code: string): string {
   return masked;
 }
 
-function extractPythonBindings(code: string): { functions: string[]; variables: string[] } {
+function extractPythonBindings(
+  code: string,
+  moduleLevelOnly: boolean
+): { functions: string[]; variables: string[] } {
   const structuralCode = maskPythonCommentsAndStrings(code);
+  const indentation = moduleLevelOnly ? '' : '[ \\t]*';
   const functions = collectUniqueMatches(
     structuralCode,
-    /^\s*(?:async\s+)?def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/gm
+    new RegExp(`^${indentation}(?:async\\s+)?def\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\(`, 'gm')
   );
   const variables = new Set<string>();
 
   for (const line of structuralCode.split('\n')) {
     const simpleAssignment = line.match(
-      /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?::[^=]+)?=(?!=)/
+      new RegExp(`^${indentation}([A-Za-z_][A-Za-z0-9_]*)\\s*(?::[^=]+)?=(?!=)`)
     );
     if (simpleAssignment) {
       variables.add(simpleAssignment[1]);
     }
 
     const unpackingAssignment = line.match(
-      /^\s*[\[(]?\s*([A-Za-z_][A-Za-z0-9_]*(?:\s*,\s*[A-Za-z_][A-Za-z0-9_]*)+)\s*[\])]?\s*=(?!=)/
+      new RegExp(`^${indentation}[\\[(]?\\s*([A-Za-z_][A-Za-z0-9_]*(?:\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*)+)\\s*[\\])]?\\s*=(?!=)`)
     );
     if (unpackingAssignment) {
       unpackingAssignment[1]
@@ -156,13 +160,15 @@ function extractPythonBindings(code: string): { functions: string[]; variables: 
         .forEach((name) => variables.add(name));
     }
 
-    const importAlias = line.match(/^\s*import\s+[\w.]+\s+as\s+([A-Za-z_][A-Za-z0-9_]*)\s*$/);
+    const importAlias = line.match(
+      new RegExp(`^${indentation}import\\s+[\\w.]+\\s+as\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*$`)
+    );
     if (importAlias) {
       variables.add(importAlias[1]);
     }
 
     const fromImport = line.match(
-      /^\s*from\s+[\w.]+\s+import\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s+as\s+([A-Za-z_][A-Za-z0-9_]*))?\s*$/
+      new RegExp(`^${indentation}from\\s+[\\w.]+\\s+import\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s+as\\s+([A-Za-z_][A-Za-z0-9_]*))?\\s*$`)
     );
     if (fromImport) {
       variables.add(fromImport[2] || fromImport[1]);
@@ -190,9 +196,10 @@ function normalizeIdentifier(identifier: string): string {
 function findIdentifierMatch(
   expectedIdentifier: string,
   submittedCode: string,
-  bindingKind: BindingKind
+  bindingKind: BindingKind,
+  moduleLevelOnly: boolean
 ): null | { actual: string; reason: MatchReason } {
-  const bindings = extractPythonBindings(submittedCode);
+  const bindings = extractPythonBindings(submittedCode, moduleLevelOnly);
   const identifiers = bindingKind === 'function'
     ? bindings.functions
     : bindingKind === 'variable'
@@ -254,7 +261,8 @@ function buildMissingIdentifierHint(
   const similar = findIdentifierMatch(
     expectedIdentifier,
     submittedCode,
-    isFunction ? 'function' : 'variable'
+    isFunction ? 'function' : 'variable',
+    true
   );
 
   if (similar?.reason === 'case') {
@@ -299,7 +307,7 @@ function buildNameErrorHint(
   missingIdentifier: string,
   submittedCode: string
 ): LearnerHint {
-  const similar = findIdentifierMatch(missingIdentifier, submittedCode, 'any');
+  const similar = findIdentifierMatch(missingIdentifier, submittedCode, 'any', false);
 
   if (similar) {
     return createHint(
