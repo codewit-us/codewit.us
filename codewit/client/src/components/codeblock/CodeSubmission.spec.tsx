@@ -335,6 +335,48 @@ Failed 2 and Skipped 0 of 3 tests`;
     expect(screen.getByTestId('technical-output').textContent).toBe(rawout);
   });
 
+  it.each([
+    { expected: 'expected output', received: '', emptyLabel: 'Actual:' },
+    { expected: '', received: 'actual output', emptyLabel: 'Expected:' },
+  ])('shows an explicit empty value when $emptyLabel output is empty', ({
+    expected,
+    received,
+    emptyLabel,
+  }) => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'Test 1',
+        expected,
+        received,
+        error_message: 'Error: Expected (...), found ("expected output" != "")',
+        rawout: 'CxxTest output mismatch',
+        learner_hint: {
+          kind: 'output_mismatch',
+          confidence: 'medium',
+          title: 'Your program ran, but its result did not match the lesson',
+          summary: 'The output differed from what the lesson expected.',
+          next_steps: [],
+        },
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    render(<CodeSubmission evaluation={evaluation} />);
+
+    expect(screen.getByText(emptyLabel)).toBeTruthy();
+    expect(screen.getByText('(empty output)')).toBeTruthy();
+  });
+
   it('falls back to structured diagnostics when raw output is unavailable', () => {
     const evaluation: EvaluationResponse = {
       state: 'failed',

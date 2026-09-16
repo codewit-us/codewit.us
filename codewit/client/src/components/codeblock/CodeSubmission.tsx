@@ -112,6 +112,7 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
 
   const hasFailures = failure_details.length > 0;
   const hasOutput = technicalOutput.trim().length > 0;
+  const hasComparison = Boolean(activeIssue && (activeIssue.expected || activeIssue.received));
   const allPassed = !hasFailures && !compilation_error && !runtime_error && !execution_time_exceeded && !memory_exceeded && !error && state === 'passed';
   const showOutcomeTab = true;
 
@@ -196,19 +197,23 @@ const CodeSubmission = ({ evaluation }: EvalProps): JSX.Element => {
                 </pre>
               </div>
             )}
-            {hasFailures && activeIssue && (activeHint || activeIssue.expected || activeIssue.received) && (
+            {hasFailures && activeIssue && (activeHint || hasComparison) && (
               <div className="border border-cyan-500 p-4 bg-black mb-4">
                 <span className="font-bold text-cyan-300">{activeIssue.test_case}</span>
-                {activeIssue.expected && (
+                {hasComparison && (
                   <div className="mt-2 border border-cyan-500 p-2">
                     <span className="text-cyan-300 font-semibold">Expected:</span>
-                    <pre className="font-mono bg-black mt-1 whitespace-pre-wrap">{activeIssue.expected}</pre>
+                    <pre className="font-mono bg-black mt-1 whitespace-pre-wrap">
+                      {activeIssue.expected || '(empty output)'}
+                    </pre>
                   </div>
                 )}
-                {activeIssue.received && (
+                {hasComparison && (
                   <div className="mt-2 border border-cyan-500 p-2">
                     <span className="text-cyan-300 font-semibold">Actual:</span>
-                    <pre className="font-mono bg-black mt-1 whitespace-pre-wrap">{activeIssue.received}</pre>
+                    <pre className="font-mono bg-black mt-1 whitespace-pre-wrap">
+                      {activeIssue.received || '(empty output)'}
+                    </pre>
                   </div>
                 )}
                 <p className="mt-3 text-gray-300">Open the Output tab to see the technical details for this issue.</p>
