@@ -235,6 +235,139 @@ describe('CodeSubmission', () => {
     expect(screen.getByText(/embedded diagnostic/).textContent?.match(/embedded diagnostic/g)).toHaveLength(1);
   });
 
+  it('shows complete raw output in Outcome when no learner hint matches', () => {
+    const rawout = `Running cxxtest tests (3 tests)
+In codewit_test::testSuccessfulLogin:
+Error: Assertion failed: first failure
+In codewit_test::testWrongPassword:
+Error: Assertion failed: second failure
+Failed 2 and Skipped 0 of 3 tests`;
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 3,
+      passed: 1,
+      failed: 2,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'Test 1',
+        expected: '',
+        received: '',
+        error_message: 'Error: Assertion failed: first failure',
+        rawout: 'partial failure output',
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+      rawout,
+      learner_hint: null,
+    };
+
+    render(<CodeSubmission evaluation={evaluation} />);
+
+    expect(screen.queryByText(/The lesson found a problem/)).toBeNull();
+    expect(screen.getByText('Technical result')).toBeTruthy();
+    expect(screen.getByTestId('outcome-technical-output').textContent).toBe(rawout);
+  });
+
+  it('shows structured CxxTest diffs for each issue and keeps the full run in Output', () => {
+    const rawout = `Running cxxtest tests (3 tests)
+In codewit_test::testSuccessfulLogin:
+Error: Expected (...), found ("expected first" != "actual first")
+In codewit_test::testWrongPassword:
+Error: Expected (...), found ("expected second" != "actual second")
+Failed 2 and Skipped 0 of 3 tests`;
+    const hint = {
+      kind: 'output_mismatch' as const,
+      confidence: 'medium' as const,
+      title: 'Your program ran, but its result did not match the lesson',
+      summary: 'The output differed from what the lesson expected.',
+      next_steps: ['Compare the expected and actual output.'],
+    };
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 3,
+      passed: 1,
+      failed: 2,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [
+        {
+          test_case: 'Test 1',
+          expected: 'expected first',
+          received: 'actual first',
+          error_message: 'Error: Expected (...), found ("expected first" != "actual first")',
+          rawout,
+          learner_hint: hint,
+        },
+        {
+          test_case: 'Test 2',
+          expected: 'expected second',
+          received: 'actual second',
+          error_message: 'Error: Expected (...), found ("expected second" != "actual second")',
+          rawout,
+          learner_hint: hint,
+        },
+      ],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+      rawout,
+      learner_hint: hint,
+    };
+
+    render(<CodeSubmission evaluation={evaluation} />);
+
+    expect(screen.getByText('expected first')).toBeTruthy();
+    expect(screen.getByText('actual first')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next issue' }));
+
+    expect(screen.getByText('expected second')).toBeTruthy();
+    expect(screen.getByText('actual second')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Output' }));
+
+    expect(screen.getByTestId('technical-output').textContent).toBe(rawout);
+  });
+
+  it('falls back to structured diagnostics when raw output is unavailable', () => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'unrecognized failure',
+        expected: '',
+        received: '',
+        error_message: 'specific failure message',
+        rawout: '',
+        diagnostic: 'scoped technical diagnostic',
+        stderr: 'runner warning',
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+      learner_hint: null,
+    };
+
+    render(<CodeSubmission evaluation={evaluation} />);
+
+    expect(screen.getByText('Technical result')).toBeTruthy();
+    expect(screen.getByText(/scoped technical diagnostic/)).toBeTruthy();
+    expect(screen.getByText(/specific failure message/)).toBeTruthy();
+    expect(screen.getByText(/runner warning/)).toBeTruthy();
+  });
+
   it('prioritizes timeout guidance over a partial failure hint', () => {
     const evaluation: EvaluationResponse = {
       state: 'failed',
