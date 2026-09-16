@@ -531,28 +531,15 @@ function buildRuntimeHint(message: string): LearnerHint {
   );
 }
 
-function buildUnknownHint(): LearnerHint {
-  return createHint(
-    'unknown',
-    'low',
-    'The lesson found a problem, but it needs the technical details to explain it',
-    'I could not safely turn this failure into a more specific beginner hint yet.',
-    [
-      'Open the Output tab to see the technical error details.',
-      'Focus first on the first error shown there, then submit again.'
-    ]
-  );
-}
-
 function hasAssertionFailure(diagnosticText: string): boolean {
-  return /AssertionError\b|Assertion failed:|^\s*assert\b/m.test(diagnosticText);
+  return /AssertionError\b|Assertion failed:\s*assert\b|^\s*assert\b/m.test(diagnosticText);
 }
 
 function buildFailureHint(
   detail: FailureDetail,
   context: LearnerHintContext,
   includeRawOutput: boolean
-): LearnerHint {
+): LearnerHint | undefined {
   const contract = extractExerciseContract(context.referenceTest, context.topic, context.title);
   const message = detail.error_message || '';
   const diagnosticText = buildDiagnosticText(detail, includeRawOutput);
@@ -655,7 +642,7 @@ function buildFailureHint(
     return buildOutputMismatchHint();
   }
 
-  return buildUnknownHint();
+  return undefined;
 }
 
 function buildTopLevelHint(evaluation: EvaluationResponse, context: LearnerHintContext): LearnerHint | null {
@@ -708,14 +695,14 @@ function buildTopLevelHint(evaluation: EvaluationResponse, context: LearnerHintC
   }
 
   if (evaluation.memory_exceeded) {
-    return buildUnknownHint();
+    return null;
   }
 
   if (evaluation.state === 'passed') {
     return null;
   }
 
-  return buildUnknownHint();
+  return null;
 }
 
 function addLearnerHintsToEvaluation(
@@ -723,10 +710,13 @@ function addLearnerHintsToEvaluation(
   context: LearnerHintContext
 ): EvaluationResponse {
   const includeRawOutput = evaluation.failure_details.length === 1;
-  const failure_details = evaluation.failure_details.map((detail) => ({
-    ...detail,
-    learner_hint: buildFailureHint(detail, context, includeRawOutput),
-  }));
+  const failure_details = evaluation.failure_details.map((detail) => {
+    const learnerHint = buildFailureHint(detail, context, includeRawOutput);
+
+    return learnerHint
+      ? { ...detail, learner_hint: learnerHint }
+      : detail;
+  });
 
   const hintedEvaluation = {
     ...evaluation,
