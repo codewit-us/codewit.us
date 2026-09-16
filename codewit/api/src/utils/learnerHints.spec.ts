@@ -1451,7 +1451,7 @@ E       assert 2 == 4
     expect(hinted.learner_hint?.kind).toBe('timeout');
   });
 
-  it('does not classify import failures from other modules as missing lesson names', () => {
+  it('does not add a learner hint for import failures from other modules', () => {
     const evaluation: EvaluationResponse = {
       state: 'failed',
       tests_run: 0,
@@ -1481,7 +1481,59 @@ E       assert 2 == 4
       title: 'Value',
     });
 
-    expect(hinted.failure_details[0].learner_hint?.kind).toBe('unknown');
+    expect(hinted.failure_details[0].learner_hint).toBeUndefined();
+    expect(hinted.learner_hint).toBeNull();
+  });
+
+  it.each([
+    {
+      framework: 'CxxTest',
+      error_message: 'Error: Assertion failed: false',
+      rawout: `Running cxxtest tests (1 test)
+test_program.h:15: Error: Assertion failed: false
+Failed 1 and Skipped 0 of 1 test`,
+    },
+    {
+      framework: 'JUnit',
+      error_message: 'java.lang.IllegalStateException: unexpected state',
+      rawout: 'java.lang.IllegalStateException: unexpected state\n\tat MainTest.testValue(MainTest.java:12)',
+    },
+    {
+      framework: 'pytest',
+      error_message: 'ZeroDivisionError: division by zero',
+      rawout: 'E       ZeroDivisionError: division by zero',
+    },
+  ])('does not add a learner hint for unrecognized $framework output', ({ error_message, rawout }) => {
+    const evaluation: EvaluationResponse = {
+      state: 'failed',
+      tests_run: 1,
+      passed: 0,
+      failed: 1,
+      errors: 0,
+      no_tests_collected: false,
+      exit_code: 1,
+      failure_details: [{
+        test_case: 'unrecognized failure',
+        expected: '',
+        received: '',
+        error_message,
+        rawout,
+      }],
+      compilation_error: '',
+      runtime_error: '',
+      execution_time_exceeded: false,
+      memory_exceeded: false,
+    };
+
+    const hinted = addLearnerHintsToEvaluation(evaluation, {
+      referenceTest: '',
+      submittedCode: '',
+      topic: null,
+      title: null,
+    });
+
+    expect(hinted.failure_details[0].learner_hint).toBeUndefined();
+    expect(hinted.learner_hint).toBeNull();
   });
 
   it('does not claim a memory limit was enforced from an unsupported flag', () => {
@@ -1507,7 +1559,6 @@ E       assert 2 == 4
       title: 'Value',
     });
 
-    expect(hinted.learner_hint?.kind).toBe('unknown');
-    expect(hinted.learner_hint?.summary).not.toMatch(/memory/i);
+    expect(hinted.learner_hint).toBeNull();
   });
 });
